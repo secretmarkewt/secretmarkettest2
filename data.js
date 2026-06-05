@@ -67,6 +67,11 @@ const SECMARKET_DATA = {
     ["SubLine", "4.88", "4 704", "USDT BEP20"],
     ["AimShop", "4.96", "7 122", "USDT TRC20"],
   ],
+  demoUsers: [
+    { id: "usr-buyer", role: "buyer", name: "Artem", email: "buyer@example.com", telegram: "@buyer", status: "active" },
+    { id: "usr-seller", role: "seller", name: "PixelTrade", email: "seller@example.com", telegram: "@pixeltrade", status: "active" },
+    { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", status: "active" },
+  ],
   demoOrders: [
     { id: 12345, product: "Robux 10 000", seller: "PixelTrade", buyer: "Artem", amount: 88.3, payment: "Оплачено", order: "Ожидает подтверждения", delivery: "Автовыдача" },
     { id: 22341, product: "Steam Gift Card", seller: "KeyDock", buyer: "Artem", amount: 50, payment: "Оплачено", order: "Завершен", delivery: "Автовыдача" },
@@ -107,6 +112,20 @@ const SECMARKET_DATA = {
     ["Chat", "сообщения, файлы, системные события, контекст заказа"],
     ["Dispute", "причина, доказательства, решение, возврат, заморозка средств"],
     ["Withdrawal", "продавец, адрес, сеть, сумма, tx hash, история статусов"],
+  ],
+  apiEndpoints: [
+    ["GET /api/products", "каталог, фильтры, категории"],
+    ["POST /api/products", "создание товара продавцом"],
+    ["PATCH /api/products/:id", "редактирование и модерация товара"],
+    ["POST /api/orders", "создание заказа и escrow"],
+    ["GET /api/orders/:id", "детальная страница заказа"],
+    ["POST /api/payments", "создание crypto invoice"],
+    ["PATCH /api/payments/:id/status", "ручная или автоматическая смена статуса"],
+    ["POST /api/disputes", "открытие спора"],
+    ["PATCH /api/disputes/:id/decision", "решение поддержки и возврат"],
+    ["POST /api/support/tickets", "создание тикета"],
+    ["PATCH /api/withdrawals/:id", "подтверждение выплаты и tx hash"],
+    ["GET /api/admin/moderation", "очередь товаров, жалоб, отзывов и продавцов"],
   ],
   infoPages: {
     "/terms": ["Пользовательское соглашение", "Правила безопасной сделки, покупки цифровых товаров, статусы заказов и ответственность сторон."],
