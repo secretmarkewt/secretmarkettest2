@@ -1,4 +1,6 @@
 const API_STORAGE_KEY = "secmarket-mock-api-state";
+const API_BASE_URL_KEY = "secmarket-api-base-url";
+const DEFAULT_API_BASE_URL = "http://127.0.0.1:4174";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -76,11 +78,74 @@ function getSnapshot() {
   return Object.fromEntries(Object.entries(state).map(([key, value]) => [key, value.length]));
 }
 
+function getApiBaseUrl() {
+  return localStorage.getItem(API_BASE_URL_KEY) || DEFAULT_API_BASE_URL;
+}
+
+function setApiBaseUrl(url) {
+  const cleanUrl = String(url || "").replace(/\/$/, "");
+  if (!cleanUrl) localStorage.removeItem(API_BASE_URL_KEY);
+  else localStorage.setItem(API_BASE_URL_KEY, cleanUrl);
+  return getApiBaseUrl();
+}
+
+async function requestLive(path, options = {}) {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(body.error || `API request failed: ${response.status}`);
+    error.status = response.status;
+    error.body = body;
+    throw error;
+  }
+  return body;
+}
+
+const live = {
+  async health() {
+    return requestLive("/api/health");
+  },
+  async list(collectionName) {
+    const response = await requestLive(`/api/${collectionName}`);
+    return response.items || [];
+  },
+  async findById(collectionName, id) {
+    return requestLive(`/api/${collectionName}/${id}`);
+  },
+  async create(collectionName, payload) {
+    return requestLive(`/api/${collectionName}`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  async updateStatus(collectionName, id, status) {
+    return requestLive(`/api/${collectionName}/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  },
+  async getSnapshot() {
+    return requestLive("/api/snapshot");
+  },
+  async reset() {
+    return requestLive("/api/reset", { method: "POST" });
+  },
+};
+
 window.SECMARKET_API = {
   create,
   findById,
+  getApiBaseUrl,
   getSnapshot,
   list,
+  live,
   reset,
+  setApiBaseUrl,
   updateStatus,
 };

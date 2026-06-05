@@ -16,6 +16,9 @@ function request(port, path, options = {}) {
     const health = await request(port, "/api/health").then((res) => res.json());
     if (!health.ok) throw new Error("health check failed");
 
+    const preflight = await request(port, "/api/products", { method: "OPTIONS" });
+    if (preflight.status !== 204 || preflight.headers.get("access-control-allow-origin") !== "*") throw new Error("cors preflight failed");
+
     const products = await request(port, "/api/products").then((res) => res.json());
     if (!Array.isArray(products.items) || products.items.length < 1) throw new Error("products list failed");
 
@@ -36,6 +39,12 @@ function request(port, path, options = {}) {
       body: JSON.stringify({ status: "bad-status" }),
     });
     if (rejected.status !== 422) throw new Error("invalid status validation failed");
+
+    const invalidJson = await request(port, "/api/products", {
+      method: "POST",
+      body: "{broken-json",
+    });
+    if (invalidJson.status !== 400) throw new Error("invalid json validation failed");
 
     console.log("backend OK");
   } finally {

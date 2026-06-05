@@ -9,7 +9,7 @@ function createApiServer(options = {}) {
       const handled = await handleApi(req, res, store);
       if (!handled) json(res, 404, { error: "api_route_not_found" });
     } catch (error) {
-      json(res, 500, { error: "internal_error", message: error.message });
+      json(res, error.status || 500, { error: error.message === "invalid_json" ? "invalid_json" : "internal_error", message: error.message });
     }
   });
 }

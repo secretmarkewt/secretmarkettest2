@@ -26,6 +26,8 @@ Default API URL: `http://127.0.0.1:4174/api/health`
 - `GET /api/snapshot`
 - `POST /api/reset`
 
+The API allows CORS for local frontend development, so the static SPA can call `http://127.0.0.1:4174/api/*` directly while the frontend server runs on `4173`.
+
 ## Next Backend Work
 
 - Replace in-memory repository with SQLite/PostgreSQL.

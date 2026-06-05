@@ -23,6 +23,7 @@ Health check: `http://127.0.0.1:4174/api/health`.
 ```powershell
 node verify.js
 node verify-backend.js
+node verify-api-client.js
 ```
 
 ## Structure
@@ -31,6 +32,7 @@ node verify-backend.js
 - `routes.js` - SPA route map.
 - `models.js` - frontend model contracts.
 - `api.js` - browser mock API over localStorage.
+- `api.js` also has `SECMARKET_API.live` for real `/api/*` calls.
 - `backend/` - Node HTTP API skeleton with in-memory repository.
 - `renderers/` - page renderers split by domain.
 - `state.js`, `session.js`, `selectors.js` - app state, demo session and data selectors.
@@ -46,6 +48,7 @@ node verify-backend.js
 - Mobile navigation, compact filters and simplified checkout flow.
 - Backend-ready frontend split.
 - Backend API skeleton for products, orders, payments, disputes, tickets, withdrawals and moderation.
+- Browser API client that can switch from localStorage mock data to live `/api/*`.
 
 ## Next Work
 

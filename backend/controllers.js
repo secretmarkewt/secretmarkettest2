@@ -1,9 +1,21 @@
 const { resourceModels } = require("./models");
 const { validateCreate, validatePatch } = require("./validators");
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 function json(res, status, body) {
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", ...corsHeaders });
   res.end(JSON.stringify(body, null, 2));
+  return true;
+}
+
+function empty(res, status) {
+  res.writeHead(status, corsHeaders);
+  res.end();
   return true;
 }
 
@@ -16,7 +28,13 @@ async function readBody(req) {
   for await (const chunk of req) chunks.push(chunk);
   const raw = Buffer.concat(chunks).toString("utf8");
   if (!raw) return {};
-  return JSON.parse(raw);
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const error = new Error("invalid_json");
+    error.status = 400;
+    throw error;
+  }
 }
 
 async function handleApi(req, res, store) {
@@ -24,6 +42,7 @@ async function handleApi(req, res, store) {
   const [apiPrefix, resource, id, action] = url.pathname.split("/").filter(Boolean);
 
   if (apiPrefix !== "api") return false;
+  if (req.method === "OPTIONS") return empty(res, 204);
   if (resource === "health") return json(res, 200, { ok: true, service: "secmarket-api" });
   if (resource === "snapshot") return json(res, 200, store.snapshot());
   if (resource === "reset" && req.method === "POST") return json(res, 200, store.reset());
