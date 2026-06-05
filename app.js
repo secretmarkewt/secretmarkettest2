@@ -1,127 +1,23 @@
-const categories = [
-  ["Игровая валюта", "USDT-цены, быстрая выдача", "VC"],
-  ["Аккаунты", "Steam, Roblox, Telegram", "AC"],
-  ["Ключи", "Игры, софт, подписки", "KY"],
-  ["Подписки", "Сервисы и приложения", "SB"],
-  ["Пополнение", "Балансы и донат", "TP"],
-  ["Предметы", "Скины, вещи, инвентарь", "IT"],
-  ["Услуги", "Буст, прокачка, помощь", "SV"],
-  ["Скины", "Valorant, CS, Fortnite", "SK"],
-  ["Софт", "Цифровые товары", "SW"],
-  ["Другое", "Нишевые предложения", "OT"],
-];
-
-const quickLinks = ["Roblox", "Steam", "Telegram", "Discord", "Minecraft", "Brawl Stars", "Valorant", "PUBG", "PlayStation", "Xbox"];
-
-const subcategories = {
-  roblox: ["Robux", "Аккаунты", "Предметы", "Услуги", "Game Pass", "VIP-сервера", "Группы", "Буст"],
-  steam: ["Gift Card", "Ключи", "Аккаунты", "Скины", "Баланс"],
-  telegram: ["Premium", "Аккаунты", "Номера", "Каналы", "Боты"],
-  minecraft: ["Аккаунты", "Ключи", "Сервера", "Донат", "Услуги"],
-};
-
-const products = [
-  { id: 12345, title: "Robux 10 000, выдача 5 минут", cat: "Roblox", price: 84.9, usd: 84.9, seller: "PixelTrade", rating: 4.98, sales: 2381, type: "Автовыдача", stock: 48, colors: ["#2a6f97", "#47D651"], mark: "RB" },
-  { id: 22341, title: "Steam Gift Card 50 USDT", cat: "Steam", price: 50, usd: 50, seller: "KeyDock", rating: 4.92, sales: 1840, type: "Автовыдача", stock: 120, colors: ["#223556", "#67aaf9"], mark: "ST" },
-  { id: 33412, title: "Telegram Premium 12 месяцев", cat: "Telegram", price: 31.5, usd: 31.5, seller: "SubLine", rating: 4.88, sales: 902, type: "Ручная", stock: 16, colors: ["#1f6f8b", "#e85d87"], mark: "TG" },
-  { id: 44510, title: "Minecraft Java аккаунт", cat: "Minecraft", price: 12.8, usd: 12.8, seller: "MineVault", rating: 4.81, sales: 671, type: "Автовыдача", stock: 37, colors: ["#335c34", "#f4bd4f"], mark: "MC" },
-  { id: 55118, title: "Valorant VP, регион EU", cat: "Valorant", price: 22.4, usd: 22.4, seller: "AimShop", rating: 4.96, sales: 1120, type: "Ручная", stock: 23, colors: ["#4a1f2f", "#ff6b6b"], mark: "VP" },
-  { id: 66209, title: "Discord Nitro 1 месяц", cat: "Discord", price: 7.2, usd: 7.2, seller: "NitroBay", rating: 4.76, sales: 504, type: "Автовыдача", stock: 89, colors: ["#303c88", "#7bd88f"], mark: "DN" },
-  { id: 77102, title: "PUBG UC, быстрая отправка", cat: "PUBG", price: 18.6, usd: 18.6, seller: "DropZone", rating: 4.9, sales: 1320, type: "Ручная", stock: 41, colors: ["#493819", "#f4bd4f"], mark: "UC" },
-  { id: 88444, title: "PlayStation Plus Deluxe", cat: "PlayStation", price: 39.9, usd: 39.9, seller: "ConsoleHub", rating: 4.84, sales: 774, type: "Автовыдача", stock: 14, colors: ["#143c68", "#67aaf9"], mark: "PS" },
-];
-
-const sellers = [
-  ["PixelTrade", "4.98", "12 840", "USDT TRC20"],
-  ["KeyDock", "4.92", "9 310", "USDT TON"],
-  ["SubLine", "4.88", "4 704", "USDT BEP20"],
-  ["AimShop", "4.96", "7 122", "USDT TRC20"],
-];
-
-const demoOrders = [
-  { id: 12345, product: "Robux 10 000", seller: "PixelTrade", buyer: "Artem", amount: 88.3, payment: "Оплачено", order: "Ожидает подтверждения", delivery: "Автовыдача" },
-  { id: 22341, product: "Steam Gift Card", seller: "KeyDock", buyer: "Artem", amount: 50, payment: "Оплачено", order: "Завершен", delivery: "Автовыдача" },
-  { id: 33412, product: "Telegram Premium", seller: "SubLine", buyer: "Artem", amount: 31.5, payment: "Ожидает подтверждений", order: "В работе", delivery: "Ручная" },
-  { id: 77102, product: "PUBG UC", seller: "DropZone", buyer: "Artem", amount: 18.6, payment: "Оплачено", order: "Спор", delivery: "Ручная" },
-];
-
-const demoPayments = [
-  { id: "pay-12345", order: 12345, amount: 88.3, coin: "USDT", network: "TRC20", status: "Оплачено", confirmations: "3/3", tx: "tx_trc20_9a2" },
-  { id: "pay-22341", order: 22341, amount: 50, coin: "USDT", network: "TON", status: "Оплачено", confirmations: "1/1", tx: "tx_ton_17b" },
-  { id: "pay-33412", order: 33412, amount: 31.5, coin: "USDT", network: "BEP20", status: "Ожидает подтверждений", confirmations: "8/12", tx: "tx_bep20_42c" },
-];
-
-const demoTickets = [
-  { id: "SUP-104", topic: "Проблема с оплатой", order: 12345, status: "Открыт" },
-  { id: "SUP-097", topic: "Вопрос по заказу", order: 33412, status: "Ждет ответа" },
-  { id: "SUP-081", topic: "Возврат", order: 77102, status: "Закрыт" },
-];
-
-const infoPages = {
-  "/terms": ["Пользовательское соглашение", "Правила безопасной сделки, покупки цифровых товаров, статусы заказов и ответственность сторон."],
-  "/privacy": ["Политика конфиденциальности", "Минимальный сбор данных для заказов, чатов, платежей и поддержки."],
-  "/refund-policy": ["Политика возвратов", "Возвраты рассматриваются через спор, с учетом статуса выдачи и подтверждения оплаты."],
-  "/seller-rules": ["Правила продавцов", "Точные описания, честные сроки, рабочие товары, запрет выдачи повторно проданных данных."],
-  "/buyer-rules": ["Правила покупателей", "Оплата только выбранной сетью, проверка товара после получения, корректное ведение спора."],
-  "/crypto-payment-guide": ["Инструкция по оплате криптой", "Выберите USDT TRC20, TON или BEP20, отправьте точную сумму и дождитесь подтверждений."],
-  "/fees": ["Комиссии", "Платформа удерживает комиссию после завершения заказа, сетевые комиссии оплачиваются отправителем."],
-  "/contacts": ["Контакты", "Поддержка работает через тикеты, спор по заказу и системный чат."],
-  "/faq": ["FAQ", "Ответы по оплате, выдаче, спорам, возвратам, статусам и ручным выплатам."],
-  "/status-map": ["Карта статусов", "Все основные статусы оплаты, заказов, средств продавца и выплат в MVP."],
-};
-
-const routeLinks = [
-  ["/catalog", "Каталог"],
-  ["/seller/products/create", "Продать"],
-  ["/orders/12345", "Заказы"],
-  ["/chats", "Чаты"],
-  ["/notifications", "Уведомления"],
-  ["/account", "Профиль"],
-];
-
-const accountLinks = [
-  ["Профиль", "/account"],
-  ["Мои заказы", "/account/orders"],
-  ["Избранное", "/account/favorites"],
-  ["Чаты", "/chats"],
-  ["Споры", "/disputes"],
-  ["Отзывы", "/account/reviews"],
-  ["Настройки", "/account/settings"],
-  ["Безопасность", "/account/security"],
-  ["История оплат", "/account/payments"],
-];
-
-const sellerLinks = [
-  ["Обзор", "/seller"],
-  ["Профиль", "/seller/profile"],
-  ["Мои товары", "/seller/products"],
-  ["Создать товар", "/seller/products/create"],
-  ["Заказы", "/seller/orders"],
-  ["Чаты", "/chats"],
-  ["Финансы", "/seller/finance"],
-  ["Выплаты", "/seller/withdraw"],
-  ["Отзывы", "/seller/reviews"],
-  ["Настройки", "/seller/settings"],
-  ["Правила", "/seller-rules"],
-];
-
-const adminLinks = [
-  ["Дашборд", "/admin"],
-  ["Пользователи", "/admin/users"],
-  ["Продавцы", "/admin/sellers"],
-  ["Товары", "/admin/products"],
-  ["Заказы", "/admin/orders"],
-  ["Платежи", "/admin/payments"],
-  ["Выплаты", "/admin/payouts"],
-  ["Споры", "/admin/disputes"],
-  ["Тикеты", "/admin/tickets"],
-  ["Категории", "/admin/categories"],
-  ["Промокоды", "/admin/promocodes"],
-  ["Комиссии", "/admin/fees"],
-  ["Крипто-платежи", "/admin/crypto"],
-  ["Модерация", "/admin/moderation"],
-];
-
+﻿const {
+  categories,
+  quickLinks,
+  subcategories,
+  categoryPages,
+  products,
+  sellers,
+  demoOrders,
+  demoPayments,
+  demoTickets,
+  demoDisputes,
+  demoWithdrawals,
+  moderationQueue,
+  dataModels,
+  infoPages,
+  routeLinks,
+  accountLinks,
+  sellerLinks,
+  adminLinks,
+} = window.SECMARKET_DATA;
 const app = document.querySelector("#app");
 let currency = "USDT";
 let activeStep = 1;
@@ -211,6 +107,10 @@ function activeClass(path) {
   return currentPath() === path ? "active" : "";
 }
 
+function isCompactViewport() {
+  return window.innerWidth <= 640;
+}
+
 function productById(id) {
   return products.find((product) => String(product.id) === String(id)) || products[0];
 }
@@ -221,6 +121,22 @@ function orderById(id) {
 
 function paymentByOrderId(id) {
   return demoPayments.find((paymentItem) => String(paymentItem.order) === String(id)) || demoPayments[0];
+}
+
+function paymentById(id) {
+  return demoPayments.find((paymentItem) => paymentItem.id === id || String(paymentItem.order) === String(id)) || demoPayments[0];
+}
+
+function disputeById(id) {
+  return demoDisputes.find((dispute) => String(dispute.id) === String(id)) || demoDisputes[0];
+}
+
+function ticketById(id) {
+  return demoTickets.find((ticket) => String(ticket.id).toLowerCase() === String(id).toLowerCase()) || demoTickets[0];
+}
+
+function withdrawalById(id) {
+  return demoWithdrawals.find((withdrawalItem) => String(withdrawalItem.id).toLowerCase() === String(id).toLowerCase()) || demoWithdrawals[0];
 }
 
 function productMatchesSearch(product, query = state.query) {
@@ -271,7 +187,16 @@ function header() {
         <button class="icon-btn" title="Язык">RU</button>
         <button class="icon-btn" title="Валюта" data-currency>${currency}</button>
       </nav>
-    </header>`;
+    </header>
+    <nav class="mobile-tabbar">
+      ${[
+        ["/", "⌂", "Главная"],
+        ["/catalog", "⌕", "Каталог"],
+        ["/orders/12345", "#", "Заказы"],
+        ["/chats", "✉", "Чаты"],
+        ["/account", "◉", "Профиль"],
+      ].map(([href, icon, label]) => `<a href="${href}" data-link class="${activeClass(href)}"><span>${icon}</span>${label}</a>`).join("")}
+    </nav>`;
 }
 
 function footer() {
@@ -283,6 +208,7 @@ function footer() {
           ["Покупателям", ["/buyer-rules", "/refund-policy", "/crypto-payment-guide"]],
           ["Продавцам", ["/seller-rules", "/fees", "/seller/withdraw"]],
           ["Платформа", ["/terms", "/privacy", "/contacts", "/faq", "/status-map"]],
+          ["Разработка", ["/backend-structure"]],
         ].map(([title, links]) => `<div><h3>${title}</h3>${links.map((href) => `<a href="${href}" data-link>${infoPages[href]?.[0] || href}</a>`).join("")}</div>`).join("")}
       </div>
     </footer>`;
@@ -353,16 +279,19 @@ function home() {
 }
 
 function catalog(category = "") {
-  const title = category ? `Категория: ${pretty(category)}` : "Каталог цифровых товаров";
+  const categoryInfo = categoryPages[category];
+  const title = categoryInfo ? categoryInfo.title : category ? `Категория: ${pretty(category)}` : "Каталог цифровых товаров";
   const list = filteredProducts(category);
   const subs = subcategories[category] || [];
   return `${header()}<main class="main">
     <div class="layout">
-      <aside class="sidebar"><h3>Категории</h3>${["Все категории", ...categories.map((c) => c[0])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все категории") ? "active" : ""}" href="${x === "Все категории" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>›</span></a>`).join("")}</aside>
+      <aside class="sidebar"><h3>Категории</h3>${["Все категории", ...categories.map((c) => c[0])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все категории") ? "active" : ""}" href="${x === "Все категории" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>›</span></a>`).join("")}<section class="section"><h3>Игры</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>›</span></a>`).join("")}</section></aside>
       <section>
         <p class="eyebrow">Фильтры, сортировка, наличие</p><h1>${title}</h1>
+        ${categoryInfo ? `<section class="section"><p class="lead">${categoryInfo.description}</p><div class="grid trust section">${subs.map((name) => `<a class="trust-item panel" href="/catalog/${category}" data-link><h3>${name}</h3><p class="muted">Подкатегория ${categoryInfo.title}</p></a>`).join("")}</div></section>` : ""}
         ${subs.length ? `<div class="chips section">${subs.map((name) => `<a class="chip" href="/catalog/${category}" data-link>${name}</a>`).join("")}</div>` : ""}
-        <div class="panel">
+        <details class="panel filters-panel" ${isCompactViewport() ? "" : "open"}>
+          <summary>Фильтры и сортировка</summary>
           <div class="filter-grid">
             <label class="field"><span>Цена до, USDT</span><input type="number" min="1" step="1" value="${state.maxPrice}" data-filter="maxPrice" /></label>
             <label class="field"><span>Выдача</span><select data-filter="delivery">${option("all", "Любая", state.delivery)}${option("автовыдача", "Автоматическая", state.delivery)}${option("ручная", "Ручная", state.delivery)}</select></label>
@@ -374,14 +303,14 @@ function catalog(category = "") {
           <div class="tabs section">
             ${sortTab("popular", "Популярные")}${sortTab("cheap", "Дешевые")}${sortTab("expensive", "Дорогие")}${sortTab("new", "Новые")}${sortTab("rating", "По рейтингу")}
           </div>
-        </div>
+        </details>
         <section class="section">${productCards(list)}</section>
         <section class="section panel"><h2>FAQ по категории</h2><div class="list">${[
+          ...(categoryInfo?.faq || []),
           "Проверяйте сеть оплаты, тип выдачи, регион и условия получения перед оформлением заказа.",
-          "Автовыдача открывает код или инструкцию после подтверждения оплаты.",
-          "Для ручных товаров после оплаты создается чат по заказу.",
           "Если товар не получен или не работает, открывайте спор со страницы заказа.",
         ].map(row).join("")}</div><p class="muted section">SEO: товары ${category ? pretty(category) : "цифрового каталога"} продаются с ценой в USDT, рейтингом продавца, количеством продаж и прозрачным статусом выдачи.</p></section>
+        ${categoryInfo ? `<section class="section panel"><h2>SEO-описание</h2><p class="muted">${categoryInfo.seo}</p></section>` : ""}
       </section>
     </div>${footer()}</main>`;
 }
@@ -564,6 +493,7 @@ function accountSettings() {
 function seller(path = "") {
   if (path.includes("profile")) return sellerProfile();
   if (path.includes("products/create")) return createProduct();
+  if (path.includes("/edit")) return createProduct("edit", path.split("/").at(-2));
   if (path.includes("products")) return sellerProducts();
   if (path.includes("orders")) return sellerOrders();
   if (path.includes("finance")) return finance();
@@ -585,7 +515,7 @@ function sellerSettings() {
 }
 
 function sellerProducts() {
-  return page("Мои товары", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><div class="section-head"><h2>Активные товары</h2><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div><div class="list">${products.slice(0, 5).map((product) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.cat} · ${product.stock} шт. · ${money(product.price)}</span></span><span class="status ok">Опубликован</span></div>`).join("")}</div></section></div>`, "Seller");
+  return page("Мои товары", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><div class="section-head"><h2>Активные товары</h2><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div><div class="list">${products.slice(0, 5).map((product, index) => `<a class="list-row" href="/seller/products/${product.id}/edit" data-link><span>${product.title}<br><span class="muted">${product.cat} · ${product.stock} шт. · ${money(product.price)}</span></span><span class="status ${index === 2 ? "wait" : "ok"}">${index === 2 ? "на модерации" : "опубликован"}</span></a>`).join("")}</div></section></div>`, "Seller");
 }
 
 function sellerOrders() {
@@ -604,11 +534,14 @@ function publicSeller() {
   </section><aside class="panel"><h2>Отзывы</h2><div class="list">${["Быстрая автовыдача", "Отвечает в чате", "Коды рабочие", "Возвратов почти нет"].map((x) => row(x, "5★")).join("")}</div><a class="btn primary section" href="/chats" data-link>Написать продавцу</a></aside></div>`, "Seller");
 }
 
-function createProduct() {
-  return page("Создание товара", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
-    <div class="panel"><h2>Основные поля</h2><div class="form-grid">${field("Категория", "select", categories.map((c) => c[0]))}${field("Подкатегория", "input", "Robux")}${field("Название", "input", "Robux 10 000")}${field("Цена в USDT", "input", "84.90")}${field("Наличие", "input", "50")}${field("Тип выдачи", "select", ["Автоматическая", "Ручная"])}${field("Регион", "select", ["EU", "US", "CIS", "Любой"])}${field("Платформа", "input", "Roblox")}${field("Срок выполнения", "input", "5 минут")}${field("Гарантия", "input", "24 часа")}${field("Изображение", "input", "Загрузить файл")}${field("Статус", "select", ["Черновик", "На модерации", "Опубликован"])}</div></div>
+function createProduct(mode = "create", id = 12345) {
+  const p = mode === "edit" ? productById(id) : productById(12345);
+  const title = mode === "edit" ? `Редактирование товара #${p.id}` : "Создание товара";
+  return page(title, `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
+    <div class="panel"><div class="section-head"><h2>Основные поля</h2><span class="status ${mode === "edit" ? "wait" : "ok"}">${mode === "edit" ? "на модерации после правок" : "новый товар"}</span></div><div class="form-grid">${field("Категория", "select", categories.map((c) => c[0]))}${field("Подкатегория", "input", p.cat === "Roblox" ? "Robux" : p.cat)}${field("Название", "input", p.title)}${field("Цена в USDT", "input", p.price.toFixed(2))}${field("Наличие", "input", String(p.stock))}${field("Тип выдачи", "select", ["Автоматическая", "Ручная"])}${field("Регион", "select", ["EU", "US", "CIS", "Любой"])}${field("Платформа", "input", p.cat)}${field("Срок выполнения", "input", "5 минут")}${field("Гарантия", "input", "24 часа")}${field("Изображение", "input", "Загрузить файл")}${field("Статус", "select", ["Черновик", "На модерации", "Опубликован"])}</div></div>
     <div class="panel section"><h2>Описание и выдача</h2><div class="form-grid">${field("Описание", "textarea", "Что получает покупатель")}${field("Инструкция покупателю", "textarea", "Как активировать товар")}${field("Данные для автовыдачи", "textarea", "Один код, ключ или аккаунт на строку")}</div><div class="list section">${["Автовыдача списывает одну строку после подтверждения оплаты", "Ручная выдача открывает чат и ставит заказ в работу", "Модерация может проверять новые товары перед публикацией", "После публикации товар появится в каталоге"].map(row).join("")}</div></div>
-    <div class="form-actions section"><button class="btn">Сохранить черновик</button><button class="btn warn">Отправить на модерацию</button><button class="btn primary">Опубликовать</button></div>
+    <section class="section"><div class="section-head"><h2>Предпросмотр</h2><a class="btn" href="/product/${p.id}" data-link>Открыть карточку</a></div>${productCards([p])}<section class="panel section"><h2>Остатки автовыдачи</h2><div class="list">${[["Всего строк", String(p.stock)], ["Зарезервировано заказами", "2"], ["Использовано", "18"], ["При нуле", "снять товар с публикации"]].map(([left, right]) => row(left, right)).join("")}</div></section></section>
+    <div class="form-actions section"><button class="btn">Сохранить черновик</button><button class="btn warn">Отправить на модерацию</button><button class="btn primary">${mode === "edit" ? "Сохранить правки" : "Опубликовать"}</button></div>
   </section></div>`, "Seller");
 }
 
@@ -637,13 +570,29 @@ function withdraw() {
 
 function disputes() {
   return page("Споры", `<div class="two-col"><section class="panel"><h2>Открыть спор</h2><div class="form-grid">${field("Заказ", "input", "#12345")}${field("Причина", "select", ["Товар не выдан", "Товар не работает", "Продавец не отвечает", "Неверное описание", "Проблема с оплатой", "Другое"])}${field("Описание проблемы", "textarea", "Опишите ситуацию")}${field("Доказательства", "input", "Ссылка или файл")}</div><button class="btn primary section">Отправить</button><section class="section"><h2>Активные споры</h2><div class="list">${[
-    ...(state.disputeCreated ? [["#DSP-45 · заказ #12345", "Создан только что"]] : []),
-    ["#DSP-44 · заказ #12345", "Ожидает поддержки"],
-    ["#DSP-39 · заказ #77102", "Запрошены данные"],
-  ].map(([left, status]) => `<div class="list-row"><span>${left}</span><span class="status wait">${status}</span></div>`).join("")}</div></section></section><aside class="panel"><h2>Решения поддержки</h2>${["Закрыть в пользу покупателя", "Закрыть в пользу продавца", "Частичный возврат", "Запросить дополнительные данные", "Заморозить средства до решения"].map(row).join("")}</aside></div>`, "Support");
+    ...(state.disputeCreated ? [{ id: 45, order: 12345, reason: "Создан только что", status: "Новый" }] : []),
+    ...demoDisputes,
+  ].map((dispute) => `<a class="list-row" href="/disputes/${dispute.id}" data-link><span>#DSP-${dispute.id} · заказ #${dispute.order}<br><span class="muted">${dispute.reason}</span></span><span class="status wait">${dispute.status}</span></a>`).join("")}</div></section></section><aside class="panel"><h2>Решения поддержки</h2>${["Закрыть в пользу покупателя", "Закрыть в пользу продавца", "Частичный возврат", "Запросить дополнительные данные", "Заморозить средства до решения"].map(row).join("")}</aside></div>`, "Support");
+}
+
+function disputeDetail(id = 123) {
+  const dispute = disputeById(id);
+  const orderItem = orderById(dispute.order);
+  const messages = ["Покупатель: товар не активируется, приложил скриншот ошибки.", "Продавец: нужна проверка никнейма и региона.", "Поддержка: средства заморожены до решения.", "Система: платеж и чат заказа прикреплены к спору."];
+  return page(`Спор #DSP-${dispute.id}`, `<div class="two-col">
+    <section class="panel"><div class="section-head"><div><h2>${dispute.reason}</h2><p class="muted">Заказ #${dispute.order} · ${orderItem.product}</p></div><span class="status wait">${dispute.status}</span></div><div class="list">${[
+      ["Покупатель", dispute.buyer],
+      ["Продавец", dispute.seller],
+      ["Сумма заказа", money(orderItem.amount)],
+      ["Escrow", "заморожен до решения"],
+      ["Предварительное решение", dispute.refund],
+    ].map(([left, right]) => row(left, right)).join("")}</div><section class="section"><h2>Чат спора</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><section class="section"><h2>Доказательства</h2><div class="list">${["Скриншот ошибки активации", "tx hash платежа", "Переписка из чата заказа", "Данные выдачи продавца"].map(row).join("")}</div></section></section>
+    <aside class="panel"><h2>Действия поддержки</h2><div class="form-grid">${field("Решение", "select", ["Запросить данные", "Частичный возврат", "Полный возврат", "Закрыть в пользу продавца"])}${field("Сумма возврата", "input", "35 USDT")}${field("Комментарий", "textarea", "Опишите решение поддержки")}</div><div class="form-actions section"><button class="btn primary">Сохранить решение</button><a class="btn" href="/orders/${dispute.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${dispute.payment}" data-link>Платеж</a></div></aside>
+  </div>`, "Support");
 }
 
 function support(path = "") {
+  if (path.includes("/tickets/")) return supportTicketDetail(path.split("/").pop());
   if (path.includes("/ticket")) return supportTicket();
   if (path.includes("/requests")) return supportRequests();
   if (path.includes("/payment")) return supportTopic("Проблемы с оплатой", ["Проверьте сеть и точную сумму", "Сохраните tx hash", "Если сумма недостаточная, доплатите только после ответа поддержки", "Не отправляйте другой токен на адрес USDT"]);
@@ -671,24 +620,46 @@ function supportRequests() {
   return page("Мои обращения", `<section class="panel"><div class="list">${demoTickets.map(ticketListRow).join("")}</div></section>`, "Support");
 }
 
+function supportTicketDetail(id = "SUP-104") {
+  const ticket = ticketById(id);
+  const paymentItem = paymentByOrderId(ticket.order);
+  return page(`Тикет #${ticket.id}`, `<div class="two-col">
+    <section class="panel"><div class="section-head"><div><h2>${ticket.topic}</h2><p class="muted">Связан с заказом #${ticket.order}</p></div><span class="status ${statusTone(ticket.status)}">${ticket.status}</span></div><section class="section"><h2>Переписка</h2><div class="list">${[
+      "Покупатель: приложил tx hash и скрин оплаты.",
+      "Поддержка: проверяем сеть и сумму.",
+      "Система: найден связанный платеж и заказ.",
+      "Поддержка: если подтверждений достаточно, заказ будет обновлен вручную.",
+    ].map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><form class="form-actions section">${field("Ответ", "input", "Написать в поддержку")}<button class="btn primary">Отправить</button></form></section>
+    <aside class="panel"><h2>Связанные сущности</h2><div class="list">${[
+      ["Заказ", `#${ticket.order}`],
+      ["Платеж", paymentItem.id],
+      ["Сеть", paymentItem.network],
+      ["tx hash", paymentItem.tx],
+      ["Подтверждения", paymentItem.confirmations],
+    ].map(([left, right]) => row(left, right)).join("")}</div><div class="form-actions section"><a class="btn" href="/orders/${ticket.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${paymentItem.id}" data-link>Админ-платеж</a></div></aside>
+  </div>`, "Support");
+}
+
 function supportTopic(title, rows) {
   return page(title, `<section class="panel"><div class="list">${rows.map(row).join("")}</div><div class="form-actions section"><a class="btn primary" href="/support/ticket" data-link>Создать тикет</a><a class="btn" href="/support" data-link>Все разделы</a></div></section>`, "Support");
 }
 
 function admin(path = "") {
+  if (path.includes("/payments/")) return adminPaymentDetail(path.split("/").pop());
+  if (path.includes("/payouts/")) return adminPayoutDetail(path.split("/").pop());
   if (path.includes("/users")) return adminUsers();
   if (path.includes("/sellers")) return adminSellers();
   if (path.includes("/products")) return adminProducts();
   if (path.includes("/orders")) return adminTable("Админка заказов", ["#12345 · Robux 10 000", "Покупатель Artem", "Продавец PixelTrade", "Статус: ожидает подтверждения", "Ручная смена статуса доступна"]);
   if (path.includes("/crypto")) return adminCrypto();
   if (path.includes("/payments")) return adminPayments();
-  if (path.includes("/payouts")) return adminTable("Админка выплат", ["PixelTrade · 500 USDT", "Адрес: TQ9...Lm2", "Сеть: TRC20", "Статус: на проверке", "tx hash выплаты: ожидается"]);
+  if (path.includes("/payouts")) return adminPayouts();
   if (path.includes("/disputes")) return adminTable("Админка споров", ["#12345 · покупатель открыл спор", "Причина: товар не работает", "Чат доступен", "Оплата подтверждена", "Решение: запросить данные"]);
   if (path.includes("/tickets")) return adminTickets();
   if (path.includes("/categories")) return adminCategories();
   if (path.includes("/promocodes")) return adminPromocodes();
   if (path.includes("/fees")) return adminFees();
-  if (path.includes("/moderation")) return adminTable("Модерация", ["Новые товары: 12", "Жалобы: 3", "Продавцы на проверке: 2", "Отзывы на модерации: 4"]);
+  if (path.includes("/moderation")) return adminModeration();
   if (path !== "/admin") return adminTable(adminLinks.find((item) => item[1] === path)?.[0] || "Раздел админки", ["Список записей", "Фильтры", "Ручные действия", "История изменений"]);
 
   return page("Админ-панель", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section><div class="grid metrics">${[
@@ -700,7 +671,43 @@ function admin(path = "") {
 }
 
 function adminPayments() {
-  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Крипто-транзакции</h2><button class="btn primary">Синхронизировать</button></div><div class="list">${demoPayments.map(paymentListRow).join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
+  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Крипто-транзакции</h2><button class="btn primary">Синхронизировать</button></div><div class="list">${demoPayments.map((paymentItem) => `<a class="list-row" href="/admin/payments/${paymentItem.id}" data-link><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></a>`).join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
+}
+
+function adminPaymentDetail(id = "pay-12345") {
+  const paymentItem = paymentById(id);
+  const orderItem = orderById(paymentItem.order);
+  return page(`Платеж ${paymentItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <section class="panel"><div class="section-head"><div><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></div><div class="grid metrics">${[
+      [paymentItem.network, "сеть"],
+      [paymentItem.confirmations, "подтверждения"],
+      [paymentItem.tx, "tx hash"],
+      [orderItem.order, "статус заказа"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
+    <section class="panel section"><h2>Ручная проверка</h2><div class="form-grid">${field("Адрес оплаты", "input", "TX9a...F2Lm")}${field("tx hash", "input", paymentItem.tx)}${field("Подтверждения", "input", paymentItem.confirmations)}${field("Статус", "select", ["Ожидает оплату", "Транзакция найдена", "Оплата подтверждена", "Недостаточная сумма", "Ошибка сети"])}${field("Комментарий админа", "textarea", "Проверить сумму и сеть перед сменой статуса")}</div><div class="form-actions section"><button class="btn primary">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger">Пометить ошибку</button></div></section>
+    <section class="panel section"><h2>История статусов</h2><div class="list">${["Создан адрес оплаты", "Транзакция найдена мониторингом", `Подтверждения: ${paymentItem.confirmations}`, `Текущий статус: ${paymentItem.status}`].map(row).join("")}</div></section>
+  </section></div>`, "Admin");
+}
+
+function adminPayouts() {
+  return page("Админка выплат", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и tx hash после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${demoWithdrawals.map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${withdrawalItem.seller}<br><span class="muted">${withdrawalItem.amount.toFixed(2)} USDT · ${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></a>`).join("")}</div></section>
+    <section class="panel section"><h2>Проверки перед выплатой</h2><div class="grid trust">${["Адрес совпадает с профилем", "Баланс доступен без холда", "Нет открытого спора", "2FA продавца подтверждена"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Админ подтверждает вручную в MVP.</p></div>`).join("")}</div></section>
+  </section></div>`, "Admin");
+}
+
+function adminPayoutDetail(id = "WD-120") {
+  const withdrawalItem = withdrawalById(id);
+  return page(`Выплата #${withdrawalItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <section class="panel"><div class="section-head"><div><h2>${withdrawalItem.seller} · ${withdrawalItem.amount.toFixed(2)} USDT</h2><p class="muted">${withdrawalItem.network} · ${withdrawalItem.address}</p></div><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></div><div class="grid metrics">${[
+      [withdrawalItem.network, "сеть"],
+      [withdrawalItem.tx, "tx hash"],
+      [withdrawalItem.risk, "риск"],
+      [withdrawalItem.status, "статус"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
+    <section class="panel section"><h2>Ручное подтверждение</h2><div class="form-grid">${field("Адрес кошелька", "input", withdrawalItem.address)}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Сумма", "input", `${withdrawalItem.amount.toFixed(2)} USDT`)}${field("tx hash выплаты", "input", withdrawalItem.tx)}${field("Статус", "select", ["На проверке", "В обработке", "Отправлен", "Выполнен", "Отклонен"])}${field("Комментарий", "textarea", "Проверить адрес, холды и открытые споры перед отправкой")}</div><div class="form-actions section"><button class="btn primary">Подтвердить выплату</button><button class="btn warn">Запросить проверку</button><button class="btn danger">Отклонить</button></div></section>
+    <section class="panel section"><h2>История изменения статусов</h2><div class="list">${["Запрос создан продавцом", "Адрес прошел форматную проверку", `Риск: ${withdrawalItem.risk}`, `Текущий статус: ${withdrawalItem.status}`].map(row).join("")}</div></section>
+  </section></div>`, "Admin");
 }
 
 function adminTable(title, rows) {
@@ -726,6 +733,24 @@ function adminSellers() {
 
 function adminProducts() {
   return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Модерация товаров</h2><div class="list">${products.slice(0, 6).map((product, index) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.seller} · ${product.cat}</span></span><span class="status ${index % 3 === 0 ? "wait" : "ok"}">${index % 3 === 0 ? "на проверке" : "активен"}</span></div>`).join("")}</div><div class="form-actions section"><button class="btn primary">Одобрить</button><button class="btn danger">Снять с публикации</button></div></section></div>`, "Admin");
+}
+
+function adminModeration() {
+  const groups = ["Товар", "Жалоба", "Отзыв", "Продавец"].map((type) => {
+    const items = moderationQueue.filter((item) => item.type === type);
+    return `<section class="panel"><div class="section-head"><h2>${type}</h2><span class="status wait">${items.length}</span></div><div class="list">${items.map((item) => `<div class="list-row"><span>#${item.id} · ${item.target}<br><span class="muted">${item.owner} · ${item.reason}</span></span><span class="status ${statusTone(item.status)}">${item.status}</span></div>`).join("")}</div></section>`;
+  }).join("");
+
+  return page("Модерация", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <div class="grid metrics">${[
+      [moderationQueue.filter((item) => item.type === "Товар").length, "товаров"],
+      [moderationQueue.filter((item) => item.type === "Жалоба").length, "жалоб"],
+      [moderationQueue.filter((item) => item.type === "Отзыв").length, "отзывов"],
+      [moderationQueue.filter((item) => item.type === "Продавец").length, "продавцов"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label} в очереди</span></div>`).join("")}</div>
+    <div class="grid admin section">${groups}</div>
+    <section class="panel section"><h2>Ручное решение</h2><div class="form-grid">${field("Объект", "select", moderationQueue.map((item) => `#${item.id} · ${item.target}`))}${field("Действие", "select", ["Одобрить", "Запросить правки", "Снять товар", "Заблокировать продавца", "Скрыть отзыв"])}${field("Причина", "textarea", "Коротко опишите решение модерации")}${field("Новый статус", "select", ["Активен", "На проверке", "Ограничен", "Заблокирован"])}</div><div class="form-actions section"><button class="btn primary">Сохранить решение</button><button class="btn warn">Запросить данные</button><button class="btn danger">Заблокировать</button></div></section>
+  </section></div>`, "Admin");
 }
 
 function adminTickets() {
@@ -792,6 +817,7 @@ function sideLinks(links) {
 
 function info(path) {
   if (path === "/status-map") return statusMap();
+  if (path === "/backend-structure") return backendStructure();
   const data = infoPages[path] || ["Страница", "Раздел будет добавлен позже."];
   const rows = infoRows(path);
   return page(data[0], `<section class="panel"><p class="lead">${data[1]}</p><div class="list section">${rows.map(row).join("")}</div></section>`, "Info");
@@ -805,6 +831,16 @@ function statusMap() {
     ["Статусы вывода", ["Создан", "На проверке", "В обработке", "Отправлен", "Выполнен", "Отклонен"]],
   ];
   return page("Карта статусов", `<div class="grid admin">${groups.map(([title, rows]) => `<section class="admin-tile panel"><h2>${title}</h2><div class="list">${rows.map((item) => row(item)).join("")}</div></section>`).join("")}</div>`, "Info");
+}
+
+function backendStructure() {
+  return page("Backend-ready структура", `<div class="two-col"><section class="panel"><h2>Будущие модели</h2><div class="list">${dataModels.map(([model, fields]) => row(model, fields)).join("")}</div></section><aside class="panel"><h2>Следующий распил файлов</h2><div class="list">${[
+    ["data.js", "демо-коллекции и сиды"],
+    ["routes.js", "карта SPA-маршрутов"],
+    ["renderers/", "страницы каталога, заказов, продавца, админки"],
+    ["api/", "будущие fetch-клиенты"],
+    ["models/", "контракты User, Product, Order, Payment"],
+  ].map(([left, right]) => row(left, right)).join("")}</div></aside></div>`, "Info");
 }
 
 function infoRows(path) {
@@ -856,7 +892,7 @@ function paymentListRow(paymentItem) {
 }
 
 function ticketListRow(ticket) {
-  return `<div class="list-row"><span>#${ticket.id} · ${ticket.topic}<br><span class="muted">заказ #${ticket.order}</span></span><span class="status ${statusTone(ticket.status)}">${ticket.status}</span></div>`;
+  return `<a class="list-row" href="/support/tickets/${ticket.id}" data-link><span>#${ticket.id} · ${ticket.topic}<br><span class="muted">заказ #${ticket.order}</span></span><span class="status ${statusTone(ticket.status)}">${ticket.status}</span></a>`;
 }
 
 function escapeHtml(value) {
@@ -892,6 +928,7 @@ function render() {
   else if (path === "/seller/pixeltrade") app.innerHTML = publicSeller();
   else if (path.startsWith("/seller")) app.innerHTML = seller(path);
   else if (path === "/disputes") app.innerHTML = disputes();
+  else if (path.startsWith("/disputes/")) app.innerHTML = disputeDetail(path.split("/").pop());
   else if (path.startsWith("/support")) app.innerHTML = support(path);
   else if (path.startsWith("/admin")) app.innerHTML = admin(path);
   else app.innerHTML = info(path);
@@ -1008,3 +1045,4 @@ addEventListener("hashchange", () => {
   scrollTo({ top: 0, behavior: "smooth" });
 });
 render();
+

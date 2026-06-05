@@ -111,6 +111,10 @@ a {
   gap: 6px;
 }
 
+.mobile-tabbar {
+  display: none;
+}
+
 .nav a,
 .chip,
 .btn,
@@ -572,6 +576,13 @@ a.status {
   gap: 12px;
 }
 
+.filters-panel summary {
+  display: none;
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 800;
+}
+
 .two-col {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -728,7 +739,7 @@ a.list-row:hover {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.2fr repeat(3, 1fr);
+  grid-template-columns: 1.2fr repeat(4, 1fr);
   gap: 20px;
 }
 
@@ -801,8 +812,99 @@ a.admin-tile:hover {
 }
 
 @media (max-width: 640px) {
+  body {
+    padding-bottom: 74px;
+  }
+
   .main {
     padding-top: 16px;
+    padding-bottom: 24px;
+  }
+
+  .topbar {
+    position: static;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .mobile-tabbar {
+    position: fixed;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(13, 17, 23, 0.94);
+    box-shadow: var(--shadow);
+    padding: 6px;
+    backdrop-filter: blur(16px);
+  }
+
+  .mobile-tabbar a {
+    display: grid;
+    min-width: 0;
+    min-height: 50px;
+    place-items: center;
+    gap: 2px;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    text-decoration: none;
+  }
+
+  .mobile-tabbar a span {
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  .mobile-tabbar a.active,
+  .mobile-tabbar a:hover {
+    background: rgba(71, 214, 81, 0.1);
+    color: var(--teal);
+  }
+
+  .filters-panel {
+    padding: 0;
+  }
+
+  .filters-panel summary {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+  }
+
+  .filters-panel summary::after {
+    content: "+";
+    color: var(--teal);
+  }
+
+  .filters-panel[open] summary::after {
+    content: "-";
+  }
+
+  .filters-panel .filter-grid,
+  .filters-panel .tabs {
+    padding: 0 14px 14px;
+  }
+
+  .checkout-steps {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .step {
+    min-width: 180px;
+    scroll-snap-align: start;
   }
 
   h1 {
