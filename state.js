@@ -1,5 +1,6 @@
 let currency = "USDT";
 let activeStep = 1;
+const APP_BASE_PATH = location.hostname.endsWith("github.io") ? "/secretmarket" : "";
 
 const state = {
   query: "",
@@ -72,7 +73,7 @@ function go(path) {
   if (location.protocol === "file:") {
     location.hash = path;
   } else {
-    history.pushState({}, "", path);
+    history.pushState({}, "", `${APP_BASE_PATH}${path}`);
     render();
     scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -82,7 +83,8 @@ function currentPath() {
   if (location.protocol === "file:") {
     return location.hash.replace(/^#/, "") || "/";
   }
-  return location.pathname;
+  const path = location.pathname.replace(APP_BASE_PATH, "") || "/";
+  return path.startsWith("/") ? path : `/${path}`;
 }
 
 function activeClass(path) {

@@ -10,6 +10,14 @@ node server.js
 
 Open `http://127.0.0.1:4173/`.
 
+## GitHub Pages
+
+After GitHub Pages deploys, the static prototype opens here:
+
+`https://t1lt54.github.io/secretmarket/`
+
+The project includes `404.html` fallback and `/secretmarket` base-path handling for direct SPA links.
+
 ## Run Backend Prototype
 
 ```powershell
@@ -24,6 +32,7 @@ Health check: `http://127.0.0.1:4174/api/health`.
 node verify.js
 node verify-backend.js
 node verify-api-client.js
+node verify-pages.js
 ```
 
 ## Structure
