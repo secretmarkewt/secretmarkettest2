@@ -1,6 +1,6 @@
 let currency = "USDT";
 let activeStep = 1;
-const APP_BASE_PATH = location.hostname.endsWith("github.io") ? "/secretmarket" : "";
+const APP_BASE_PATH = location.hostname.endsWith("github.io") ? `/${location.pathname.split("/").filter(Boolean)[0] || ""}` : "";
 
 const state = {
   query: "",

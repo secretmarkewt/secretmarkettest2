@@ -14,9 +14,9 @@ Open `http://127.0.0.1:4173/`.
 
 After GitHub Pages deploys, the static prototype opens here:
 
-`https://t1lt54.github.io/secretmarket/`
+`https://penisxxxl.github.io/secretmarket1/`
 
-The project includes `404.html` fallback and `/secretmarket` base-path handling for direct SPA links.
+The project includes `404.html` fallback and automatic GitHub Pages base-path handling for direct SPA links.
 
 ## Run Backend Prototype
 

@@ -13,7 +13,7 @@ const context = {
   location: {
     protocol: "https:",
     hostname: "t1lt54.github.io",
-    pathname: "/secretmarket/catalog/minecraft",
+    pathname: "/secretmarket1/catalog/minecraft",
     hash: "",
   },
   history: {
@@ -49,7 +49,7 @@ if (context.currentPath() !== "/catalog/minecraft") {
 
 context.go("/catalog/roblox");
 
-if (pushes[0] !== "/secretmarket/catalog/roblox") {
+if (pushes[0] !== "/secretmarket1/catalog/roblox") {
   throw new Error(`GitHub Pages base path push failed: ${pushes[0]}`);
 }
 
