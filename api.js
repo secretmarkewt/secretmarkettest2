@@ -16,6 +16,9 @@ function initialApiState() {
     disputes: clone(data.demoDisputes),
     withdrawals: clone(data.demoWithdrawals),
     moderation: clone(data.moderationQueue),
+    deliveries: [],
+    ledger: [],
+    audit: [],
   };
 }
 
@@ -108,6 +111,23 @@ async function requestLive(path, options = {}) {
 }
 
 const live = {
+  async login(email, role = "buyer") {
+    return requestLive("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    });
+  },
+  async session(token) {
+    return requestLive("/api/auth/session", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
+  async logout(token) {
+    return requestLive("/api/auth/logout", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
   async health() {
     return requestLive("/api/health");
   },
@@ -128,6 +148,44 @@ const live = {
     return requestLive(`/api/${collectionName}/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
+    });
+  },
+  async syncPayment(id, payload = {}, token = "") {
+    return requestLive(`/api/payments/${id}/sync`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: JSON.stringify(payload),
+    });
+  },
+  async issueDelivery(orderId, token = "") {
+    return requestLive(`/api/orders/${orderId}/deliver`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  },
+  async confirmOrder(orderId, token = "") {
+    return requestLive(`/api/orders/${orderId}/confirm`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  },
+  async withdrawalBalance(token = "") {
+    return requestLive("/api/withdrawals/balance", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  },
+  async requestWithdrawal(payload, token = "") {
+    return requestLive("/api/withdrawals", {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: JSON.stringify(payload),
+    });
+  },
+  async settleWithdrawal(id, payload = {}, token = "") {
+    return requestLive(`/api/withdrawals/${id}/settle`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: JSON.stringify(payload),
     });
   },
   async getSnapshot() {

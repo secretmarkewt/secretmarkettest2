@@ -13,6 +13,7 @@
   if (path.includes("/categories")) return adminCategories();
   if (path.includes("/promocodes")) return adminPromocodes();
   if (path.includes("/fees")) return adminFees();
+  if (path.includes("/audit")) return adminAudit();
   if (path.includes("/moderation")) return adminModeration();
   if (path !== "/admin") return adminTable(adminLinks.find((item) => item[1] === path)?.[0] || "Раздел админки", ["Список записей", "Фильтры", "Ручные действия", "История изменений"]);
 
@@ -31,6 +32,7 @@ function adminPayments() {
 function adminPaymentDetail(id = "pay-12345") {
   const paymentItem = paymentById(id);
   const orderItem = orderById(paymentItem.order);
+  const paymentAddress = window.SECMARKET_DATA.paymentWallets[paymentItem.network] || window.SECMARKET_DATA.paymentWallets.TRC20;
   return page(`Платеж ${paymentItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
     <section class="panel"><div class="section-head"><div><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></div><div class="grid metrics">${[
       [paymentItem.network, "сеть"],
@@ -38,7 +40,7 @@ function adminPaymentDetail(id = "pay-12345") {
       [paymentItem.tx, "tx hash"],
       [orderItem.order, "статус заказа"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
-    <section class="panel section"><h2>Ручная проверка</h2><div class="form-grid">${field("Адрес оплаты", "input", "TX9a...F2Lm")}${field("tx hash", "input", paymentItem.tx)}${field("Подтверждения", "input", paymentItem.confirmations)}${field("Статус", "select", ["Ожидает оплату", "Транзакция найдена", "Оплата подтверждена", "Недостаточная сумма", "Ошибка сети"])}${field("Комментарий админа", "textarea", "Проверить сумму и сеть перед сменой статуса")}</div><div class="form-actions section"><button class="btn primary">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger">Пометить ошибку</button></div></section>
+    <section class="panel section"><h2>Ручная проверка</h2><div class="form-grid">${field("Адрес оплаты", "input", paymentAddress)}${field("tx hash", "input", paymentItem.tx)}${field("Подтверждения", "input", paymentItem.confirmations)}${field("Статус", "select", ["Ожидает оплату", "Транзакция найдена", "Оплата подтверждена", "Недостаточная сумма", "Ошибка сети"])}${field("Комментарий админа", "textarea", "Проверить сумму и сеть перед сменой статуса")}</div><div class="form-actions section"><button class="btn primary">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger">Пометить ошибку</button></div></section>
     <section class="panel section"><h2>История статусов</h2><div class="list">${["Создан адрес оплаты", "Транзакция найдена мониторингом", `Подтверждения: ${paymentItem.confirmations}`, `Текущий статус: ${paymentItem.status}`].map(row).join("")}</div></section>
   </section></div>`, "Admin");
 }
@@ -107,6 +109,21 @@ function adminModeration() {
   </section></div>`, "Admin");
 }
 
+function adminAudit() {
+  const auditRows = [
+    ["usr-admin", "patch payments pay-12345", "from confirming to paid"],
+    ["usr-admin", "patch withdrawals WD-120", "from review to processing"],
+    ["usr-admin", "patch disputes 123", "from waiting_support to partial_refund"],
+    ["usr-seller", "create products", "status moderation"],
+    ["system", "reset system seed", "demo data restored"],
+  ];
+
+  return page("Журнал аудита", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <section class="panel"><div class="section-head"><div><h2>Последние действия</h2><p class="muted">API пишет такие события в /api/audit при создании и изменении записей.</p></div><span class="status ok">live-ready</span></div><div class="list">${auditRows.map(([actor, action, details]) => `<div class="list-row"><span>${actor}<br><span class="muted">${details}</span></span><strong>${action}</strong></div>`).join("")}</div></section>
+    <section class="panel section"><h2>Что фиксируется</h2><div class="grid trust">${["Кто изменил запись", "Какой ресурс изменен", "ID заказа, платежа или выплаты", "Старый и новый статус", "Время действия"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Нужно для споров, выплат и ручной модерации.</p></div>`).join("")}</div></section>
+  </section></div>`, "Admin");
+}
+
 function adminTickets() {
   return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Очередь обращений</h2><div class="list">${demoTickets.map(ticketListRow).join("")}</div><div class="form-actions section"><button class="btn warn">Запросить данные</button><button class="btn primary">Ответить</button></div></section></div>`, "Admin");
 }
@@ -146,7 +163,7 @@ function adminCrypto() {
       ["BEP20", "12 подтверждений"],
       ["USDT", "базовая валюта"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
-    <section class="panel section"><h2>Сети MVP</h2><div class="form-grid">${field("USDT TRC20 адрес", "input", "TX9a...F2Lm")}${field("USDT TON адрес", "input", "UQ9...Ton")}${field("USDT BEP20 адрес", "input", "0x9a...b20")}${field("Генерация", "select", ["Отдельный адрес", "Уникальная сумма"])}${field("Таймер оплаты", "input", "30 минут")}${field("Недостаточная сумма", "select", ["Открыть тикет", "Ждать доплату", "Ручная проверка"])}</div></section>
+    <section class="panel section"><h2>Сети MVP</h2><div class="form-grid">${field("USDT TRC20 адрес", "input", window.SECMARKET_DATA.paymentWallets.TRC20)}${field("USDT TON адрес", "input", window.SECMARKET_DATA.paymentWallets.TON)}${field("USDT BEP20 адрес", "input", window.SECMARKET_DATA.paymentWallets.BEP20)}${field("Генерация", "select", ["Отдельный адрес", "Уникальная сумма"])}${field("Таймер оплаты", "input", "30 минут")}${field("Недостаточная сумма", "select", ["Открыть тикет", "Ждать доплату", "Ручная проверка"])}</div></section>
     <section class="panel section"><h2>Мониторинг</h2><div class="list">${[
       ["Последний найденный tx", "2 мин назад"],
       ["Ошибки сети", "0"],
@@ -155,4 +172,3 @@ function adminCrypto() {
     ].map(([left, right]) => row(left, right)).join("")}</div></section>
   </section></div>`, "Admin");
 }
-

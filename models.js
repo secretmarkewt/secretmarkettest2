@@ -4,6 +4,10 @@ const SECMARKET_MODELS = {
     statuses: ["active", "limited", "blocked"],
     roles: ["guest", "buyer", "seller", "admin"],
   },
+  Session: {
+    fields: ["id", "userId", "role", "token", "status", "expiresAt", "createdAt"],
+    statuses: ["active", "revoked", "expired"],
+  },
   Product: {
     fields: ["id", "sellerId", "title", "category", "price", "stock", "deliveryType", "moderationStatus", "createdAt"],
     statuses: ["draft", "moderation", "published", "paused", "blocked"],
@@ -18,6 +22,14 @@ const SECMARKET_MODELS = {
     statuses: ["waiting", "found", "confirming", "paid", "underpaid", "expired", "network_error"],
     networks: ["TRC20", "TON", "BEP20"],
   },
+  Delivery: {
+    fields: ["id", "orderId", "productId", "sellerId", "buyerId", "deliveryType", "secret", "status", "createdAt"],
+    statuses: ["created", "issued", "viewed", "revoked"],
+  },
+  LedgerEntry: {
+    fields: ["id", "orderId", "sellerId", "buyerId", "amount", "coin", "type", "status", "createdAt"],
+    types: ["escrow_release", "refund", "payout"],
+  },
   Chat: {
     fields: ["id", "orderId", "participants", "messages", "files", "createdAt"],
     messageTypes: ["user", "seller", "support", "system"],
@@ -29,6 +41,10 @@ const SECMARKET_MODELS = {
   Withdrawal: {
     fields: ["id", "sellerId", "amount", "coin", "network", "address", "txHash", "status", "riskNote", "createdAt"],
     statuses: ["created", "review", "processing", "sent", "completed", "rejected"],
+  },
+  AuditLog: {
+    fields: ["id", "actorId", "action", "resource", "itemId", "details", "createdAt"],
+    actions: ["create", "patch", "reset", "seed"],
   },
 };
 
