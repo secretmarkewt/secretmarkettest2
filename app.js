@@ -31,7 +31,7 @@ function header() {
   const session = sessionApi.currentSession();
   return `
     <header class="topbar">
-      <a class="brand" href="/" data-link><span class="brand-mark">SM</span><span>SecMarket</span></a>
+      <a class="brand" href="/" data-link><span class="brand-mark">SM</span><span>Secret Market</span></a>
       <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" /><button class="icon-btn" title="Искать">↵</button></form>
       <nav class="nav">
         ${routeLinks.map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
@@ -57,7 +57,7 @@ function footer() {
   return `
     <footer class="footer">
       <div class="footer-grid">
-        <div><h3>SecMarket</h3><p>Маркетплейс цифровых товаров с оплатой в USDT, escrow-логикой и ручной модерацией спорных заказов.</p></div>
+        <div><h3>Secret Market</h3><p>Маркетплейс цифровых товаров с оплатой в USDT, escrow-логикой и ручной модерацией спорных заказов.</p></div>
         ${[
           ["Покупателям", ["/buyer-rules", "/refund-policy", "/crypto-payment-guide"]],
           ["Продавцам", ["/seller-rules", "/fees", "/seller/withdraw"]],
@@ -68,7 +68,7 @@ function footer() {
     </footer>`;
 }
 
-function page(title, body, eyebrow = "SecMarket") {
+function page(title, body, eyebrow = "Secret Market") {
   return `${header()}<main class="main"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${body}${footer()}</main>${toast()}`;
 }
 
@@ -93,7 +93,6 @@ function auth() {
 }
 
 startRouter();
-
 
 
 

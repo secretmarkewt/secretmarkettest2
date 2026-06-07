@@ -20,16 +20,26 @@
     setSearch(new FormData(event.currentTarget).get("query") || "");
   });
   document.querySelectorAll("[data-login-role]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const role = button.dataset.loginRole;
       sessionApi.loginAs(role);
-      notify(`Вход выполнен: ${sessionApi.roleLabel(role)}`);
+      try {
+        await loginLiveRole(role);
+        notify(`Вход выполнен: ${sessionApi.roleLabel(role)} · live API подключен`);
+      } catch (error) {
+        notify(`Вход выполнен локально, API: ${error.message}`);
+      }
       if (role === "seller") go("/seller");
       else if (role === "admin") go("/admin");
       else go("/account");
     });
   });
-  document.querySelector("[data-logout]")?.addEventListener("click", () => {
+  document.querySelector("[data-logout]")?.addEventListener("click", async () => {
+    try {
+      await api.live.logout();
+    } catch {
+      api.setAuthToken("");
+    }
     sessionApi.logout();
     notify("Вы вышли из демо-сессии");
     go("/");
@@ -69,23 +79,58 @@
   document.querySelector("[data-copy-address]")?.addEventListener("click", async () => {
     state.copiedAddress = true;
     saveState();
+    const address = document.querySelector("[data-copy-address]")?.dataset.copyAddress || "";
     try {
-      await navigator.clipboard?.writeText("TX9a...F2Lm");
+      await navigator.clipboard?.writeText(address);
       notify("Адрес оплаты скопирован");
     } catch {
       notify("Адрес отмечен как скопированный");
     }
   });
-  document.querySelector("[data-confirm-order]")?.addEventListener("click", () => {
-    state.orderConfirmed = true;
-    saveState();
-    notify("Получение подтверждено, средства доступны продавцу");
+  document.querySelector("[data-confirm-order]")?.addEventListener("click", async () => {
+    try {
+      await ensureLiveRole("buyer");
+      const id = currentPath().split("/").pop();
+      const result = await api.live.confirmOrder(id);
+      upsertLiveItem("orders", result.order);
+      if (result.ledgerEntry) upsertLiveItem("ledger", result.ledgerEntry);
+      state.orderConfirmed = true;
+      saveState();
+      notify(result.alreadyConfirmed ? "Заказ уже был подтвержден в API" : "Получение подтверждено через API, escrow освобожден");
+    } catch (error) {
+      notify(`Не удалось подтвердить заказ: ${error.message}`);
+    }
   });
-  document.querySelector("[data-open-dispute]")?.addEventListener("click", () => {
-    state.disputeCreated = true;
-    saveState();
-    notify("Спор создан и средства остаются в холде");
-    go("/disputes");
+  document.querySelector("[data-open-dispute]")?.addEventListener("click", async () => {
+    try {
+      await ensureLiveRole("buyer");
+      const orderId = currentPath().split("/").pop();
+      const orderItem = orderById(orderId);
+      const dispute = await api.live.create("disputes", {
+        id: `DSP-${Date.now()}`,
+        orderId,
+        buyerId: "usr-buyer",
+        sellerId: orderItem.seller || "usr-seller",
+        reason: "Товар не работает",
+        evidence: [],
+        decision: "",
+        refundAmount: 0,
+        status: "waiting_support",
+      });
+      const order = await api.live.update("orders", orderId, {
+        orderStatus: "dispute",
+        status: "dispute",
+        escrowStatus: "hold",
+      });
+      upsertLiveItem("disputes", dispute);
+      upsertLiveItem("orders", order);
+      state.disputeCreated = true;
+      saveState();
+      notify("Спор создан через API, средства остаются в escrow");
+      go("/disputes");
+    } catch (error) {
+      notify(`Не удалось открыть спор: ${error.message}`);
+    }
   });
   document.querySelector("[data-chat-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -115,5 +160,136 @@
     activeStep = Math.max(1, activeStep - 1);
     render();
   });
+  document.querySelectorAll("[data-live-action]").forEach((button) => {
+    button.addEventListener("click", () => runLiveAction(button));
+  });
 }
 
+const liveDemoUsers = {
+  admin: "support@example.com",
+  buyer: "buyer@example.com",
+  seller: "seller@example.com",
+};
+
+async function loginLiveRole(role) {
+  const email = liveDemoUsers[role];
+  if (!email) throw new Error("роль не поддерживается live API");
+  return api.live.login(email, role);
+}
+
+async function ensureLiveRole(role) {
+  if (api.getAuthToken() && sessionApi.currentSession().role === role) return api.getAuthToken();
+  await loginLiveRole(role);
+  return api.getAuthToken();
+}
+
+async function runLiveAction(button) {
+  const action = button.dataset.liveAction;
+  const previousText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Выполняется...";
+
+  try {
+    if (action === "create-checkout") {
+      await ensureLiveRole("buyer");
+      const orderId = `ord-${Date.now()}`;
+      const order = await api.live.create("orders", {
+        id: orderId,
+        sellerId: "usr-seller",
+        productId: 12345,
+        amount: 88.3,
+        paymentStatus: "waiting",
+        orderStatus: "awaiting_payment",
+        escrowStatus: "hold",
+        status: "awaiting_payment",
+      });
+      const payment = await api.live.create("payments", {
+        id: `pay-${order.id}`,
+        orderId: order.id,
+        amount: order.amount,
+        coin: "USDT",
+        network: "TRC20",
+        address: window.SECMARKET_DATA.paymentWallets.TRC20,
+        confirmations: 0,
+        status: "waiting",
+      });
+      upsertLiveItem("orders", order);
+      upsertLiveItem("payments", payment);
+      go(`/payment/${order.id}`);
+      notify(`Заказ #${order.id} создан, счет готов к оплате`);
+    } else if (action === "create-product") {
+      await ensureLiveRole("seller");
+      const product = await api.live.create("products", {
+        title: "Discord Nitro 1 мес",
+        category: "discord",
+        price: 8.5,
+        stock: 10,
+        deliveryType: "auto",
+        status: "moderation",
+      });
+      upsertLiveItem("products", product);
+      notify(`Товар #${product.id} создан и отправлен на модерацию`);
+    } else if (action === "request-withdrawal") {
+      await ensureLiveRole("seller");
+      const result = await api.live.requestWithdrawal({
+        amount: 25,
+        coin: "USDT",
+        network: "TRC20",
+        address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB",
+      });
+      upsertLiveItem("withdrawals", result.withdrawal);
+      notify(`Вывод ${result.withdrawal.id} создан: ${result.withdrawal.status}`);
+    } else if (action === "sync-payment") {
+      await ensureLiveRole("admin");
+      const id = button.dataset.paymentId || currentPath().split("/").pop();
+      const result = await api.live.syncPayment(id, { txHash: `TX-LIVE-${Date.now()}`, confirmations: 24 });
+      upsertLiveItem("payments", result.payment);
+      upsertLiveItem("orders", result.order);
+      notify(`Платеж ${result.payment.id}: ${result.payment.status}`);
+    } else if (action === "issue-delivery") {
+      await ensureLiveRole("seller");
+      const id = button.dataset.orderId || currentPath().split("/").pop();
+      const result = await api.live.issueDelivery(id);
+      upsertLiveItem("deliveries", result.delivery);
+      upsertLiveItem("orders", result.order);
+      upsertLiveItem("products", result.product);
+      notify(result.alreadyIssued ? "Выдача уже была создана" : `Товар выдан по заказу #${id}`);
+    } else if (action === "resolve-dispute") {
+      await ensureLiveRole("admin");
+      const disputeId = button.dataset.disputeId || currentPath().split("/").pop();
+      const orderId = button.dataset.orderId;
+      const dispute = await api.live.update("disputes", disputeId, {
+        status: "resolved_buyer",
+        decision: "Support resolved in favor of buyer",
+        refundAmount: 35,
+      });
+      upsertLiveItem("disputes", dispute);
+      if (orderId) {
+        const order = await api.live.update("orders", orderId, {
+          orderStatus: "refunded",
+          status: "refunded",
+          escrowStatus: "refunded",
+        });
+        upsertLiveItem("orders", order);
+      }
+      notify(`Спор #${dispute.id} решен: ${statusLabel(dispute.status)}`);
+    } else if (action === "settle-withdrawal") {
+      await ensureLiveRole("admin");
+      const id = button.dataset.withdrawalId || currentPath().split("/").pop();
+      const result = await api.live.settleWithdrawal(id, { txHash: `TX-OUT-${Date.now()}`, status: "completed" });
+      upsertLiveItem("withdrawals", result.withdrawal);
+      if (result.ledgerEntry) upsertLiveItem("ledger", result.ledgerEntry);
+      notify(`Выплата ${result.withdrawal.id}: ${result.withdrawal.status}`);
+    } else if (action === "approve-product") {
+      await ensureLiveRole("admin");
+      const product = await api.live.updateStatus("products", button.dataset.productId || 33412, "published");
+      upsertLiveItem("products", product);
+      notify(`Товар #${product.id} опубликован`);
+    }
+  } catch (error) {
+    notify(`API действие не выполнено: ${error.message}`);
+  } finally {
+    button.disabled = false;
+    button.textContent = previousText;
+  }
+}

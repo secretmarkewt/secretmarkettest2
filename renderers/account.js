@@ -1,6 +1,9 @@
 ﻿function order(id = 12345) {
   const orderItem = orderById(id);
   const paymentItem = paymentByOrderId(orderItem.id);
+  const deliveryItem = deliveryByOrderId(orderItem.id);
+  const deliverySecret = deliveryItem?.secret || (orderItem.delivery === "Автовыдача" ? "AUTO-DELIVERY-CODE-SEC-9K2" : "Ручная выдача через чат заказа");
+  const issueButton = deliveryItem ? `<span class="status ok">Товар выдан</span>` : `<button class="btn warn" data-live-action="issue-delivery" data-order-id="${orderItem.id}">Выдать товар</button>`;
   const isConfirmed = state.orderConfirmed || orderItem.order === "Завершен";
   const isDispute = state.disputeCreated || orderItem.order === "Спор";
   const statusRows = isConfirmed
@@ -11,7 +14,7 @@
     : ["Заказ создан", "Покупатель выбрал USDT TRC20", "Оплата найдена", "Средства помещены в escrow", "Продавец выдал товар", "Покупатель читает инструкцию"];
   const doneSteps = isConfirmed ? 5 : isDispute ? 4 : orderItem.order === "В работе" ? 3 : 4;
   return page(`Заказ #${orderItem.id}`, `<div class="two-col">
-    <section class="panel"><h2>Информация</h2><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Платеж</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${orderItem.delivery === "Автовыдача" ? "AUTO-DELIVERY-CODE-SEC-9K2" : "Ручная выдача через чат заказа"}</strong><span>Инструкция: активируйте данные после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статусы заказа</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Ожидает подтверждения", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : `<button class="btn primary" data-confirm-order>Подтвердить получение</button><button class="btn danger" data-open-dispute>Открыть спор</button>`}</div></section>
+    <section class="panel"><h2>Информация</h2><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Платеж</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Инструкция: активируйте данные после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статусы заказа</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Ожидает подтверждения", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : `${issueButton}<button class="btn primary" data-confirm-order>Подтвердить получение</button><button class="btn danger" data-open-dispute>Открыть спор</button>`}</div></section>
     <aside class="panel timeline"><h2>История</h2>${timeline.map((x, i) => `<div class="list-row"><span>${i + 1}</span><span>${x}</span><span class="status ok">OK</span></div>`).join("")}</aside>
   </div>`, "Orders");
 }
@@ -60,7 +63,10 @@ function account(path = "") {
 }
 
 function accountOrders() {
-  return page("Мои заказы", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Активные и завершенные</h2><div class="list">${demoOrders.map((orderItem) => orderListRow(orderItem)).join("")}</div></section></div>`, "Account");
+  const liveOrderIds = new Set(liveItems("orders").map((orderItem) => String(orderItem.id)));
+  const liveRows = liveItems("orders").map((orderItem) => orderListRow(normalizeLiveOrder(orderItem)));
+  const demoRows = demoOrders.filter((orderItem) => !liveOrderIds.has(String(orderItem.id))).map((orderItem) => orderListRow(orderItem));
+  return page("Мои заказы", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Активные и завершенные</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div></section></div>`, "Account");
 }
 
 function accountFavorites() {
@@ -72,7 +78,10 @@ function accountFavorites() {
 }
 
 function accountPayments() {
-  return page("История оплат", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Крипто-платежи</h2>${demoPayments.map((paymentItem) => paymentListRow(paymentItem)).join("")}</section></div>`, "Account");
+  const livePaymentIds = new Set(liveItems("payments").map((paymentItem) => String(paymentItem.id)));
+  const liveRows = liveItems("payments").map((paymentItem) => paymentListRow(normalizeLivePayment(paymentItem)));
+  const demoRows = demoPayments.filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id))).map((paymentItem) => paymentListRow(paymentItem));
+  return page("История оплат", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Крипто-платежи</h2>${[...liveRows, ...demoRows].join("")}</section></div>`, "Account");
 }
 
 function accountReviews() {
@@ -88,4 +97,3 @@ function accountSettings() {
     ["Заказ подтвержден", state.orderConfirmed ? "да" : "нет"],
   ].map(([left, right]) => row(left, right)).join("")}</div><div class="form-actions section"><button class="btn danger" data-reset-demo>Сбросить демо-состояние</button></div></section></div>`, "Account");
 }
-

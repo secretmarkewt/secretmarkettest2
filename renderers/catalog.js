@@ -32,7 +32,7 @@ function home() {
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">Крипто-MVP для цифровых товаров</p>
-        <h1>SecMarket</h1>
+        <h1>Secret Market</h1>
         <p class="lead">Покупайте ключи, аккаунты, игровую валюту, подписки и услуги с оплатой в USDT. Деньги удерживаются до подтверждения заказа, а чат и спор всегда привязаны к сделке.</p>
         <div class="actions"><a class="btn primary" href="/catalog" data-link>Открыть каталог</a><a class="btn" href="/seller/products/create" data-link>Создать товар</a><a class="btn warn" href="/crypto-payment-guide" data-link>USDT TRC20 / TON / BEP20</a></div>
         <div class="stats-strip">
@@ -127,7 +127,7 @@ function checkout() {
     <section class="panel">
       <div class="checkout-steps">${steps.map((x, i) => `<button class="step ${i + 1 === activeStep ? "active" : ""}" data-step="${i + 1}">${i + 1}. ${x}</button>`).join("")}</div>
       ${checkoutStepBody()}
-      <div class="form-actions section"><button class="btn" data-step-prev>Назад</button><button class="btn primary" data-step-next>Далее</button><a class="btn warn" href="/payment/order-id" data-link>Перейти к оплате</a></div>
+      <div class="form-actions section"><button class="btn" data-step-prev>Назад</button><button class="btn primary" data-step-next>Далее</button><button class="btn warn" data-live-action="create-checkout">Перейти к оплате</button></div>
     </section>
     <aside class="panel"><h2>Итого</h2>${row("Robux 10 000", "84.90 USDT")}${row("Комиссия платформы", "3.40 USDT")}${row("К оплате", "88.30 USDT")}<p class="muted section">Отправляйте только выбранную валюту и сеть. Ошибка сети может задержать заказ.</p></aside>
   </div>`, "Checkout");
@@ -157,7 +157,7 @@ function payment(id = 12345) {
   const paymentAddress = window.SECMARKET_DATA.paymentWallets[paymentItem.network] || window.SECMARKET_DATA.paymentWallets.TRC20;
   const qrCells = Array.from({ length: 49 }, (_, i) => [0, 1, 2, 7, 14, 8, 16, 34, 35, 42, 43, 44, 6, 13, 20, 28, 36, 48, 5, 19, 24, 30, 39, 46].includes(i));
   return page("Крипто-оплата заказа", `<div class="two-col">
-    <section class="panel"><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.coin} ${paymentItem.network}</h2><p class="muted">Адрес для оплаты</p><div class="list-row"><strong>${paymentAddress}</strong><button class="btn" data-copy-address>${state.copiedAddress ? "Скопировано" : "Копировать"}</button></div><div class="section qr">${qrCells.map((on) => `<span style="opacity:${on ? 1 : 0}"></span>`).join("")}</div><div class="list section">${[
+    <section class="panel"><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.coin} ${paymentItem.network}</h2><p class="muted">Адрес для оплаты</p><div class="list-row"><strong>${paymentAddress}</strong><button class="btn" data-copy-address="${paymentAddress}">${state.copiedAddress ? "Скопировано" : "Копировать"}</button></div><div class="section qr">${qrCells.map((on) => `<span style="opacity:${on ? 1 : 0}"></span>`).join("")}</div><div class="list section">${[
       ["Монета", paymentItem.coin],
       ["Сеть", paymentItem.network],
       ["Точная сумма", `${paymentItem.amount.toFixed(2)} ${paymentItem.coin}`],

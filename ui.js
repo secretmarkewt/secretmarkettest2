@@ -30,9 +30,39 @@ function row(left, right = "") {
 }
 
 function statusTone(status) {
-  if (["Завершен", "Оплачено", "Закрыт", "Выполнен"].includes(status)) return "ok";
-  if (["Спор", "Отклонен", "Ошибка сети"].includes(status)) return "bad";
+  if (["Завершен", "Оплачено", "Закрыт", "Выполнен", "paid", "published", "completed", "approved", "posted", "refunded", "resolved_buyer", "resolved_seller"].includes(status)) return "ok";
+  if (["Спор", "Отклонен", "Ошибка сети", "blocked", "rejected", "network_error", "underpaid"].includes(status)) return "bad";
   return "wait";
+}
+
+function statusLabel(status) {
+  const labels = {
+    awaiting_buyer: "ожидает подтверждения",
+    awaiting_payment: "ожидает оплату",
+    blocked: "заблокирован",
+    completed: "завершен",
+    confirming: "подтверждается",
+    draft: "черновик",
+    expired: "истек",
+    found: "транзакция найдена",
+    moderation: "на модерации",
+    paid: "оплачен",
+    paused: "пауза",
+    processing: "в обработке",
+    published: "опубликован",
+    rejected: "отклонен",
+    refunded: "возврат",
+    review: "на проверке",
+    sent: "отправлен",
+    underpaid: "недоплата",
+    waiting: "ожидает",
+    waiting_support: "ожидает поддержку",
+    need_more_data: "нужны данные",
+    resolved_buyer: "решено в пользу покупателя",
+    resolved_seller: "решено в пользу продавца",
+    partial_refund: "частичный возврат",
+  };
+  return labels[status] || status || "—";
 }
 
 function orderListRow(orderItem) {
@@ -40,7 +70,7 @@ function orderListRow(orderItem) {
 }
 
 function paymentListRow(paymentItem) {
-  return `<div class="list-row"><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></div>`;
+  return `<div class="list-row"><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${statusLabel(paymentItem.status)}</span></div>`;
 }
 
 function ticketListRow(ticket) {
@@ -63,4 +93,3 @@ function slug(text) {
 function pretty(slugText) {
   return decodeURIComponent(slugText || "").replaceAll("-", " ").replace(/\b\w/g, (m) => m.toUpperCase());
 }
-

@@ -26,7 +26,15 @@
 }
 
 function adminPayments() {
-  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Крипто-транзакции</h2><button class="btn primary">Синхронизировать</button></div><div class="list">${demoPayments.map((paymentItem) => `<a class="list-row" href="/admin/payments/${paymentItem.id}" data-link><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></a>`).join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
+  const livePaymentIds = new Set(liveItems("payments").map((paymentItem) => String(paymentItem.id)));
+  const liveRows = liveItems("payments").map((paymentItem) => {
+    const normalized = normalizeLivePayment(paymentItem);
+    return `<a class="list-row" href="/admin/payments/${normalized.id}" data-link><span>${normalized.amount.toFixed(2)} ${normalized.coin} · ${normalized.network}<br><span class="muted">#${normalized.order} · ${normalized.tx || "tx pending"} · ${normalized.confirmations}</span></span><span class="status ${statusTone(normalized.status)}">${statusLabel(normalized.status)}</span></a>`;
+  });
+  const demoRows = demoPayments
+    .filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id)))
+    .map((paymentItem) => `<a class="list-row" href="/admin/payments/${paymentItem.id}" data-link><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></a>`);
+  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Крипто-транзакции</h2><button class="btn primary" data-live-action="sync-payment" data-payment-id="pay-12345">Синхронизировать</button></div><div class="list">${[...liveRows, ...demoRows].join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
 }
 
 function adminPaymentDetail(id = "pay-12345") {
@@ -34,20 +42,25 @@ function adminPaymentDetail(id = "pay-12345") {
   const orderItem = orderById(paymentItem.order);
   const paymentAddress = window.SECMARKET_DATA.paymentWallets[paymentItem.network] || window.SECMARKET_DATA.paymentWallets.TRC20;
   return page(`Платеж ${paymentItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></div><div class="grid metrics">${[
+    <section class="panel"><div class="section-head"><div><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status ${statusTone(paymentItem.status)}">${statusLabel(paymentItem.status)}</span></div><div class="grid metrics">${[
       [paymentItem.network, "сеть"],
       [paymentItem.confirmations, "подтверждения"],
       [paymentItem.tx, "tx hash"],
       [orderItem.order, "статус заказа"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
-    <section class="panel section"><h2>Ручная проверка</h2><div class="form-grid">${field("Адрес оплаты", "input", paymentAddress)}${field("tx hash", "input", paymentItem.tx)}${field("Подтверждения", "input", paymentItem.confirmations)}${field("Статус", "select", ["Ожидает оплату", "Транзакция найдена", "Оплата подтверждена", "Недостаточная сумма", "Ошибка сети"])}${field("Комментарий админа", "textarea", "Проверить сумму и сеть перед сменой статуса")}</div><div class="form-actions section"><button class="btn primary">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger">Пометить ошибку</button></div></section>
-    <section class="panel section"><h2>История статусов</h2><div class="list">${["Создан адрес оплаты", "Транзакция найдена мониторингом", `Подтверждения: ${paymentItem.confirmations}`, `Текущий статус: ${paymentItem.status}`].map(row).join("")}</div></section>
+    <section class="panel section"><h2>Ручная проверка</h2><div class="form-grid">${field("Адрес оплаты", "input", paymentAddress)}${field("tx hash", "input", paymentItem.tx)}${field("Подтверждения", "input", paymentItem.confirmations)}${field("Статус", "select", ["Ожидает оплату", "Транзакция найдена", "Оплата подтверждена", "Недостаточная сумма", "Ошибка сети"])}${field("Комментарий админа", "textarea", "Проверить сумму и сеть перед сменой статуса")}</div><div class="form-actions section"><button class="btn primary" data-live-action="sync-payment" data-payment-id="${paymentItem.id}">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger">Пометить ошибку</button></div></section>
+    <section class="panel section"><h2>История статусов</h2><div class="list">${["Создан адрес оплаты", "Транзакция найдена мониторингом", `Подтверждения: ${paymentItem.confirmations}`, `Текущий статус: ${statusLabel(paymentItem.status)}`].map(row).join("")}</div></section>
   </section></div>`, "Admin");
 }
 
 function adminPayouts() {
+  const liveWithdrawalIds = new Set(liveItems("withdrawals").map((withdrawalItem) => String(withdrawalItem.id).toLowerCase()));
+  const liveRows = liveItems("withdrawals").map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${withdrawalItem.sellerId}<br><span class="muted">${Number(withdrawalItem.amount || 0).toFixed(2)} ${withdrawalItem.coin || "USDT"} · ${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${statusLabel(withdrawalItem.status)}</span></a>`);
+  const demoRows = demoWithdrawals
+    .filter((withdrawalItem) => !liveWithdrawalIds.has(String(withdrawalItem.id).toLowerCase()))
+    .map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${withdrawalItem.seller}<br><span class="muted">${withdrawalItem.amount.toFixed(2)} USDT · ${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></a>`);
   return page("Админка выплат", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и tx hash после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${demoWithdrawals.map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${withdrawalItem.seller}<br><span class="muted">${withdrawalItem.amount.toFixed(2)} USDT · ${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></a>`).join("")}</div></section>
+    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и tx hash после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${[...liveRows, ...demoRows].join("")}</div></section>
     <section class="panel section"><h2>Проверки перед выплатой</h2><div class="grid trust">${["Адрес совпадает с профилем", "Баланс доступен без холда", "Нет открытого спора", "2FA продавца подтверждена"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Админ подтверждает вручную в MVP.</p></div>`).join("")}</div></section>
   </section></div>`, "Admin");
 }
@@ -55,14 +68,14 @@ function adminPayouts() {
 function adminPayoutDetail(id = "WD-120") {
   const withdrawalItem = withdrawalById(id);
   return page(`Выплата #${withdrawalItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>${withdrawalItem.seller} · ${withdrawalItem.amount.toFixed(2)} USDT</h2><p class="muted">${withdrawalItem.network} · ${withdrawalItem.address}</p></div><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></div><div class="grid metrics">${[
+    <section class="panel"><div class="section-head"><div><h2>${withdrawalItem.seller} · ${withdrawalItem.amount.toFixed(2)} USDT</h2><p class="muted">${withdrawalItem.network} · ${withdrawalItem.address}</p></div><span class="status ${statusTone(withdrawalItem.status)}">${statusLabel(withdrawalItem.status)}</span></div><div class="grid metrics">${[
       [withdrawalItem.network, "сеть"],
       [withdrawalItem.tx, "tx hash"],
       [withdrawalItem.risk, "риск"],
-      [withdrawalItem.status, "статус"],
+      [statusLabel(withdrawalItem.status), "статус"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
-    <section class="panel section"><h2>Ручное подтверждение</h2><div class="form-grid">${field("Адрес кошелька", "input", withdrawalItem.address)}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Сумма", "input", `${withdrawalItem.amount.toFixed(2)} USDT`)}${field("tx hash выплаты", "input", withdrawalItem.tx)}${field("Статус", "select", ["На проверке", "В обработке", "Отправлен", "Выполнен", "Отклонен"])}${field("Комментарий", "textarea", "Проверить адрес, холды и открытые споры перед отправкой")}</div><div class="form-actions section"><button class="btn primary">Подтвердить выплату</button><button class="btn warn">Запросить проверку</button><button class="btn danger">Отклонить</button></div></section>
-    <section class="panel section"><h2>История изменения статусов</h2><div class="list">${["Запрос создан продавцом", "Адрес прошел форматную проверку", `Риск: ${withdrawalItem.risk}`, `Текущий статус: ${withdrawalItem.status}`].map(row).join("")}</div></section>
+    <section class="panel section"><h2>Ручное подтверждение</h2><div class="form-grid">${field("Адрес кошелька", "input", withdrawalItem.address)}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Сумма", "input", `${withdrawalItem.amount.toFixed(2)} USDT`)}${field("tx hash выплаты", "input", withdrawalItem.tx)}${field("Статус", "select", ["На проверке", "В обработке", "Отправлен", "Выполнен", "Отклонен"])}${field("Комментарий", "textarea", "Проверить адрес, холды и открытые споры перед отправкой")}</div><div class="form-actions section"><button class="btn primary" data-live-action="settle-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Подтвердить выплату</button><button class="btn warn">Запросить проверку</button><button class="btn danger">Отклонить</button></div></section>
+    <section class="panel section"><h2>История изменения статусов</h2><div class="list">${["Запрос создан продавцом", "Адрес прошел форматную проверку", `Риск: ${withdrawalItem.risk}`, `Текущий статус: ${statusLabel(withdrawalItem.status)}`].map(row).join("")}</div></section>
   </section></div>`, "Admin");
 }
 
@@ -88,7 +101,13 @@ function adminSellers() {
 }
 
 function adminProducts() {
-  return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Модерация товаров</h2><div class="list">${products.slice(0, 6).map((product, index) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.seller} · ${product.cat}</span></span><span class="status ${index % 3 === 0 ? "wait" : "ok"}">${index % 3 === 0 ? "на проверке" : "активен"}</span></div>`).join("")}</div><div class="form-actions section"><button class="btn primary">Одобрить</button><button class="btn danger">Снять с публикации</button></div></section></div>`, "Admin");
+  const liveProductIds = new Set(liveItems("products").map((product) => String(product.id)));
+  const liveRows = liveItems("products").map((product) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.sellerId || "seller"} · ${product.category || "catalog"}</span></span><span class="status ${statusTone(product.status)}">${statusLabel(product.status)}</span></div>`);
+  const demoRows = products
+    .filter((product) => !liveProductIds.has(String(product.id)))
+    .slice(0, 6)
+    .map((product, index) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.seller} · ${product.cat}</span></span><span class="status ${index % 3 === 0 ? "wait" : "ok"}">${index % 3 === 0 ? "на проверке" : "активен"}</span></div>`);
+  return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Модерация товаров</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div><div class="form-actions section"><button class="btn primary" data-live-action="approve-product" data-product-id="33412">Одобрить</button><button class="btn danger">Снять с публикации</button></div></section></div>`, "Admin");
 }
 
 function adminModeration() {

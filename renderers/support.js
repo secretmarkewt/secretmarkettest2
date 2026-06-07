@@ -1,9 +1,13 @@
 function disputes() {
   const state = window.SECMARKET_STATE;
   const demoDisputes = window.SECMARKET_DATA.demoDisputes;
+  const liveDisputeIds = new Set(liveItems("disputes").map((dispute) => String(dispute.id)));
+  const liveRows = liveItems("disputes").map((dispute) => normalizeLiveDispute(dispute));
+  const demoRows = demoDisputes.filter((dispute) => !liveDisputeIds.has(String(dispute.id)));
   return page("Споры", `<div class="two-col"><section class="panel"><h2>Открыть спор</h2><div class="form-grid">${field("Заказ", "input", "#12345")}${field("Причина", "select", ["Товар не выдан", "Товар не работает", "Продавец не отвечает", "Неверное описание", "Проблема с оплатой", "Другое"])}${field("Описание проблемы", "textarea", "Опишите ситуацию")}${field("Доказательства", "input", "Ссылка или файл")}</div><button class="btn primary section">Отправить</button><section class="section"><h2>Активные споры</h2><div class="list">${[
     ...(state.disputeCreated ? [{ id: 45, order: 12345, reason: "Создан только что", status: "Новый" }] : []),
-    ...demoDisputes,
+    ...liveRows,
+    ...demoRows,
   ].map((dispute) => `<a class="list-row" href="/disputes/${dispute.id}" data-link><span>#DSP-${dispute.id} · заказ #${dispute.order}<br><span class="muted">${dispute.reason}</span></span><span class="status wait">${dispute.status}</span></a>`).join("")}</div></section></section><aside class="panel"><h2>Решения поддержки</h2>${["Закрыть в пользу покупателя", "Закрыть в пользу продавца", "Частичный возврат", "Запросить дополнительные данные", "Заморозить средства до решения"].map(row).join("")}</aside></div>`, "Support");
 }
 
@@ -19,7 +23,7 @@ function disputeDetail(id = 123) {
       ["Escrow", "заморожен до решения"],
       ["Предварительное решение", dispute.refund],
     ].map(([left, right]) => row(left, right)).join("")}</div><section class="section"><h2>Чат спора</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><section class="section"><h2>Доказательства</h2><div class="list">${["Скриншот ошибки активации", "tx hash платежа", "Переписка из чата заказа", "Данные выдачи продавца"].map(row).join("")}</div></section></section>
-    <aside class="panel"><h2>Действия поддержки</h2><div class="form-grid">${field("Решение", "select", ["Запросить данные", "Частичный возврат", "Полный возврат", "Закрыть в пользу продавца"])}${field("Сумма возврата", "input", "35 USDT")}${field("Комментарий", "textarea", "Опишите решение поддержки")}</div><div class="form-actions section"><button class="btn primary">Сохранить решение</button><a class="btn" href="/orders/${dispute.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${dispute.payment}" data-link>Платеж</a></div></aside>
+    <aside class="panel"><h2>Действия поддержки</h2><div class="form-grid">${field("Решение", "select", ["Запросить данные", "Частичный возврат", "Полный возврат", "Закрыть в пользу продавца"])}${field("Сумма возврата", "input", "35 USDT")}${field("Комментарий", "textarea", "Опишите решение поддержки")}</div><div class="form-actions section"><button class="btn primary" data-live-action="resolve-dispute" data-dispute-id="${dispute.id}" data-order-id="${dispute.order}">Сохранить решение</button><a class="btn" href="/orders/${dispute.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${dispute.payment}" data-link>Платеж</a></div></aside>
   </div>`, "Support");
 }
 

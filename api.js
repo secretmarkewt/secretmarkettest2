@@ -1,5 +1,6 @@
 const API_STORAGE_KEY = "secmarket-mock-api-state";
 const API_BASE_URL_KEY = "secmarket-api-base-url";
+const API_AUTH_TOKEN_KEY = "secmarket-api-auth-token";
 const DEFAULT_API_BASE_URL = "http://127.0.0.1:4174";
 
 function clone(value) {
@@ -92,12 +93,29 @@ function setApiBaseUrl(url) {
   return getApiBaseUrl();
 }
 
+function getAuthToken() {
+  return localStorage.getItem(API_AUTH_TOKEN_KEY) || "";
+}
+
+function setAuthToken(token) {
+  const cleanToken = String(token || "").trim();
+  if (!cleanToken) localStorage.removeItem(API_AUTH_TOKEN_KEY);
+  else localStorage.setItem(API_AUTH_TOKEN_KEY, cleanToken);
+  return getAuthToken();
+}
+
+function authHeader(token = getAuthToken()) {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function requestLive(path, options = {}) {
+  const { token = getAuthToken(), ...requestOptions } = options;
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
-    ...options,
+    ...requestOptions,
     headers: {
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      ...authHeader(token),
+      ...(requestOptions.headers || {}),
     },
   });
   const body = await response.json().catch(() => ({}));
@@ -112,21 +130,23 @@ async function requestLive(path, options = {}) {
 
 const live = {
   async login(email, role = "buyer") {
-    return requestLive("/api/auth/login", {
+    const session = await requestLive("/api/auth/login", {
       method: "POST",
+      token: "",
       body: JSON.stringify({ email, role }),
     });
+    setAuthToken(session.token);
+    return session;
   },
-  async session(token) {
+  async session(token = getAuthToken()) {
     return requestLive("/api/auth/session", {
-      headers: { Authorization: `Bearer ${token}` },
+      token,
     });
   },
-  async logout(token) {
-    return requestLive("/api/auth/logout", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async logout(token = getAuthToken()) {
+    const result = await requestLive("/api/auth/logout", { method: "POST", token });
+    if (token === getAuthToken()) setAuthToken("");
+    return result;
   },
   async health() {
     return requestLive("/api/health");
@@ -138,53 +158,62 @@ const live = {
   async findById(collectionName, id) {
     return requestLive(`/api/${collectionName}/${id}`);
   },
-  async create(collectionName, payload) {
+  async create(collectionName, payload, token = getAuthToken()) {
     return requestLive(`/api/${collectionName}`, {
       method: "POST",
+      token,
       body: JSON.stringify(payload),
     });
   },
-  async updateStatus(collectionName, id, status) {
+  async update(collectionName, id, payload, token = getAuthToken()) {
+    return requestLive(`/api/${collectionName}/${id}`, {
+      method: "PATCH",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  async updateStatus(collectionName, id, status, token = getAuthToken()) {
     return requestLive(`/api/${collectionName}/${id}/status`, {
       method: "PATCH",
+      token,
       body: JSON.stringify({ status }),
     });
   },
-  async syncPayment(id, payload = {}, token = "") {
+  async syncPayment(id, payload = {}, token = getAuthToken()) {
     return requestLive(`/api/payments/${id}/sync`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      token,
       body: JSON.stringify(payload),
     });
   },
-  async issueDelivery(orderId, token = "") {
+  async issueDelivery(orderId, token = getAuthToken()) {
     return requestLive(`/api/orders/${orderId}/deliver`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      token,
     });
   },
-  async confirmOrder(orderId, token = "") {
+  async confirmOrder(orderId, token = getAuthToken()) {
     return requestLive(`/api/orders/${orderId}/confirm`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      token,
     });
   },
-  async withdrawalBalance(token = "") {
+  async withdrawalBalance(token = getAuthToken()) {
     return requestLive("/api/withdrawals/balance", {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      token,
     });
   },
-  async requestWithdrawal(payload, token = "") {
+  async requestWithdrawal(payload, token = getAuthToken()) {
     return requestLive("/api/withdrawals", {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      token,
       body: JSON.stringify(payload),
     });
   },
-  async settleWithdrawal(id, payload = {}, token = "") {
+  async settleWithdrawal(id, payload = {}, token = getAuthToken()) {
     return requestLive(`/api/withdrawals/${id}/settle`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      token,
       body: JSON.stringify(payload),
     });
   },
@@ -199,11 +228,13 @@ const live = {
 window.SECMARKET_API = {
   create,
   findById,
+  getAuthToken,
   getApiBaseUrl,
   getSnapshot,
   list,
   live,
   reset,
+  setAuthToken,
   setApiBaseUrl,
   updateStatus,
 };

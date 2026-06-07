@@ -23,11 +23,20 @@ function sellerSettings() {
 }
 
 function sellerProducts() {
-  return page("Мои товары", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><div class="section-head"><h2>Активные товары</h2><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div><div class="list">${products.slice(0, 5).map((product, index) => `<a class="list-row" href="/seller/products/${product.id}/edit" data-link><span>${product.title}<br><span class="muted">${product.cat} · ${product.stock} шт. · ${money(product.price)}</span></span><span class="status ${index === 2 ? "wait" : "ok"}">${index === 2 ? "на модерации" : "опубликован"}</span></a>`).join("")}</div></section></div>`, "Seller");
+  const liveProductIds = new Set(liveItems("products").map((product) => String(product.id)));
+  const liveRows = liveItems("products").map((product) => `<a class="list-row" href="/seller/products/${product.id}/edit" data-link><span>${product.title}<br><span class="muted">${product.category || product.cat || "catalog"} · ${product.stock ?? 0} шт. · ${money(Number(product.price || 0))}</span></span><span class="status ${statusTone(product.status)}">${statusLabel(product.status)}</span></a>`);
+  const demoRows = products
+    .filter((product) => !liveProductIds.has(String(product.id)))
+    .slice(0, 5)
+    .map((product, index) => `<a class="list-row" href="/seller/products/${product.id}/edit" data-link><span>${product.title}<br><span class="muted">${product.cat} · ${product.stock} шт. · ${money(product.price)}</span></span><span class="status ${index === 2 ? "wait" : "ok"}">${index === 2 ? "на модерации" : "опубликован"}</span></a>`);
+  return page("Мои товары", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><div class="section-head"><h2>Активные товары</h2><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div><div class="list">${[...liveRows, ...demoRows].join("")}</div></section></div>`, "Seller");
 }
 
 function sellerOrders() {
-  return page("Заказы продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><h2>Очередь выполнения</h2><div class="list">${demoOrders.map((orderItem) => orderListRow(orderItem)).join("")}</div></section></div>`, "Seller");
+  const liveOrderIds = new Set(liveItems("orders").map((orderItem) => String(orderItem.id)));
+  const liveRows = liveItems("orders").map((orderItem) => orderListRow(normalizeLiveOrder(orderItem)));
+  const demoRows = demoOrders.filter((orderItem) => !liveOrderIds.has(String(orderItem.id))).map((orderItem) => orderListRow(orderItem));
+  return page("Заказы продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><h2>Очередь выполнения</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div></section></div>`, "Seller");
 }
 
 function publicSeller() {
@@ -49,7 +58,7 @@ function createProduct(mode = "create", id = 12345) {
     <div class="panel"><div class="section-head"><h2>Основные поля</h2><span class="status ${mode === "edit" ? "wait" : "ok"}">${mode === "edit" ? "на модерации после правок" : "новый товар"}</span></div><div class="form-grid">${field("Категория", "select", categories.map((c) => c[0]))}${field("Подкатегория", "input", p.cat === "Roblox" ? "Robux" : p.cat)}${field("Название", "input", p.title)}${field("Цена в USDT", "input", p.price.toFixed(2))}${field("Наличие", "input", String(p.stock))}${field("Тип выдачи", "select", ["Автоматическая", "Ручная"])}${field("Регион", "select", ["EU", "US", "CIS", "Любой"])}${field("Платформа", "input", p.cat)}${field("Срок выполнения", "input", "5 минут")}${field("Гарантия", "input", "24 часа")}${field("Изображение", "input", "Загрузить файл")}${field("Статус", "select", ["Черновик", "На модерации", "Опубликован"])}</div></div>
     <div class="panel section"><h2>Описание и выдача</h2><div class="form-grid">${field("Описание", "textarea", "Что получает покупатель")}${field("Инструкция покупателю", "textarea", "Как активировать товар")}${field("Данные для автовыдачи", "textarea", "Один код, ключ или аккаунт на строку")}</div><div class="list section">${["Автовыдача списывает одну строку после подтверждения оплаты", "Ручная выдача открывает чат и ставит заказ в работу", "Модерация может проверять новые товары перед публикацией", "После публикации товар появится в каталоге"].map(row).join("")}</div></div>
     <section class="section"><div class="section-head"><h2>Предпросмотр</h2><a class="btn" href="/product/${p.id}" data-link>Открыть карточку</a></div>${productCards([p])}<section class="panel section"><h2>Остатки автовыдачи</h2><div class="list">${[["Всего строк", String(p.stock)], ["Зарезервировано заказами", "2"], ["Использовано", "18"], ["При нуле", "снять товар с публикации"]].map(([left, right]) => row(left, right)).join("")}</div></section></section>
-    <div class="form-actions section"><button class="btn">Сохранить черновик</button><button class="btn warn">Отправить на модерацию</button><button class="btn primary">${mode === "edit" ? "Сохранить правки" : "Опубликовать"}</button></div>
+    <div class="form-actions section"><button class="btn">Сохранить черновик</button><button class="btn warn">Отправить на модерацию</button><button class="btn primary" data-live-action="create-product">${mode === "edit" ? "Сохранить правки" : "Опубликовать"}</button></div>
   </section></div>`, "Seller");
 }
 
@@ -66,13 +75,16 @@ function finance() {
 }
 
 function withdraw() {
+  const liveWithdrawalIds = new Set(liveItems("withdrawals").map((withdrawalItem) => String(withdrawalItem.id).toLowerCase()));
+  const liveRows = liveItems("withdrawals").map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${Number(withdrawalItem.amount || 0).toFixed(2)} ${withdrawalItem.coin || "USDT"}<br><span class="muted">${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${statusLabel(withdrawalItem.status)}</span></a>`);
+  const demoRows = [
+    ["#WD-120 · 500 USDT · TRC20", "На проверке", "WD-120"],
+    ["#WD-108 · 300 USDT · TON", "Выполнен", "WD-108"],
+    ["#WD-099 · 150 USDT · BEP20", "Отклонен", "WD-099"],
+  ].filter(([, , id]) => !liveWithdrawalIds.has(id.toLowerCase()))
+    .map(([left, status]) => `<div class="list-row"><span>${left}</span><span class="status ${status === "Выполнен" ? "ok" : status === "Отклонен" ? "bad" : "wait"}">${status}</span></div>`);
   return page("Вывод средств", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
-    <section class="panel"><h2>Новый вывод</h2><div class="form-grid">${field("Валюта", "select", ["USDT"])}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Адрес кошелька", "input", "T...")}${field("Сумма", "input", "500")}${field("Комиссия сети", "input", "1 USDT")}${field("Итого к получению", "input", "499 USDT")}</div><div class="form-actions section"><button class="btn primary">Запросить вывод</button><span class="status wait">MVP: ручное подтверждение админом</span></div></section>
-    <section class="panel section"><h2>История выплат</h2><div class="list">${[
-      ["#WD-120 · 500 USDT · TRC20", "На проверке"],
-      ["#WD-108 · 300 USDT · TON", "Выполнен"],
-      ["#WD-099 · 150 USDT · BEP20", "Отклонен"],
-    ].map(([left, status]) => `<div class="list-row"><span>${left}</span><span class="status ${status === "Выполнен" ? "ok" : status === "Отклонен" ? "bad" : "wait"}">${status}</span></div>`).join("")}</div></section>
+    <section class="panel"><h2>Новый вывод</h2><div class="form-grid">${field("Валюта", "select", ["USDT"])}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Адрес кошелька", "input", "T...")}${field("Сумма", "input", "500")}${field("Комиссия сети", "input", "1 USDT")}${field("Итого к получению", "input", "499 USDT")}</div><div class="form-actions section"><button class="btn primary" data-live-action="request-withdrawal">Запросить вывод</button><span class="status wait">MVP: ручное подтверждение админом</span></div></section>
+    <section class="panel section"><h2>История выплат</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div></section>
   </section></div>`, "Seller");
 }
-

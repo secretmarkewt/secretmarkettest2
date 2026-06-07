@@ -13,6 +13,15 @@ const state = {
   disputeCreated: false,
   copiedAddress: false,
   chatMessages: [],
+  live: {
+    deliveries: [],
+    disputes: [],
+    ledger: [],
+    orders: [],
+    payments: [],
+    products: [],
+    withdrawals: [],
+  },
   toast: "",
 };
 
@@ -38,6 +47,7 @@ function saveState() {
     disputeCreated: state.disputeCreated,
     copiedAddress: state.copiedAddress,
     chatMessages: state.chatMessages,
+    live: state.live,
   };
   localStorage.setItem("secmarket-demo-state", JSON.stringify(payload));
 }
@@ -53,9 +63,28 @@ function loadState() {
     state.disputeCreated = Boolean(payload.disputeCreated);
     state.copiedAddress = Boolean(payload.copiedAddress);
     state.chatMessages = Array.isArray(payload.chatMessages) ? payload.chatMessages : [];
+    state.live = {
+      ...state.live,
+      ...(payload.live && typeof payload.live === "object" ? payload.live : {}),
+    };
   } catch {
     localStorage.removeItem("secmarket-demo-state");
   }
+}
+
+function liveItems(collectionName) {
+  return Array.isArray(state.live[collectionName]) ? state.live[collectionName] : [];
+}
+
+function upsertLiveItem(collectionName, item) {
+  if (!item || item.id === undefined || item.id === null) return null;
+  state.live[collectionName] ||= [];
+  const items = state.live[collectionName];
+  const index = items.findIndex((candidate) => String(candidate.id).toLowerCase() === String(item.id).toLowerCase());
+  if (index === -1) items.unshift(item);
+  else items[index] = { ...items[index], ...item };
+  saveState();
+  return item;
 }
 
 function resetDemoState() {
@@ -66,6 +95,7 @@ function resetDemoState() {
   state.disputeCreated = false;
   state.copiedAddress = false;
   state.chatMessages = [];
+  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], products: [], withdrawals: [] };
   notify("Демо-состояние сброшено");
 }
 
