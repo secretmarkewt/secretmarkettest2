@@ -43,6 +43,7 @@ Useful focused checks:
 ```powershell
 npm run verify:backend
 npm run verify:env
+npm run verify:github-pages-assets
 npm run verify:api-client
 npm run verify:live-sync
 npm run verify:live-ui
