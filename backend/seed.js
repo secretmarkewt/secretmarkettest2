@@ -1,14 +1,15 @@
 const { PAYMENT_WALLETS } = require("./paymentConfig");
+const { hashPassword } = require("./passwords");
 
 const now = "2026-06-05T09:00:00.000Z";
 
 const seed = {
   users: [
-    { id: "usr-buyer", role: "buyer", name: "Artem", email: "buyer@example.com", telegram: "@buyer", status: "active", createdAt: now },
-    { id: "usr-seller", role: "seller", name: "PixelTrade", email: "seller@example.com", telegram: "@pixeltrade", status: "active", createdAt: now },
-    { id: "usr-buyer-2", role: "buyer", name: "SecondBuyer", email: "buyer2@example.com", telegram: "@buyer2", status: "active", createdAt: now },
-    { id: "usr-seller-2", role: "seller", name: "OtherSeller", email: "seller2@example.com", telegram: "@seller2", status: "active", createdAt: now },
-    { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", status: "active", createdAt: now },
+    { id: "usr-buyer", role: "buyer", name: "Artem", email: "buyer@example.com", telegram: "@buyer", passwordHash: hashPassword("password", "seed-buyer"), status: "active", createdAt: now },
+    { id: "usr-seller", role: "seller", name: "PixelTrade", email: "seller@example.com", telegram: "@pixeltrade", passwordHash: hashPassword("password", "seed-seller"), status: "active", createdAt: now },
+    { id: "usr-buyer-2", role: "buyer", name: "SecondBuyer", email: "buyer2@example.com", telegram: "@buyer2", passwordHash: hashPassword("password", "seed-buyer-2"), status: "active", createdAt: now },
+    { id: "usr-seller-2", role: "seller", name: "OtherSeller", email: "seller2@example.com", telegram: "@seller2", passwordHash: hashPassword("password", "seed-seller-2"), status: "active", createdAt: now },
+    { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", passwordHash: hashPassword("password", "seed-admin"), status: "active", createdAt: now },
   ],
   sessions: [],
   products: [

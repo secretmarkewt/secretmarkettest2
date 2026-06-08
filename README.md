@@ -86,13 +86,14 @@ Ready as a public MVP demo:
 
 - Static GitHub Pages frontend.
 - Live API contract for products, orders, payments, delivery, disputes, withdrawals, audit and auth sessions.
+- Password-gated demo auth with PBKDF2 hashes and bearer sessions.
 - File-backed JSON store for MVP persistence.
 - CORS allowlist, reset protection, rate limiting and basic security headers.
 - CI verification before Pages deployment.
 
 Still needed before real-money production:
 
-- Password hashing and real account registration.
+- Real account registration, password reset and 2FA.
 - Real TRC20, TON and BEP20 payment watchers.
 - Production database such as PostgreSQL.
 - Encrypted auto-delivery secrets.

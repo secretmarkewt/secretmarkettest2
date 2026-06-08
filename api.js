@@ -129,11 +129,11 @@ async function requestLive(path, options = {}) {
 }
 
 const live = {
-  async login(email, role = "buyer") {
+  async login(email, role = "buyer", password = "password") {
     const session = await requestLive("/api/auth/login", {
       method: "POST",
       token: "",
-      body: JSON.stringify({ email, role }),
+      body: JSON.stringify({ email, role, password }),
     });
     setAuthToken(session.token);
     return session;

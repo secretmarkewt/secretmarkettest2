@@ -78,11 +78,18 @@ function authHeader(token) {
     const products = await request(port, "/api/products").then((res) => res.json());
     if (!Array.isArray(products.items) || products.items.length < 1) throw new Error("products list failed");
 
+    const rejectedLogin = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "buyer@example.com", role: "buyer", password: "wrong" }),
+    });
+    if (rejectedLogin.status !== 401) throw new Error("password guard failed");
+
     const login = await request(port, "/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: "buyer@example.com", role: "buyer" }),
+      body: JSON.stringify({ email: "buyer@example.com", role: "buyer", password: "password" }),
     }).then((res) => res.json());
     if (!login.token || login.user?.role !== "buyer") throw new Error("auth login failed");
+    if (login.user?.passwordHash) throw new Error("public user leaked password hash");
 
     const session = await request(port, "/api/auth/session", {
       headers: authHeader(login.token),
@@ -91,13 +98,13 @@ function authHeader(token) {
 
     const sellerLogin = await request(port, "/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: "seller@example.com", role: "seller" }),
+      body: JSON.stringify({ email: "seller@example.com", role: "seller", password: "password" }),
     }).then((res) => res.json());
     if (!sellerLogin.token || sellerLogin.user?.role !== "seller") throw new Error("seller auth login failed");
 
     const adminLogin = await request(port, "/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email: "support@example.com", role: "admin" }),
+      body: JSON.stringify({ email: "support@example.com", role: "admin", password: "password" }),
     }).then((res) => res.json());
     if (!adminLogin.token || adminLogin.user?.role !== "admin") throw new Error("admin auth login failed");
 

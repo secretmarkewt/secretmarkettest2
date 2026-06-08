@@ -5,6 +5,7 @@ const { resourceModels } = require("./models");
 const { syncPayment } = require("./paymentWatcher");
 const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
+const { verifyPassword } = require("./passwords");
 const packageInfo = require("../package.json");
 
 const rateBuckets = new Map();
@@ -150,7 +151,7 @@ function readBearerToken(req) {
 
 function publicUser(user) {
   if (!user) return null;
-  const { email, telegram, ...safeUser } = user;
+  const { email, passwordHash, telegram, ...safeUser } = user;
   return { ...safeUser, email, telegram };
 }
 
@@ -244,6 +245,7 @@ async function handleAuth(req, res, store, id) {
   if (id === "login" && req.method === "POST") {
     const payload = await readBody(req);
     const email = String(payload.email || "").trim().toLowerCase();
+    const password = String(payload.password || "");
     const role = String(payload.role || "buyer").trim().toLowerCase();
     const user = store.list("users").find((candidate) => (
       String(candidate.email || "").toLowerCase() === email &&
@@ -252,6 +254,9 @@ async function handleAuth(req, res, store, id) {
     ));
 
     if (!user) return json(req, res, 401, { error: "invalid_credentials" });
+    if (user.passwordHash && !verifyPassword(password, user.passwordHash)) {
+      return json(req, res, 401, { error: "invalid_credentials" });
+    }
 
     const session = store.create("sessions", {
       userId: user.id,

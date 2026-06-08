@@ -96,7 +96,7 @@ The API allows CORS for local frontend development. By default it accepts all or
 
 ## Auth Notes
 
-Auth is demo-level for now: `POST /api/auth/login` accepts an active demo user email and role, then returns a bearer token stored in the JSON database. This creates the backend contract for sessions before adding password hashing and 2FA.
+Auth is demo-level but now password-gated: `POST /api/auth/login` accepts an active demo user email, role and password, verifies the stored PBKDF2 hash, then returns a bearer token stored in the JSON database. Demo users use `password` as the password. Existing local JSON databases without `passwordHash` remain accepted so old demo data is not locked out.
 
 ## Role Guards
 
@@ -130,7 +130,7 @@ Auth is demo-level for now: `POST /api/auth/login` accepts an active demo user e
 ## Next Backend Work
 
 - Move the JSON store to SQLite/PostgreSQL when auth and payment workers are ready.
-- Add password hashing and 2FA.
+- Add registration, password reset and 2FA.
 - Add file storage for dispute evidence and ticket attachments.
 - Replace the mock payment watcher with real TRC20, TON and BEP20 workers.
 - Encrypt auto-delivery secrets before moving from JSON storage to production storage.
