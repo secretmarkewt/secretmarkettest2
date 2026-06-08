@@ -33,6 +33,7 @@ function createAuditEntry(action, resource, itemId, actorId, details = {}) {
 
 function createStore(options = {}) {
   const filePath = options.filePath === false ? "" : options.filePath || process.env.SECMARKET_DB_FILE || DEFAULT_DB_FILE;
+  const configuredFilePath = options.filePath !== undefined || Boolean(process.env.SECMARKET_DB_FILE);
   let state = readState(filePath) || clone(seed);
 
   function persist() {
@@ -96,6 +97,7 @@ function createStore(options = {}) {
 
   function meta() {
     return {
+      configured: configuredFilePath,
       persistent: Boolean(filePath),
     };
   }

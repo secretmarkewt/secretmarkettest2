@@ -12,7 +12,7 @@ Default API URL: `http://127.0.0.1:4174/api/health`
 
 `GET /api/health` returns deployment metadata such as API version, environment, storage mode, CORS origins, reset availability and rate-limit settings.
 
-`GET /api/ready` returns readiness metadata for hosting checks: required collections, storage mode and collection counts. It returns `503` if a required collection is missing.
+`GET /api/ready` returns readiness metadata for hosting checks: required collections, storage mode, collection counts and production deployment issues. It returns `503` if a required collection is missing or production settings are unsafe.
 
 The server also supports direct Node startup:
 
@@ -62,6 +62,8 @@ This is still a lightweight MVP store, but orders, payments, disputes, withdrawa
 Set `SECMARKET_ALLOW_RESET=false` for any public deployment. The reset route stays enabled by default only to keep local demo development fast.
 
 When `NODE_ENV=production`, reset is disabled by default even if `SECMARKET_ALLOW_RESET` is missing. Keeping `SECMARKET_ALLOW_RESET=false` in the host environment still makes the public setting explicit in `GET /api/health`.
+
+In production, `GET /api/ready` also reports `deploymentIssues` and blocks readiness when CORS is open to `*`, reset is enabled, storage is not configured or rate limiting is disabled.
 
 ## Resources
 

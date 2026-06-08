@@ -37,6 +37,34 @@ function authHeader(token) {
     if (ready.status !== 200 || !readyBody.ok || readyBody.service !== "secret-market-api" || readyBody.snapshot?.products < 1) {
       throw new Error("ready check failed");
     }
+    if (!Array.isArray(readyBody.deploymentIssues) || readyBody.deploymentIssues.length !== 0) {
+      throw new Error("development ready deployment issues failed");
+    }
+
+    const previousNodeEnvForReady = process.env.NODE_ENV;
+    const previousOriginsForReady = process.env.SECMARKET_ALLOWED_ORIGINS;
+    const previousResetForReady = process.env.SECMARKET_ALLOW_RESET;
+    process.env.NODE_ENV = "production";
+    delete process.env.SECMARKET_ALLOWED_ORIGINS;
+    delete process.env.SECMARKET_ALLOW_RESET;
+    const unsafeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
+    const unsafeReadyBody = await unsafeReady.body;
+    if (unsafeReady.status !== 503 || !unsafeReadyBody.deploymentIssues?.includes("cors_wildcard_origin")) {
+      throw new Error("production ready unsafe settings failed");
+    }
+    process.env.SECMARKET_ALLOWED_ORIGINS = "https://penisxxxl.github.io";
+    process.env.SECMARKET_ALLOW_RESET = "false";
+    const safeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
+    const safeReadyBody = await safeReady.body;
+    if (safeReady.status !== 200 || !safeReadyBody.ok || safeReadyBody.deploymentIssues.length !== 0) {
+      throw new Error("production ready safe settings failed");
+    }
+    if (previousNodeEnvForReady === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnvForReady;
+    if (previousOriginsForReady === undefined) delete process.env.SECMARKET_ALLOWED_ORIGINS;
+    else process.env.SECMARKET_ALLOWED_ORIGINS = previousOriginsForReady;
+    if (previousResetForReady === undefined) delete process.env.SECMARKET_ALLOW_RESET;
+    else process.env.SECMARKET_ALLOW_RESET = previousResetForReady;
 
     const resetSnapshot = await request(port, "/api/reset", { method: "POST" }).then((res) => res.json());
     if (!resetSnapshot.products || !resetSnapshot.audit) throw new Error("reset route failed");

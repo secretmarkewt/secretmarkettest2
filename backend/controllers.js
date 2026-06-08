@@ -30,6 +30,10 @@ function resetAllowed() {
   return String(process.env.NODE_ENV || "development").toLowerCase() !== "production";
 }
 
+function isProduction() {
+  return String(process.env.NODE_ENV || "development").toLowerCase() === "production";
+}
+
 function rateLimitSettings() {
   return {
     max: Number(process.env.SECMARKET_RATE_LIMIT_MAX || 240),
@@ -97,11 +101,27 @@ function healthPayload(store) {
 
 function readyPayload(store) {
   const readiness = store.ready ? store.ready() : { ok: false, missingCollections: ["store.ready"], storage: {}, snapshot: {} };
+  const deploymentIssues = deploymentReadinessIssues(readiness.storage);
   return {
     ...readiness,
+    ok: readiness.ok && deploymentIssues.length === 0,
+    deploymentIssues,
     service: "secret-market-api",
     checkedAt: new Date().toISOString(),
   };
+}
+
+function deploymentReadinessIssues(storage = {}) {
+  if (!isProduction()) return [];
+
+  const issues = [];
+  const origins = allowedOrigins();
+  const rateLimit = rateLimitSettings();
+  if (origins.includes("*")) issues.push("cors_wildcard_origin");
+  if (resetAllowed()) issues.push("reset_enabled");
+  if (!storage.persistent || !storage.configured) issues.push("storage_not_configured");
+  if (!rateLimit.max || rateLimit.max < 1 || !rateLimit.windowMs || rateLimit.windowMs < 1) issues.push("rate_limit_disabled");
+  return issues;
 }
 
 function securityHeaders() {
