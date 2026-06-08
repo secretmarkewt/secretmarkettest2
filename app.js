@@ -31,7 +31,7 @@ function header() {
   const session = sessionApi.currentSession();
   return `
     <header class="topbar">
-      <a class="brand" href="/" data-link><span class="brand-mark">SM</span><span>Secret Market</span></a>
+      <a class="brand" href="/" data-link><img class="brand-logo" src="assets/secret-market-logo.png" alt="Secret Market" /><span>Secret Market</span></a>
       <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" /><button class="icon-btn" title="Искать">↵</button></form>
       <nav class="nav">
         ${routeLinks.map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
@@ -93,7 +93,6 @@ function auth() {
 }
 
 startRouter();
-
 
 
 

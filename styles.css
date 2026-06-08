@@ -73,15 +73,11 @@ a {
   white-space: nowrap;
 }
 
-.brand-mark {
-  display: grid;
+.brand-logo {
+  display: block;
   width: 36px;
   height: 36px;
-  place-items: center;
-  border: 1px solid rgba(71, 214, 81, 0.35);
-  border-radius: 8px;
-  background: linear-gradient(135deg, #19332f, #2b2033);
-  color: var(--teal);
+  object-fit: contain;
 }
 
 .searchbar {
