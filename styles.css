@@ -346,10 +346,11 @@ h3 {
 }
 
 .home-hero-visual.mascot-hero img {
-  width: min(82%, 470px);
+  width: min(92%, 560px);
   height: auto;
   min-height: 0;
   object-fit: contain;
+  opacity: 1;
   filter: drop-shadow(0 0 34px rgba(53, 255, 106, 0.22));
 }
 
@@ -1245,7 +1246,7 @@ a.admin-tile:hover {
 
   .home-hero-visual.mascot-hero img {
     min-height: 0;
-    width: min(86%, 360px);
+    width: min(94%, 430px);
   }
 
   .mobile-tabbar {
