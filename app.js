@@ -32,14 +32,17 @@ function header() {
   return `
     <header class="topbar">
       <a class="brand" href="/" data-link><img class="brand-logo" src="assets/secret-market-logo.png" alt="Secret Market" /><span>Secret Market</span></a>
-      <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" /><button class="icon-btn" title="Искать">↵</button></form>
+      <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Поиск товаров..." /><button class="icon-btn" title="Искать">↵</button></form>
       <nav class="nav">
-        ${routeLinks.map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
+        ${[
+          ["/catalog", "Каталог"],
+          ["/seller/products/create", "Продать"],
+          ["/orders/12345", "Заказы"],
+          ["/chats", "Чаты"],
+        ].map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
         <a href="/support" data-link>Поддержка</a>
-        <a href="/auth" data-link class="${activeClass("/auth")}">${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
-        <span class="status ${session.role === "guest" ? "wait" : "ok"}">${sessionApi.roleLabel(session.role)}</span>
-        <button class="icon-btn" title="Язык">RU</button>
-        <button class="icon-btn" title="Валюта" data-currency>${currency}</button>
+        <a class="login-link ${activeClass("/auth")}" href="/auth" data-link>${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
+        <a class="btn primary nav-register" href="/auth" data-link>Регистрация</a>
       </nav>
     </header>
     <nav class="mobile-tabbar">
@@ -57,12 +60,12 @@ function footer() {
   return `
     <footer class="footer">
       <div class="footer-grid">
-        <div><h3>Secret Market</h3><p>Маркетплейс цифровых товаров с оплатой в USDT, escrow-логикой и ручной модерацией спорных заказов.</p></div>
+        <div><a class="brand footer-brand" href="/" data-link><img class="brand-logo" src="assets/secret-market-logo.png" alt="Secret Market" /><span>Secret Market</span></a><p>Тёмный маркетплейс цифровых товаров с оплатой в USDT, escrow-логикой и ручной модерацией спорных заказов.</p></div>
         ${[
           ["Покупателям", ["/buyer-rules", "/refund-policy", "/crypto-payment-guide"]],
           ["Продавцам", ["/seller-rules", "/fees", "/seller/withdraw"]],
-          ["Платформа", ["/terms", "/privacy", "/contacts", "/faq", "/status-map"]],
-          ["Разработка", ["/backend-structure"]],
+          ["Поддержка", ["/support", "/support/ticket", "/faq", "/contacts"]],
+          ["Мы в сети", ["/status-map", "/privacy", "/terms", "/backend-structure"]],
         ].map(([title, links]) => `<div><h3>${title}</h3>${links.map((href) => `<a href="${href}" data-link>${infoPages[href]?.[0] || href}</a>`).join("")}</div>`).join("")}
       </div>
     </footer>`;

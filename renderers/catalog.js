@@ -27,29 +27,126 @@ function productCards(list = products) {
     </article>`).join("")}</div>`;
 }
 
+const homeCategories = [
+  ["IG", "Игровая валюта", "Robux, VP, UC и донат для популярных игр"],
+  ["AC", "Аккаунты", "Игровые и сервисные аккаунты с проверкой"],
+  ["KY", "Ключи", "Steam, Minecraft, Xbox, PlayStation и подписки"],
+  ["SB", "Подписки", "Telegram, Discord, Spotify и цифровые сервисы"],
+  ["UP", "Пополнение", "Баланс, подарочные карты и быстрые платежи"],
+  ["SK", "Скины", "Инвентарь, предметы и косметика"],
+  ["SV", "Услуги", "Буст, настройка, помощь и ручная выдача"],
+  ["OT", "Другое", "Редкие цифровые товары и кастомные офферы"],
+];
+
+const homeRecommendedProducts = [
+  ["RB", "Roblox 10 000, выдача 5 минут", "Автовыдача", "84.90", "4.98", "8 420", ["#133d24", "#35ff6a"]],
+  ["ST", "Steam Gift Card 50 USDT", "Автовыдача", "50.00", "4.95", "6 104", ["#132b3a", "#35ff6a"]],
+  ["TG", "Telegram Premium 12 месяцев", "Ручная", "31.50", "4.88", "902", ["#122b38", "#20c8ff"]],
+  ["MC", "Minecraft Java аккаунт", "Автовыдача", "12.80", "4.92", "1 840", ["#1c3b21", "#35ff6a"]],
+  ["VP", "Valorant VP регион EU", "Ручная", "22.40", "4.96", "1 120", ["#3a1420", "#35ff6a"]],
+  ["DN", "Discord Nitro 1 месяц", "Автовыдача", "7.20", "4.91", "3 240", ["#1f2344", "#35ff6a"]],
+];
+
+const homeNewProducts = [
+  ["UC", "PUBG UC, быстрая отправка", "Ручная", "18.60", "4.90", "1 320", ["#30230f", "#35ff6a"]],
+  ["PS", "PlayStation Plus Deluxe", "Автовыдача", "14.40", "4.89", "870", ["#102842", "#35ff6a"]],
+  ["BS", "Brawl Stars аккаунт", "Ручная", "19.90", "4.87", "514", ["#331f10", "#35ff6a"]],
+  ["XB", "Xbox Game Pass Ultimate", "Автовыдача", "9.80", "4.93", "2 104", ["#102f1a", "#35ff6a"]],
+  ["TH", "Clash of Clans аккаунт TH15", "Ручная", "44.20", "4.84", "388", ["#2f1e14", "#35ff6a"]],
+  ["SP", "Spotify Premium 12 месяцев", "Автовыдача", "24.00", "4.94", "1 742", ["#102a18", "#35ff6a"]],
+];
+
+const homeSellers = [
+  ["PixelTrade", "USDT TRC20", "4.98", "8 420"],
+  ["KeyDock", "USDT TON", "4.95", "6 104"],
+  ["SubLine", "USDT BEP20", "4.88", "4 704"],
+  ["AimShop", "USDT TRC20", "4.96", "7 122"],
+  ["CryptoStore", "USDT TON", "4.93", "3 916"],
+  ["TopDigital", "USDT BEP20", "4.91", "5 240"],
+];
+
+function homeSection(title, body, action = "") {
+  return `<section class="home-section"><div class="section-head"><h2>${title}</h2>${action}</div>${body}</section>`;
+}
+
+function homeStats() {
+  return `<section class="home-stats">${[
+    ["28 450+", "успешных сделок"],
+    ["3 сети", "для оплаты"],
+    ["4.91", "средний рейтинг"],
+    ["15 мин", "типовая выдача"],
+  ].map(([value, label]) => `<article class="home-stat"><strong>${value}</strong><span>${label}</span></article>`).join("")}</section>`;
+}
+
+function trustBar() {
+  return `<section class="trust-bar">${[
+    ["Escrow-защита", "Деньги удерживаются до подтверждения заказа"],
+    ["Чат и спор", "Контекст сделки всегда рядом"],
+    ["USDT TRC20 / TON / BEP20", "Три сети для оплаты"],
+    ["Быстрая выдача", "Авто-коды и ручные услуги"],
+  ].map(([title, text]) => `<article><strong>${title}</strong><span>${text}</span></article>`).join("")}</section>`;
+}
+
+function homeCategoryGrid() {
+  return `<div class="home-categories">${homeCategories.map(([icon, title, description]) => `
+    <a class="home-category-card" href="/catalog/${slug(title)}" data-link>
+      <span>${icon}</span><strong>${title}</strong><small>${description}</small>
+    </a>`).join("")}</div>`;
+}
+
+function homeProductGrid(list) {
+  return `<div class="home-product-grid">${list.map(([mark, title, delivery, price, rating, sales, colors], index) => `
+    <article class="home-product-card" style="--thumb-a:${colors[0]};--thumb-b:${colors[1]}">
+      <div class="home-product-thumb"><span>${mark}</span></div>
+      <div class="home-product-body">
+        <span class="badge">${delivery}</span>
+        <h3>${title}</h3>
+        <strong class="home-price">${price} USDT</strong>
+        <p class="meta">★ ${rating} · ${sales} продаж</p>
+        <a class="btn primary" href="/product/${products[index % products.length].id}" data-link>Купить</a>
+      </div>
+    </article>`).join("")}</div>`;
+}
+
+function paymentBlock() {
+  return `<section class="payment-block">
+    <div>
+      <p class="eyebrow">Crypto checkout</p>
+      <h2>Оплата в USDT</h2>
+      <p class="muted">Выбирайте сеть перед оплатой, отправляйте точную сумму и отслеживайте подтверждения прямо в заказе.</p>
+    </div>
+    <div class="payment-badges">${["USDT TRC20", "USDT TON", "USDT BEP20"].map((network) => `<span>${network}</span>`).join("")}</div>
+  </section>`;
+}
+
+function homeSellerGrid() {
+  return `<div class="home-sellers">${homeSellers.map(([name, network, rating, sales]) => `
+    <article class="home-seller-card">
+      <div class="seller-avatar">${name.slice(0, 2).toUpperCase()}</div>
+      <strong>${name}</strong>
+      <span class="status ok">${network}</span>
+      <small>★ ${rating} · ${sales} продаж</small>
+    </article>`).join("")}</div>`;
+}
+
 function home() {
   return `${header()}<main class="main">
-    <section class="hero">
-      <div class="hero-copy">
+    <section class="home-hero">
+      <div class="home-hero-copy">
         <p class="eyebrow">Крипто-MVP для цифровых товаров</p>
-        <h1>Secret Market</h1>
+        <h1>Secret <span>Market</span></h1>
         <p class="lead">Покупайте ключи, аккаунты, игровую валюту, подписки и услуги с оплатой в USDT. Деньги удерживаются до подтверждения заказа, а чат и спор всегда привязаны к сделке.</p>
-        <div class="actions"><a class="btn primary" href="/catalog" data-link>Открыть каталог</a><a class="btn" href="/seller/products/create" data-link>Создать товар</a><a class="btn warn" href="/crypto-payment-guide" data-link>USDT TRC20 / TON / BEP20</a></div>
-        <div class="stats-strip">
-          <div class="stat"><strong>28 450</strong><span>успешных сделок</span></div>
-          <div class="stat"><strong>3 сети</strong><span>для старта MVP</span></div>
-          <div class="stat"><strong>4.91</strong><span>средний рейтинг</span></div>
-          <div class="stat"><strong>15 мин</strong><span>типовая выдача</span></div>
-        </div>
+        <div class="actions"><a class="btn primary" href="/catalog" data-link>Открыть каталог</a><a class="btn ghost" href="/seller/products/create" data-link>Стать продавцом</a></div>
       </div>
-      <div class="hero-art"><img src="assets/market-hero.png" alt="Интерфейс цифрового маркетплейса с крипто оплатой" /></div>
+      <div class="home-hero-visual"><img src="assets/market-hero.png" alt="Зеленый маскот Secret Market с crypto-атмосферой" /><div class="hero-token">USDT</div><div class="hero-shield">Escrow</div></div>
     </section>
-    <section class="section"><div class="section-head"><div><h2>Быстрые ссылки</h2><p class="muted">Популярные направления для поиска.</p></div></div><div class="chips">${quickLinks.map((x) => `<a class="chip" href="/catalog/${x.toLowerCase()}" data-link>${x}</a>`).join("")}</div></section>
-    <section class="section"><div class="section-head"><h2>Популярные категории</h2><a class="btn" href="/catalog" data-link>Все категории</a></div>${categoryCards()}</section>
-    <section class="section"><div class="section-head"><h2>Рекомендованные товары</h2><a class="btn" href="/catalog" data-link>Смотреть все</a></div>${productCards(products.slice(0, 4))}</section>
-    <section class="section"><div class="section-head"><h2>Новые товары</h2></div>${productCards(products.slice(4))}</section>
-    <section class="section"><div class="section-head"><h2>Лучшие продавцы</h2></div><div class="grid sellers">${sellers.map((s) => `<div class="seller-card"><strong>${s[0]}</strong><span>★ ${s[1]} · ${s[2]} продаж</span><span class="status ok">${s[3]}</span></div>`).join("")}</div></section>
-    <section class="section"><div class="grid trust">${["Безопасная сделка", "Крипто-оплата", "Escrow до подтверждения", "Поддержка и споры"].map((x) => `<div class="trust-item panel"><h3>${x}</h3><p class="muted">Статусы, чат и история действий помогают разбирать заказ без потери контекста.</p></div>`).join("")}</div></section>
+    ${homeStats()}
+    ${trustBar()}
+    ${homeSection("Популярные категории", homeCategoryGrid(), `<a class="btn ghost" href="/catalog" data-link>Все категории</a>`)}
+    ${homeSection("Рекомендованные товары", homeProductGrid(homeRecommendedProducts), `<a class="btn ghost" href="/catalog" data-link>Смотреть все</a>`)}
+    ${homeSection("Новые товары", homeProductGrid(homeNewProducts))}
+    ${paymentBlock()}
+    ${homeSection("Лучшие продавцы", homeSellerGrid())}
     ${footer()}
   </main>`;
 }
