@@ -335,6 +335,24 @@ h3 {
   opacity: 0.92;
 }
 
+.home-hero-visual.mascot-hero {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(53, 255, 106, 0.24), transparent 38%),
+    radial-gradient(circle at 74% 18%, rgba(53, 255, 106, 0.16), transparent 24%),
+    linear-gradient(145deg, rgba(53, 255, 106, 0.1), transparent 48%),
+    #050a0f;
+}
+
+.home-hero-visual.mascot-hero img {
+  width: min(82%, 470px);
+  height: auto;
+  min-height: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 34px rgba(53, 255, 106, 0.22));
+}
+
 .home-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1146,6 +1164,10 @@ a.admin-tile:hover {
     min-height: 360px;
   }
 
+  .home-hero-visual.mascot-hero img {
+    min-height: 0;
+  }
+
   .sidebar {
     position: static;
   }
@@ -1219,6 +1241,11 @@ a.admin-tile:hover {
   .home-hero-visual,
   .home-hero-visual img {
     min-height: 320px;
+  }
+
+  .home-hero-visual.mascot-hero img {
+    min-height: 0;
+    width: min(86%, 360px);
   }
 
   .mobile-tabbar {
