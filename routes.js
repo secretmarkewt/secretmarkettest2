@@ -49,6 +49,7 @@ const SECMARKET_ROUTES = [
   { path: "/faq", area: "info", title: "FAQ" },
   { path: "/status-map", area: "info", title: "Карта статусов" },
   { path: "/backend-structure", area: "info", title: "Backend-ready структура" },
+  { path: "/launch-readiness", area: "info", title: "Готовность к запуску" },
   { path: "/crypto-payment-guide", area: "info", title: "Инструкция по оплате" },
   { path: "/refund-policy", area: "info", title: "Политика возвратов" },
   { path: "/seller-rules", area: "info", title: "Правила продавцов" },

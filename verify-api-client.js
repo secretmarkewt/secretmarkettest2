@@ -43,6 +43,10 @@ const { createStore } = require("./backend/repository");
 
     const health = await api.live.health();
     if (!health.ok) throw new Error("live health failed");
+    if (health.service !== "secret-market-api" || !health.version) throw new Error("live health metadata failed");
+
+    const ready = await fetch(`http://127.0.0.1:${port}/api/ready`).then((response) => response.json());
+    if (!ready.ok || ready.snapshot?.products < 1) throw new Error("live ready failed");
 
     const products = await api.live.list("products");
     if (!Array.isArray(products) || products.length < 1) throw new Error("live products failed");

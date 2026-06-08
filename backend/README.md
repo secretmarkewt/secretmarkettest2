@@ -1,14 +1,54 @@
-# SecMarket Backend Skeleton
+# Secret Market Backend
 
 This folder is the backend-ready layer for the SPA prototype.
 
 ## Run
 
 ```powershell
-node backend/server.js
+npm run start:api
 ```
 
 Default API URL: `http://127.0.0.1:4174/api/health`
+
+`GET /api/health` returns deployment metadata such as API version, environment, storage mode, CORS origins, reset availability and rate-limit settings.
+
+`GET /api/ready` returns readiness metadata for hosting checks: required collections, storage mode and collection counts. It returns `503` if a required collection is missing.
+
+The server also supports direct Node startup:
+
+```powershell
+node backend/server.js
+```
+
+When started directly, the API reads `.env` from the repository root if the file exists. Existing environment variables always win over `.env` values.
+
+## Deploy
+
+Hosting platforms usually provide `PORT` automatically. Set `HOST=0.0.0.0` for a public web service and point `SECMARKET_DB_FILE` at persistent storage.
+
+Recommended environment variables:
+
+- `HOST=0.0.0.0`
+- `PORT=<provided by host>`
+- `SECMARKET_DB_FILE=/data/secmarket-db.json`
+- `SECMARKET_ALLOWED_ORIGINS=https://penisxxxl.github.io,http://127.0.0.1:4173`
+- `SECMARKET_ALLOW_RESET=false`
+- `SECMARKET_RATE_LIMIT_MAX=240`
+- `SECMARKET_RATE_LIMIT_WINDOW_MS=60000`
+
+`render.yaml` is included as a starter Render blueprint with a persistent disk mounted at `/data`.
+
+Use `.env.example` from the repository root as the local template. Real `.env` files are ignored by git.
+
+After the API is deployed, update `config.js` in the static frontend:
+
+```js
+window.SECMARKET_CONFIG = {
+  apiBaseUrl: "https://your-api-host.example.com",
+};
+```
+
+The frontend still falls back to `http://127.0.0.1:4174` when `apiBaseUrl` is empty.
 
 ## Storage
 
@@ -21,9 +61,13 @@ The prototype API now uses a file-backed JSON store instead of only in-memory da
 
 This is still a lightweight MVP store, but orders, payments, disputes, withdrawals and moderation changes now survive server restarts.
 
+Set `SECMARKET_ALLOW_RESET=false` for any public deployment. The reset route stays enabled by default only to keep local demo development fast.
+
 ## Resources
 
 - `POST /api/auth/login`
+- `GET /api/health`
+- `GET /api/ready`
 - `GET /api/auth/session`
 - `POST /api/auth/logout`
 - `GET /api/products`
@@ -48,7 +92,7 @@ This is still a lightweight MVP store, but orders, payments, disputes, withdrawa
 - `GET /api/snapshot`
 - `POST /api/reset`
 
-The API allows CORS for local frontend development, so the static SPA can call `http://127.0.0.1:4174/api/*` directly while the frontend server runs on `4173`.
+The API allows CORS for local frontend development. By default it accepts all origins for the prototype. Set `SECMARKET_ALLOWED_ORIGINS` to a comma-separated list before public deployment, for example `https://penisxxxl.github.io,http://127.0.0.1:4173`.
 
 ## Auth Notes
 

@@ -25,7 +25,21 @@ const requiredScripts = ["data.js", "routes.js", "models.js", "api.js", "validat
     if (response.status !== 200 || !text.includes('id="app"') || !requiredScripts.every((script) => text.includes(script))) {
       throw new Error(`${route} failed static response check`);
     }
+    if (!text.includes('href="site.webmanifest"') || !text.includes('name="theme-color"')) {
+      throw new Error(`${route} failed metadata check`);
+    }
+    if (response.headers.get("x-content-type-options") !== "nosniff" || response.headers.get("x-frame-options") !== "DENY") {
+      throw new Error(`${route} failed static security header check`);
+    }
     console.log(`${route} OK`);
+  }
+  const robots = await fetch("http://127.0.0.1:4173/robots.txt");
+  if (robots.headers.get("content-type") !== "text/plain; charset=utf-8" || !(await robots.text()).includes("Disallow: /")) {
+    throw new Error("robots.txt failed static response check");
+  }
+  const manifest = await fetch("http://127.0.0.1:4173/site.webmanifest");
+  if (manifest.headers.get("content-type") !== "application/manifest+json; charset=utf-8" || (await manifest.json()).name !== "Secret Market") {
+    throw new Error("site.webmanifest failed static response check");
   }
   server.kill();
 })();

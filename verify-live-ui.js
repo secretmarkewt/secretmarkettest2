@@ -125,4 +125,16 @@ context.render();
 if (!app.innerHTML.includes("Live UI dispute")) throw new Error("live dispute detail did not render");
 if (!app.innerHTML.includes('data-live-action="resolve-dispute"')) throw new Error("live dispute resolution action did not render");
 
+context.location.pathname = "/account/settings";
+context.render();
+if (!app.innerHTML.includes("Live API") || !app.innerHTML.includes('data-api-settings-form')) {
+  throw new Error("live API settings did not render");
+}
+
+context.location.pathname = "/launch-readiness";
+context.render();
+if (!app.innerHTML.includes("MVP запуск") || !app.innerHTML.includes("Production блокеры")) {
+  throw new Error("launch readiness did not render");
+}
+
 console.log("live UI OK");

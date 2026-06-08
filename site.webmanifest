@@ -1,0 +1,17 @@
+{
+  "name": "Secret Market",
+  "short_name": "Secret Market",
+  "description": "MVP demo for digital goods, USDT payments, escrow orders and seller payouts.",
+  "start_url": "/secretmarket1/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#47d651",
+  "icons": [
+    {
+      "src": "assets/secret-market-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: secret-market-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start:api
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: SECMARKET_DB_FILE
+        value: /data/secmarket-db.json
+      - key: SECMARKET_ALLOWED_ORIGINS
+        value: https://penisxxxl.github.io,http://127.0.0.1:4173
+      - key: SECMARKET_ALLOW_RESET
+        value: false
+      - key: SECMARKET_RATE_LIMIT_MAX
+        value: 240
+      - key: SECMARKET_RATE_LIMIT_WINDOW_MS
+        value: 60000
+    disk:
+      name: secret-market-data
+      mountPath: /data
+      sizeGB: 1

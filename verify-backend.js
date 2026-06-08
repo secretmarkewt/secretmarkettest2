@@ -24,9 +24,56 @@ function authHeader(token) {
   try {
     const health = await request(port, "/api/health").then((res) => res.json());
     if (!health.ok) throw new Error("health check failed");
+    if (health.service !== "secret-market-api" || !health.version || health.storage?.persistent !== true) {
+      throw new Error("health metadata failed");
+    }
+    if (!health.resetEnabled || health.rateLimit?.max < 1) throw new Error("health settings failed");
+    const healthHeaders = await request(port, "/api/health");
+    if (healthHeaders.headers.get("cache-control") !== "no-store" || healthHeaders.headers.get("x-content-type-options") !== "nosniff") {
+      throw new Error("api security headers failed");
+    }
+    const ready = await request(port, "/api/ready");
+    const readyBody = await ready.json();
+    if (ready.status !== 200 || !readyBody.ok || readyBody.service !== "secret-market-api" || readyBody.snapshot?.products < 1) {
+      throw new Error("ready check failed");
+    }
 
-    const preflight = await request(port, "/api/products", { method: "OPTIONS" });
-    if (preflight.status !== 204 || preflight.headers.get("access-control-allow-origin") !== "*") throw new Error("cors preflight failed");
+    const resetSnapshot = await request(port, "/api/reset", { method: "POST" }).then((res) => res.json());
+    if (!resetSnapshot.products || !resetSnapshot.audit) throw new Error("reset route failed");
+
+    const previousReset = process.env.SECMARKET_ALLOW_RESET;
+    process.env.SECMARKET_ALLOW_RESET = "false";
+    const blockedReset = await request(port, "/api/reset", { method: "POST" });
+    if (blockedReset.status !== 403) throw new Error("disabled reset route failed");
+    if (previousReset === undefined) delete process.env.SECMARKET_ALLOW_RESET;
+    else process.env.SECMARKET_ALLOW_RESET = previousReset;
+
+    const previousRateMax = process.env.SECMARKET_RATE_LIMIT_MAX;
+    const previousRateWindow = process.env.SECMARKET_RATE_LIMIT_WINDOW_MS;
+    process.env.SECMARKET_RATE_LIMIT_MAX = "1";
+    process.env.SECMARKET_RATE_LIMIT_WINDOW_MS = "60000";
+    const rateLimitHeaders = { "X-Forwarded-For": "203.0.113.77" };
+    const firstLimitedClientRequest = await request(port, "/api/health", { headers: rateLimitHeaders });
+    const secondLimitedClientRequest = await request(port, "/api/health", { headers: rateLimitHeaders });
+    if (firstLimitedClientRequest.status !== 200 || secondLimitedClientRequest.status !== 429) throw new Error("rate limit failed");
+    if (previousRateMax === undefined) delete process.env.SECMARKET_RATE_LIMIT_MAX;
+    else process.env.SECMARKET_RATE_LIMIT_MAX = previousRateMax;
+    if (previousRateWindow === undefined) delete process.env.SECMARKET_RATE_LIMIT_WINDOW_MS;
+    else process.env.SECMARKET_RATE_LIMIT_WINDOW_MS = previousRateWindow;
+
+    const previousOrigins = process.env.SECMARKET_ALLOWED_ORIGINS;
+    process.env.SECMARKET_ALLOWED_ORIGINS = "https://penisxxxl.github.io,http://127.0.0.1:4173";
+    const preflight = await request(port, "/api/products", {
+      method: "OPTIONS",
+      headers: { Origin: "https://penisxxxl.github.io" },
+    });
+    if (preflight.status !== 204 || preflight.headers.get("access-control-allow-origin") !== "https://penisxxxl.github.io") throw new Error("cors preflight failed");
+    const blockedOrigin = await request(port, "/api/health", {
+      headers: { Origin: "https://example.com" },
+    });
+    if (blockedOrigin.status !== 403) throw new Error("cors blocked origin failed");
+    if (previousOrigins === undefined) delete process.env.SECMARKET_ALLOWED_ORIGINS;
+    else process.env.SECMARKET_ALLOWED_ORIGINS = previousOrigins;
 
     const products = await request(port, "/api/products").then((res) => res.json());
     if (!Array.isArray(products.items) || products.items.length < 1) throw new Error("products list failed");

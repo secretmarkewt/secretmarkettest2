@@ -1,6 +1,7 @@
 function info(path) {
   if (path === "/status-map") return statusMap();
   if (path === "/backend-structure") return backendStructure();
+  if (path === "/launch-readiness") return launchReadiness();
   const data = window.SECMARKET_DATA.infoPages[path] || ["Страница", "Раздел будет добавлен позже."];
   const rows = infoRows(path);
   return page(data[0], `<section class="panel"><p class="lead">${data[1]}</p><div class="list section">${rows.map(row).join("")}</div></section>`, "Info");
@@ -14,6 +15,43 @@ function statusMap() {
     ["Статусы вывода", ["Создан", "На проверке", "В обработке", "Отправлен", "Выполнен", "Отклонен"]],
   ];
   return page("Карта статусов", `<div class="grid admin">${groups.map(([title, rows]) => `<section class="admin-tile panel"><h2>${title}</h2><div class="list">${rows.map((item) => row(item)).join("")}</div></section>`).join("")}</div>`, "Info");
+}
+
+function readinessItem(label, ready, detail) {
+  return `<div class="list-row"><span>${label}<br><span class="muted">${detail}</span></span><span class="status ${ready ? "ok" : "wait"}">${ready ? "готово" : "нужно"}</span></div>`;
+}
+
+function launchReadiness() {
+  const apiBaseUrl = api.getApiBaseUrl();
+  const liveConnected = state.liveStatus === "connected";
+  const hasApiUrl = Boolean(apiBaseUrl && !apiBaseUrl.includes("127.0.0.1"));
+  const mvpItems = [
+    ["Frontend Pages build", true, "dist собирается через scripts/build-pages.js и публикует только статические файлы"],
+    ["CI verification", true, "GitHub Actions запускает npm run verify до Pages deploy"],
+    ["Live API contract", true, "товары, заказы, платежи, выдача, споры, выплаты и audit покрыты verify"],
+    ["API health", liveConnected, `текущий статус: ${state.liveStatus}`],
+    ["Public API URL", hasApiUrl, apiBaseUrl],
+    ["Backend safety", true, "CORS allowlist, disabled reset, rate limit и security headers добавлены"],
+  ];
+  const productionItems = [
+    ["Password auth", false, "нужны hash паролей, регистрация, восстановление и 2FA"],
+    ["Real payment watchers", false, "нужны TRC20, TON и BEP20 workers вместо mock sync"],
+    ["Production database", false, "JSON store подходит для MVP, но не для реальных денег"],
+    ["Encrypted delivery secrets", false, "автовыдачу нужно шифровать до production"],
+    ["Evidence storage", false, "нужны файлы для споров, тикетов и risk review"],
+    ["Operations", false, "нужны backup, monitoring, payout batching и refund tooling"],
+  ];
+  return page("Готовность к запуску", `<div class="two-col">
+    <section class="panel"><div class="section-head"><div><h2>MVP запуск</h2><p class="muted">Что нужно, чтобы показать рабочее демо на GitHub Pages с live backend.</p></div><span class="status ${hasApiUrl && liveConnected ? "ok" : "wait"}">${hasApiUrl && liveConnected ? "ready" : "connect API"}</span></div><div class="list section">${mvpItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></section>
+    <aside class="panel"><h2>Production блокеры</h2><div class="list section">${productionItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></aside>
+    <section class="panel section"><h2>Следующие действия</h2><div class="list">${[
+      ["1", "Закоммитить и запушить текущие изменения"],
+      ["2", "Дождаться GitHub Actions verify и Pages deploy"],
+      ["3", "Развернуть backend API через render.yaml или аналог"],
+      ["4", "Вписать публичный API URL в config.js"],
+      ["5", "Проверить checkout, оплату, выдачу, спор и вывод"],
+    ].map(([left, right]) => row(left, right)).join("")}</div></section>
+  </div>`, "Launch");
 }
 
 function backendStructure() {

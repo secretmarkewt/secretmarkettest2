@@ -89,11 +89,25 @@ function accountReviews() {
 }
 
 function accountSettings() {
+  const apiBaseUrl = api.getApiBaseUrl();
+  const authToken = api.getAuthToken();
   return page("Настройки", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Предпочтения</h2><div class="list">${[
     ["Язык", "RU"],
     ["Валюта отображения", currency],
     ["Избранных товаров", String(state.favorites.size)],
     ["Сообщений в чате", String(state.chatMessages.length)],
     ["Заказ подтвержден", state.orderConfirmed ? "да" : "нет"],
-  ].map(([left, right]) => row(left, right)).join("")}</div><div class="form-actions section"><button class="btn danger" data-reset-demo>Сбросить демо-состояние</button></div></section></div>`, "Account");
+  ].map(([left, right]) => row(left, right)).join("")}</div>
+  <section class="section"><h2>Live API</h2><div class="list">${[
+    ["Текущий адрес", apiBaseUrl],
+    ["Статус", state.liveStatus],
+    ["Последняя синхронизация", state.liveSyncedAt ? new Date(state.liveSyncedAt).toLocaleString("ru-RU") : "нет"],
+    ["Версия API", state.liveHealth?.version || "нет данных"],
+    ["Токен сессии", authToken ? "сохранен" : "нет"],
+  ].map(([left, right]) => row(left, right)).join("")}</div>
+  <form class="form-grid section" data-api-settings-form>
+    <label class="field"><span>API URL</span><input name="apiBaseUrl" value="${escapeHtml(apiBaseUrl)}" placeholder="https://secret-market-api.example.com" /></label>
+    <div class="form-actions"><button class="btn primary">Сохранить</button><button class="btn" type="button" data-api-health-check>Проверить</button><button class="btn" type="button" data-live-sync>Синхронизировать</button><button class="btn warn" type="button" data-clear-api-token>Сбросить токен</button></div>
+  </form></section>
+  <div class="form-actions section"><button class="btn danger" data-reset-demo>Сбросить демо-состояние</button></div></section></div>`, "Account");
 }

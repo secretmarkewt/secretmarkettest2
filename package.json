@@ -1,0 +1,26 @@
+{
+  "name": "secret-market",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Secret Market MVP prototype with static frontend and lightweight Node API.",
+  "scripts": {
+    "build:pages": "node scripts/build-pages.js",
+    "start": "node backend/server.js",
+    "start:api": "node backend/server.js",
+    "start:pages": "node scripts/serve-pages.js",
+    "start:web": "node server.js",
+    "verify": "node verify-env.js && node verify-backend.js && node verify-api-client.js && node verify-live-sync.js && node verify-live-ui.js && node verify-pages.js && node verify.js && node scripts/build-pages.js && node verify-dist.js",
+    "verify:backend": "node verify-backend.js",
+    "verify:env": "node verify-env.js",
+    "verify:api-client": "node verify-api-client.js",
+    "verify:build": "node scripts/build-pages.js",
+    "verify:dist": "node verify-dist.js",
+    "verify:live-ui": "node verify-live-ui.js",
+    "verify:live-sync": "node verify-live-sync.js",
+    "verify:pages": "node verify-pages.js",
+    "verify:routes": "node verify.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

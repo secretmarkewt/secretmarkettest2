@@ -1,7 +1,7 @@
 const API_STORAGE_KEY = "secmarket-mock-api-state";
 const API_BASE_URL_KEY = "secmarket-api-base-url";
 const API_AUTH_TOKEN_KEY = "secmarket-api-auth-token";
-const DEFAULT_API_BASE_URL = "http://127.0.0.1:4174";
+const DEFAULT_API_BASE_URL = (window.SECMARKET_CONFIG && window.SECMARKET_CONFIG.apiBaseUrl) || "http://127.0.0.1:4174";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));

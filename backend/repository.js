@@ -94,9 +94,26 @@ function createStore(options = {}) {
     return Object.fromEntries(Object.entries(state).map(([key, value]) => [key, value.length]));
   }
 
+  function meta() {
+    return {
+      persistent: Boolean(filePath),
+    };
+  }
+
+  function ready() {
+    const requiredCollections = ["users", "products", "orders", "payments", "audit"];
+    const missingCollections = requiredCollections.filter((collection) => !Array.isArray(state[collection]));
+    return {
+      ok: missingCollections.length === 0,
+      missingCollections,
+      storage: meta(),
+      snapshot: snapshot(),
+    };
+  }
+
   persist();
 
-  return { create, find, list, patch, reset, snapshot };
+  return { create, find, list, meta, patch, ready, reset, snapshot };
 }
 
 module.exports = { DEFAULT_DB_FILE, createStore };

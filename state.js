@@ -22,6 +22,9 @@ const state = {
     products: [],
     withdrawals: [],
   },
+  liveHealth: null,
+  liveStatus: "idle",
+  liveSyncedAt: "",
   toast: "",
 };
 
@@ -48,6 +51,9 @@ function saveState() {
     copiedAddress: state.copiedAddress,
     chatMessages: state.chatMessages,
     live: state.live,
+    liveHealth: state.liveHealth,
+    liveStatus: state.liveStatus,
+    liveSyncedAt: state.liveSyncedAt,
   };
   localStorage.setItem("secmarket-demo-state", JSON.stringify(payload));
 }
@@ -67,6 +73,9 @@ function loadState() {
       ...state.live,
       ...(payload.live && typeof payload.live === "object" ? payload.live : {}),
     };
+    state.liveHealth = payload.liveHealth || null;
+    state.liveStatus = payload.liveStatus || "idle";
+    state.liveSyncedAt = payload.liveSyncedAt || "";
   } catch {
     localStorage.removeItem("secmarket-demo-state");
   }
@@ -87,6 +96,60 @@ function upsertLiveItem(collectionName, item) {
   return item;
 }
 
+function liveCollectionsForRole(role) {
+  if (role === "admin" || role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "withdrawals"];
+  if (role === "buyer") return ["deliveries", "disputes", "ledger", "orders", "payments", "products"];
+  return ["products"];
+}
+
+async function syncLiveData(options = {}) {
+  const apiClient = window.SECMARKET_API;
+  if (!apiClient?.live) return false;
+
+  state.liveStatus = "syncing";
+  if (!options.silent) render();
+
+  try {
+    const health = await apiClient.live.health();
+    state.liveHealth = health;
+    let role = "guest";
+
+    if (apiClient.getAuthToken()) {
+      try {
+        const session = await apiClient.live.session();
+        role = session.user?.role || "guest";
+      } catch {
+        apiClient.setAuthToken("");
+      }
+    }
+
+    const results = await Promise.all(liveCollectionsForRole(role).map(async (collectionName) => {
+      try {
+        return [collectionName, await apiClient.live.list(collectionName)];
+      } catch {
+        return [collectionName, null];
+      }
+    }));
+
+    results.forEach(([collectionName, items]) => {
+      if (Array.isArray(items)) state.live[collectionName] = items;
+    });
+    state.liveStatus = "connected";
+    state.liveSyncedAt = new Date().toISOString();
+    saveState();
+    render();
+    if (options.notify) notify("Live API данные синхронизированы");
+    return true;
+  } catch (error) {
+    state.liveStatus = "offline";
+    if (!options.silent) {
+      render();
+      if (options.notify) notify(`Live API недоступен: ${error.message}`);
+    }
+    return false;
+  }
+}
+
 function resetDemoState() {
   localStorage.removeItem("secmarket-demo-state");
   currency = "USDT";
@@ -96,6 +159,9 @@ function resetDemoState() {
   state.copiedAddress = false;
   state.chatMessages = [];
   state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], products: [], withdrawals: [] };
+  state.liveHealth = null;
+  state.liveStatus = "idle";
+  state.liveSyncedAt = "";
   notify("Демо-состояние сброшено");
 }
 

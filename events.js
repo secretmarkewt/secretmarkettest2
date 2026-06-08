@@ -148,6 +148,37 @@
   document.querySelector("[data-reset-demo]")?.addEventListener("click", () => {
     resetDemoState();
   });
+  document.querySelector("[data-api-settings-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const value = new FormData(form).get("apiBaseUrl") || "";
+    const nextUrl = api.setApiBaseUrl(value);
+    notify(`API адрес сохранен: ${nextUrl}`);
+    render();
+  });
+  document.querySelector("[data-api-health-check]")?.addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    const previousText = button.textContent;
+    button.disabled = true;
+    button.textContent = "Проверка...";
+    try {
+      const health = await api.live.health();
+      notify(health.ok ? `API доступен: ${api.getApiBaseUrl()}` : "API ответил, но health не OK");
+    } catch (error) {
+      notify(`API недоступен: ${error.message}`);
+    } finally {
+      button.disabled = false;
+      button.textContent = previousText;
+    }
+  });
+  document.querySelector("[data-clear-api-token]")?.addEventListener("click", () => {
+    api.setAuthToken("");
+    notify("Live API токен сброшен");
+    render();
+  });
+  document.querySelector("[data-live-sync]")?.addEventListener("click", async () => {
+    await syncLiveData({ notify: true });
+  });
   document.querySelectorAll("[data-step]").forEach((button) => button.addEventListener("click", () => {
     activeStep = Number(button.dataset.step);
     render();
