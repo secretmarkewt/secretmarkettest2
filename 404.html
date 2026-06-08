@@ -3,32 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Secret Market - маркетплейс цифровых товаров</title>
-    <meta name="description" content="Secret Market MVP demo for digital goods, USDT payments, escrow orders and seller payouts." />
-    <meta name="theme-color" content="#47d651" />
-    <link rel="manifest" href="site.webmanifest" />
-    <link rel="stylesheet" href="styles.css" />
+    <title>404 - Secret Market</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#08c400" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #070216;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .not-found {
+        position: relative;
+        width: min(100vw, 177.78vh);
+        aspect-ratio: 16 / 9;
+        background: url("assets/404-secret-market.jpg") center / cover no-repeat;
+      }
+
+      .retry-link {
+        position: absolute;
+        top: 7.8%;
+        left: 39.3%;
+        width: 21.8%;
+        height: 9.7%;
+        border-radius: 16px;
+        text-indent: -9999px;
+      }
+
+      .retry-link:focus-visible {
+        outline: 4px solid #ffffff;
+        outline-offset: 6px;
+      }
+
+      @media (max-aspect-ratio: 16 / 9) {
+        .not-found {
+          width: 100vw;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <script src="data.js"></script>
-    <script src="config.js"></script>
-    <script src="routes.js"></script>
-    <script src="models.js"></script>
-    <script src="api.js"></script>
-    <script src="validation.js"></script>
-    <script src="session.js"></script>
-    <script src="ui.js"></script>
-    <script src="state.js"></script>
-    <script src="selectors.js"></script>
-    <script src="renderers/catalog.js"></script>
-    <script src="renderers/account.js"></script>
-    <script src="renderers/seller.js"></script>
-    <script src="renderers/admin.js"></script>
-    <script src="renderers/info.js"></script>
-    <script src="renderers/support.js"></script>
-    <script src="router.js"></script>
-    <script src="events.js"></script>
-    <script src="app.js"></script>
+    <main class="not-found" aria-label="404 Secret Market">
+      <a class="retry-link" href="https://penisxxxl.github.io/secretmarket1/">Попробовать еще раз</a>
+    </main>
   </body>
 </html>
