@@ -61,6 +61,8 @@ This is still a lightweight MVP store, but orders, payments, disputes, withdrawa
 
 Set `SECMARKET_ALLOW_RESET=false` for any public deployment. The reset route stays enabled by default only to keep local demo development fast.
 
+When `NODE_ENV=production`, reset is disabled by default even if `SECMARKET_ALLOW_RESET` is missing. Keeping `SECMARKET_ALLOW_RESET=false` in the host environment still makes the public setting explicit in `GET /api/health`.
+
 ## Resources
 
 - `POST /api/auth/login`

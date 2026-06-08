@@ -80,6 +80,8 @@ GitHub Pages deploys from `dist/` after the verification job succeeds.
 
 Use `.env.example` as the local template. Keep real `.env` files out of git.
 
+When `NODE_ENV=production`, `/api/reset` is disabled by default even if `SECMARKET_ALLOW_RESET` is not set. Keep `SECMARKET_ALLOW_RESET=false` in public host settings so the intended state is visible in `/api/health`.
+
 After the API is deployed, add a GitHub repository variable named `SECMARKET_PUBLIC_API_URL` with the public API origin, for example `https://secret-market-api.onrender.com`. The Pages workflow writes that value into `dist/config.js` during deployment. Local builds keep `apiBaseUrl` empty and fall back to `http://127.0.0.1:4174`.
 
 ## Current Launch State

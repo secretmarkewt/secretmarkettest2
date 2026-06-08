@@ -48,6 +48,19 @@ function authHeader(token) {
     if (previousReset === undefined) delete process.env.SECMARKET_ALLOW_RESET;
     else process.env.SECMARKET_ALLOW_RESET = previousReset;
 
+    const previousNodeEnv = process.env.NODE_ENV;
+    delete process.env.SECMARKET_ALLOW_RESET;
+    process.env.NODE_ENV = "production";
+    const productionDefaultReset = await request(port, "/api/reset", { method: "POST" });
+    if (productionDefaultReset.status !== 403) throw new Error("production reset default failed");
+    process.env.SECMARKET_ALLOW_RESET = "true";
+    const productionExplicitReset = await request(port, "/api/reset", { method: "POST" });
+    if (productionExplicitReset.status !== 200) throw new Error("production explicit reset failed");
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnv;
+    if (previousReset === undefined) delete process.env.SECMARKET_ALLOW_RESET;
+    else process.env.SECMARKET_ALLOW_RESET = previousReset;
+
     const previousRateMax = process.env.SECMARKET_RATE_LIMIT_MAX;
     const previousRateWindow = process.env.SECMARKET_RATE_LIMIT_WINDOW_MS;
     process.env.SECMARKET_RATE_LIMIT_MAX = "1";

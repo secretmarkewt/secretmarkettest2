@@ -24,7 +24,10 @@ function originAllowed(req) {
 }
 
 function resetAllowed() {
-  return String(process.env.SECMARKET_ALLOW_RESET || "true").toLowerCase() !== "false";
+  if (process.env.SECMARKET_ALLOW_RESET !== undefined) {
+    return String(process.env.SECMARKET_ALLOW_RESET).toLowerCase() !== "false";
+  }
+  return String(process.env.NODE_ENV || "development").toLowerCase() !== "production";
 }
 
 function rateLimitSettings() {
