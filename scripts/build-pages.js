@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { writePublicConfig } = require("./public-config");
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -59,6 +60,7 @@ fs.mkdirSync(dist, { recursive: true });
 
 files.forEach(copyFile);
 directories.forEach(copyDirectory);
+const publicApiUrl = writePublicConfig(path.join(dist, "config.js"));
 
 const forbidden = ["backend", ".github", "data", "scripts", "verify.js", "package.json", "render.yaml"];
 const leaked = forbidden.filter((relativePath) => fs.existsSync(path.join(dist, relativePath)));
@@ -73,4 +75,4 @@ if (!fs.readFileSync(path.join(dist, "404.html"), "utf8").includes("https://peni
 }
 if (!fs.existsSync(path.join(dist, "assets", "404-secret-market.jpg"))) throw new Error("Pages build missed 404 image");
 
-console.log(`pages build OK: ${dist}`);
+console.log(`pages build OK: ${dist}${publicApiUrl ? ` with API ${publicApiUrl}` : ""}`);

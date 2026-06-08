@@ -48,6 +48,8 @@ jobs:
           node-version: 20
 
       - name: Build Pages artifact
+        env:
+          SECMARKET_PUBLIC_API_URL: ${{ vars.SECMARKET_PUBLIC_API_URL }}
         run: npm run build:pages
 
       - name: Upload artifact

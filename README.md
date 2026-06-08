@@ -26,7 +26,7 @@ npm run start:api
 
 Default API health URL: `http://127.0.0.1:4174/api/health`
 
-The frontend API URL can be changed in `/account/settings` or by editing `config.js`.
+The frontend API URL can be changed in `/account/settings`. GitHub Pages builds can inject a public API URL through the `SECMARKET_PUBLIC_API_URL` repository variable.
 
 ## Verification
 
@@ -48,6 +48,7 @@ npm run verify:live-sync
 npm run verify:live-ui
 npm run verify:pages
 npm run verify:routes
+npm run verify:public-config
 npm run verify:build
 npm run verify:dist
 ```
@@ -78,7 +79,7 @@ GitHub Pages deploys from `dist/` after the verification job succeeds.
 
 Use `.env.example` as the local template. Keep real `.env` files out of git.
 
-After the API is deployed, set `window.SECMARKET_CONFIG.apiBaseUrl` in `config.js` to the public API URL, then rebuild and push the Pages artifact through GitHub Actions.
+After the API is deployed, add a GitHub repository variable named `SECMARKET_PUBLIC_API_URL` with the public API origin, for example `https://secret-market-api.onrender.com`. The Pages workflow writes that value into `dist/config.js` during deployment. Local builds keep `apiBaseUrl` empty and fall back to `http://127.0.0.1:4174`.
 
 ## Current Launch State
 
@@ -90,6 +91,7 @@ Ready as a public MVP demo:
 - File-backed JSON store for MVP persistence.
 - CORS allowlist, reset protection, rate limiting and basic security headers.
 - CI verification before Pages deployment.
+- Pages deploy can inject the public API URL from a GitHub repository variable.
 
 Still needed before real-money production:
 

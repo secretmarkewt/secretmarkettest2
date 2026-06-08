@@ -9,7 +9,7 @@
     "start:api": "node backend/server.js",
     "start:pages": "node scripts/serve-pages.js",
     "start:web": "node server.js",
-    "verify": "node verify-env.js && node verify-passwords.js && node verify-backend.js && node verify-api-client.js && node verify-live-sync.js && node verify-live-ui.js && node verify-pages.js && node verify.js && node scripts/build-pages.js && node verify-dist.js && node verify-404.js",
+    "verify": "node verify-env.js && node verify-passwords.js && node verify-public-config.js && node verify-backend.js && node verify-api-client.js && node verify-live-sync.js && node verify-live-ui.js && node verify-pages.js && node verify.js && node scripts/build-pages.js && node verify-dist.js && node verify-404.js",
     "verify:404": "node verify-404.js",
     "verify:backend": "node verify-backend.js",
     "verify:env": "node verify-env.js",
@@ -20,6 +20,7 @@
     "verify:live-sync": "node verify-live-sync.js",
     "verify:pages": "node verify-pages.js",
     "verify:passwords": "node verify-passwords.js",
+    "verify:public-config": "node verify-public-config.js",
     "verify:routes": "node verify.js"
   },
   "engines": {

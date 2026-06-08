@@ -40,15 +40,13 @@ Recommended environment variables:
 
 Use `.env.example` from the repository root as the local template. Real `.env` files are ignored by git.
 
-After the API is deployed, update `config.js` in the static frontend:
+After the API is deployed, add a GitHub repository variable named `SECMARKET_PUBLIC_API_URL`:
 
-```js
-window.SECMARKET_CONFIG = {
-  apiBaseUrl: "https://your-api-host.example.com",
-};
+```text
+SECMARKET_PUBLIC_API_URL=https://your-api-host.example.com
 ```
 
-The frontend still falls back to `http://127.0.0.1:4174` when `apiBaseUrl` is empty.
+The Pages workflow writes that value into `dist/config.js`. The frontend still falls back to `http://127.0.0.1:4174` when `apiBaseUrl` is empty.
 
 ## Storage
 
