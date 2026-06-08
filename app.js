@@ -88,9 +88,17 @@ function auth() {
     </section>
     <aside class="panel">
       <h2>Создать аккаунт</h2>
-      <div class="form-grid">${field("Никнейм", "input", "Artem")}${field("Email", "input", "new@example.com")}${field("Telegram", "input", "@username")}${field("Роль", "select", ["Покупатель", "Продавец"])}</div>
-      <p class="muted section">Для MVP достаточно email, Telegram и роли. Кошелек продавца добавляется в кабинете перед выплатами.</p>
-      <a class="btn primary" href="/account" data-link>Зарегистрироваться</a>
+      <form data-register-form>
+        <div class="form-grid">
+          <label class="field"><span>Никнейм</span><input name="name" value="Artem" /></label>
+          <label class="field"><span>Email</span><input name="email" type="email" value="new@example.com" /></label>
+          <label class="field"><span>Пароль</span><input name="password" type="password" value="password123" /></label>
+          <label class="field"><span>Telegram</span><input name="telegram" value="@username" /></label>
+          <label class="field"><span>Роль</span><select name="role"><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></label>
+        </div>
+        <p class="muted section">Пароль отправляется только в API по HTTPS, сразу хешируется и не передается в Telegram.</p>
+        <button class="btn primary section" type="submit">Зарегистрироваться</button>
+      </form>
     </aside>
   </div>`, "Auth");
 }

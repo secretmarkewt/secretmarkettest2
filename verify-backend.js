@@ -119,6 +119,42 @@ function authHeader(token) {
     const products = await request(port, "/api/products").then((res) => res.json());
     if (!Array.isArray(products.items) || products.items.length < 1) throw new Error("products list failed");
 
+    const previousTelegramToken = process.env.SECMARKET_TELEGRAM_BOT_TOKEN;
+    delete process.env.SECMARKET_TELEGRAM_BOT_TOKEN;
+    const registered = await request(port, "/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "LaunchBuyer",
+        email: "launch.buyer@example.com",
+        password: "safe-password-123",
+        telegram: "@launch_buyer",
+        role: "buyer",
+      }),
+    }).then((res) => res.json());
+    if (!registered.token || registered.user?.email !== "launch.buyer@example.com" || registered.user?.passwordHash) {
+      throw new Error("auth register failed");
+    }
+    if (registered.registrationNotice?.enabled !== false || registered.registrationNotice?.sent !== false) {
+      throw new Error("disabled telegram registration notice failed");
+    }
+    const duplicateRegister = await request(port, "/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name: "LaunchBuyer", email: "launch.buyer@example.com", password: "safe-password-123", telegram: "@launch_buyer", role: "buyer" }),
+    });
+    if (duplicateRegister.status !== 409) throw new Error("duplicate register guard failed");
+    const invalidRegister = await request(port, "/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name: "X", email: "bad", password: "short", telegram: "@bad", role: "admin" }),
+    });
+    if (invalidRegister.status !== 422) throw new Error("invalid register guard failed");
+    const registeredLogin = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123" }),
+    }).then((res) => res.json());
+    if (!registeredLogin.token || registeredLogin.user?.id !== registered.user.id) throw new Error("registered user login failed");
+    if (previousTelegramToken === undefined) delete process.env.SECMARKET_TELEGRAM_BOT_TOKEN;
+    else process.env.SECMARKET_TELEGRAM_BOT_TOKEN = previousTelegramToken;
+
     const rejectedLogin = await request(port, "/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email: "buyer@example.com", role: "buyer", password: "wrong" }),

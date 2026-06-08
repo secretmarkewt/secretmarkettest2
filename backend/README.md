@@ -68,6 +68,7 @@ In production, `GET /api/ready` also reports `deploymentIssues` and blocks readi
 ## Resources
 
 - `POST /api/auth/login`
+- `POST /api/auth/register`
 - `GET /api/health`
 - `GET /api/ready`
 - `GET /api/auth/session`
@@ -99,6 +100,8 @@ The API allows CORS for local frontend development. By default it accepts all or
 ## Auth Notes
 
 Auth is demo-level but now password-gated: `POST /api/auth/login` accepts an active demo user email, role and password, verifies the stored PBKDF2 hash, then returns a bearer token stored in the JSON database. Demo users use `password` as the password. Existing local JSON databases without `passwordHash` remain accepted so old demo data is not locked out.
+
+`POST /api/auth/register` accepts nickname, email, password, Telegram username and role (`buyer` or `seller`). The backend hashes the password immediately and never sends the plaintext password to Telegram. Telegram registration notifications use `SECMARKET_TELEGRAM_BOT_TOKEN` and `SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID`; the default chat id is `7391093210`.
 
 ## Role Guards
 

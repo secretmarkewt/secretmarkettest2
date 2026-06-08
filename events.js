@@ -44,6 +44,26 @@
     notify("Вы вышли из демо-сессии");
     go("/");
   });
+  document.querySelector("[data-register-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      telegram: formData.get("telegram"),
+      role: formData.get("role"),
+    };
+    try {
+      const session = await api.live.register(payload);
+      sessionApi.loginAs(session.user.role);
+      notify(session.registrationNotice?.sent ? "Регистрация создана и отправлена в Telegram" : "Регистрация создана, Telegram уведомление не настроено");
+      go(session.user.role === "seller" ? "/seller" : "/account");
+    } catch (error) {
+      notify(`Регистрация не выполнена: ${error.message}`);
+    }
+  });
   document.querySelectorAll("[data-filter]").forEach((control) => {
     control.addEventListener("change", (event) => {
       const key = event.target.dataset.filter;

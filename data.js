@@ -120,6 +120,7 @@ const SECMARKET_DATA = {
   ],
   apiEndpoints: [
     ["POST /api/auth/login", "demo-вход по email и роли, выдача session token"],
+    ["POST /api/auth/register", "регистрация с hash пароля и безопасным Telegram-уведомлением"],
     ["GET /api/auth/session", "проверка текущего Bearer token"],
     ["POST /api/auth/logout", "отзыв активной сессии"],
     ["GET /api/products", "каталог, фильтры, категории"],

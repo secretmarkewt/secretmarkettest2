@@ -77,6 +77,8 @@ GitHub Pages deploys from `dist/` after the verification job succeeds.
 - `SECMARKET_ALLOW_RESET=false`
 - `SECMARKET_RATE_LIMIT_MAX=240`
 - `SECMARKET_RATE_LIMIT_WINDOW_MS=60000`
+- `SECMARKET_TELEGRAM_BOT_TOKEN=<secret bot token>`
+- `SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID=7391093210`
 
 Use `.env.example` as the local template. Keep real `.env` files out of git.
 
@@ -93,6 +95,7 @@ Ready as a public MVP demo:
 - Static GitHub Pages frontend.
 - Live API contract for products, orders, payments, delivery, disputes, withdrawals, audit and auth sessions.
 - Password-gated demo auth with PBKDF2 hashes and bearer sessions.
+- Registration flow with safe Telegram notifications that never include plaintext passwords.
 - File-backed JSON store for MVP persistence.
 - CORS allowlist, reset protection, rate limiting and basic security headers.
 - CI verification before Pages deployment.

@@ -51,6 +51,17 @@ const { createStore } = require("./backend/repository");
     const products = await api.live.list("products");
     if (!Array.isArray(products) || products.length < 1) throw new Error("live products failed");
 
+    const registered = await api.live.register({
+      name: "ClientBuyer",
+      email: "client.buyer@example.com",
+      password: "client-password-123",
+      telegram: "@client_buyer",
+      role: "buyer",
+    });
+    if (!registered.token || registered.user?.email !== "client.buyer@example.com" || registered.user?.passwordHash) {
+      throw new Error("live register failed");
+    }
+
     const login = await api.live.login("seller@example.com", "seller");
     if (!login.token || api.getAuthToken() !== login.token) throw new Error("live login token failed");
 

@@ -129,6 +129,15 @@ async function requestLive(path, options = {}) {
 }
 
 const live = {
+  async register(payload) {
+    const session = await requestLive("/api/auth/register", {
+      method: "POST",
+      token: "",
+      body: JSON.stringify(payload),
+    });
+    setAuthToken(session.token);
+    return session;
+  },
   async login(email, role = "buyer", password = "password") {
     const session = await requestLive("/api/auth/login", {
       method: "POST",

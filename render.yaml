@@ -18,6 +18,10 @@ services:
         value: 240
       - key: SECMARKET_RATE_LIMIT_WINDOW_MS
         value: 60000
+      - key: SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID
+        value: 7391093210
+      - key: SECMARKET_TELEGRAM_BOT_TOKEN
+        sync: false
     disk:
       name: secret-market-data
       mountPath: /data

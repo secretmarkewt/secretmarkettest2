@@ -5,7 +5,8 @@ const { resourceModels } = require("./models");
 const { syncPayment } = require("./paymentWatcher");
 const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
-const { verifyPassword } = require("./passwords");
+const { hashPassword, verifyPassword } = require("./passwords");
+const { notifyRegistration } = require("./telegramNotifier");
 const packageInfo = require("../package.json");
 
 const rateBuckets = new Map();
@@ -265,6 +266,62 @@ async function readBody(req) {
 }
 
 async function handleAuth(req, res, store, id) {
+  if (id === "register" && req.method === "POST") {
+    const payload = await readBody(req);
+    const name = String(payload.name || payload.nickname || "").trim();
+    const email = String(payload.email || "").trim().toLowerCase();
+    const password = String(payload.password || "");
+    const telegram = String(payload.telegram || "").trim();
+    const role = String(payload.role || "buyer").trim().toLowerCase();
+
+    const errors = [];
+    if (name.length < 2) errors.push("name_required");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("email_invalid");
+    if (password.length < 8) errors.push("password_min_8");
+    if (!["buyer", "seller"].includes(role)) errors.push("role_invalid");
+    if (errors.length) return json(req, res, 422, { errors });
+
+    const existing = store.list("users").find((candidate) => (
+      String(candidate.email || "").toLowerCase() === email &&
+      String(candidate.role || "").toLowerCase() === role
+    ));
+    if (existing) return json(req, res, 409, { error: "user_already_exists" });
+
+    const user = store.create("users", {
+      id: `usr-${role}-${Date.now()}`,
+      role,
+      name,
+      email,
+      telegram,
+      passwordHash: hashPassword(password),
+      status: "active",
+      _actorId: "registration",
+    });
+
+    let notification = { enabled: false, sent: false };
+    try {
+      notification = await notifyRegistration(user);
+    } catch (error) {
+      notification = { enabled: true, sent: false, error: error.message };
+    }
+
+    const session = store.create("sessions", {
+      userId: user.id,
+      role: user.role,
+      token: authToken(),
+      status: "active",
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(),
+      _actorId: user.id,
+    });
+
+    return json(req, res, 201, {
+      token: session.token,
+      user: publicUser(user),
+      expiresAt: session.expiresAt,
+      registrationNotice: notification,
+    });
+  }
+
   if (id === "login" && req.method === "POST") {
     const payload = await readBody(req);
     const email = String(payload.email || "").trim().toLowerCase();
