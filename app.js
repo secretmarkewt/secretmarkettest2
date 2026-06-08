@@ -32,7 +32,7 @@ function header() {
   return `
     <header class="topbar">
       <a class="brand" href="/" data-link><img class="brand-logo" src="assets/secret-market-logo.png" alt="Secret Market" /><span>Secret Market</span></a>
-      <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Поиск товаров..." /><button class="icon-btn" title="Искать">↵</button></form>
+      <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Поиск товаров..." /><button class="icon-btn search-submit" title="Искать" aria-label="Искать">⌕</button></form>
       <nav class="nav">
         ${[
           ["/catalog", "Каталог"],

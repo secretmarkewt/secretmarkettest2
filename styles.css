@@ -107,6 +107,22 @@ a {
   color: var(--text);
 }
 
+.search-submit {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: rgba(141, 154, 168, 0.78);
+  font-size: 15px;
+}
+
+.search-submit:hover {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--accent);
+}
+
 .nav {
   display: flex;
   align-items: center;
