@@ -47,6 +47,10 @@ if (context.currentPath() !== "/catalog/minecraft") {
   throw new Error(`GitHub Pages path strip failed: ${context.currentPath()}`);
 }
 
+if (context.assetPath("assets/secret-market-logo.png") !== "/secretmarket1/assets/secret-market-logo.png") {
+  throw new Error(`GitHub Pages asset path failed: ${context.assetPath("assets/secret-market-logo.png")}`);
+}
+
 context.go("/catalog/roblox");
 
 if (pushes[0] !== "/secretmarket1/catalog/roblox") {

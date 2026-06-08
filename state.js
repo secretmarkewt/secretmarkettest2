@@ -32,6 +32,12 @@ window.SECMARKET_STATE = state;
 
 loadState();
 
+function assetPath(relativePath) {
+  const cleanPath = String(relativePath || "").replace(/^\/+/, "");
+  if (location.protocol === "file:") return cleanPath;
+  return `${APP_BASE_PATH}/${cleanPath}`.replace(/\/{2,}/g, "/");
+}
+
 function notify(message) {
   state.toast = message;
   render();
