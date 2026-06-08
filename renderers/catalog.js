@@ -138,7 +138,7 @@ function home() {
         <p class="lead">Покупайте ключи, аккаунты, игровую валюту, подписки и услуги с оплатой в USDT. Деньги удерживаются до подтверждения заказа, а чат и спор всегда привязаны к сделке.</p>
         <div class="actions"><a class="btn primary" href="/catalog" data-link>Открыть каталог</a><a class="btn ghost" href="/seller/products/create" data-link>Стать продавцом</a></div>
       </div>
-      <div class="home-hero-visual"><img src="assets/market-hero.png" alt="Зеленый маскот Secret Market с crypto-атмосферой" /><div class="hero-token">USDT</div></div>
+      <div class="home-hero-visual"><img src="assets/market-hero.png" alt="Зеленый маскот Secret Market с crypto-атмосферой" /></div>
     </section>
     ${homeStats()}
     ${trustBar()}
