@@ -14,16 +14,18 @@ function productCards(list = products) {
 
   return `<div class="grid products">${list.map((p) => `
     <article class="product-card" style="--thumb-a:${p.colors[0]};--thumb-b:${p.colors[1]}">
-      <button class="favorite-btn ${state.favorites.has(p.id) ? "active" : ""}" data-favorite="${p.id}" title="В избранное">★</button>
+      <button class="favorite-btn ${state.favorites.has(p.id) ? "active" : ""}" data-favorite="${p.id}" title="В избранное" aria-label="В избранное">☆</button>
       <a class="product-link" href="/product/${p.id}" data-link>
-      <div class="product-thumb">${p.mark}</div>
-      <div class="product-body">
-        <span class="badge">${p.cat} · ${p.type}</span>
-        <strong>${p.title}</strong>
-        <span class="price">${money(p.price)}</span>
-        <span class="meta">★ ${p.rating} · ${p.sales} продаж · ${p.stock} шт.</span>
-      </div>
+        <div class="product-thumb"><span>${p.mark}</span></div>
+        <div class="product-body">
+          <span class="badge">${p.type}</span>
+          <strong>${p.title}</strong>
+          <span class="product-seller">${p.seller} <span>★ ${p.rating}</span></span>
+          <span class="meta">${p.sales} продаж · ${p.stock} шт.</span>
+          <span class="price">${money(p.price)}</span>
+        </div>
       </a>
+      <a class="btn primary product-buy" href="/product/${p.id}" data-link>Купить</a>
     </article>`).join("")}</div>`;
 }
 
@@ -150,11 +152,24 @@ function catalog(category = "") {
   const subs = subcategories[category] || [];
   return `${header()}<main class="main">
     <div class="layout">
-      <aside class="sidebar"><h3>Категории</h3>${["Все категории", ...categories.map((c) => c[0])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все категории") ? "active" : ""}" href="${x === "Все категории" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>›</span></a>`).join("")}<section class="section"><h3>Игры</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>›</span></a>`).join("")}</section></aside>
-      <section>
-        <p class="eyebrow">Фильтры, сортировка, наличие</p><h1>${title}</h1>
-        ${categoryInfo ? `<section class="section"><p class="lead">${categoryInfo.description}</p><div class="grid trust section">${subs.map((name) => `<a class="trust-item panel" href="/catalog/${category}" data-link><h3>${name}</h3><p class="muted">Подкатегория ${categoryInfo.title}</p></a>`).join("")}</div></section>` : ""}
-        ${subs.length ? `<div class="chips section">${subs.map((name) => `<a class="chip" href="/catalog/${category}" data-link>${name}</a>`).join("")}</div>` : ""}
+      <aside class="sidebar catalog-sidebar">
+        <h3>Категории</h3>
+        ${["Все товары", ...homeCategories.map((item) => item[1])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все товары") ? "active" : ""}" href="${x === "Все товары" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>›</span></a>`).join("")}
+        <section class="section"><h3>Игры и сервисы</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>›</span></a>`).join("")}</section>
+      </aside>
+      <section class="catalog-content">
+        <div class="catalog-head">
+          <div>
+            <p class="eyebrow">Каталог</p>
+            <h1>${title}</h1>
+            <p class="lead">${categoryInfo ? categoryInfo.description : "Аккаунты, ключи, игровая валюта, подписки, софт и услуги от проверенных продавцов."}</p>
+          </div>
+          <div class="catalog-summary">
+            <strong>${list.length}</strong>
+            <span>товаров найдено</span>
+          </div>
+        </div>
+        ${subs.length ? `<div class="chips catalog-chips">${subs.map((name) => `<a class="chip" href="/catalog/${category}" data-link>${name}</a>`).join("")}</div>` : ""}
         <details class="panel filters-panel" ${isCompactViewport() ? "" : "open"}>
           <summary>Фильтры и сортировка</summary>
           <div class="filter-grid">
@@ -170,7 +185,7 @@ function catalog(category = "") {
           </div>
         </details>
         <section class="section">${productCards(list)}</section>
-        <section class="section panel"><h2>FAQ по категории</h2><div class="list">${[
+        <section class="section panel catalog-info"><h2>FAQ по категории</h2><div class="list">${[
           ...(categoryInfo?.faq || []),
           "Проверяйте сеть оплаты, тип выдачи, регион и условия получения перед оформлением заказа.",
           "Если товар не получен или не работает, открывайте спор со страницы заказа.",
@@ -184,23 +199,42 @@ function product(id = 12345) {
   const p = productById(id);
   return `${header()}<main class="main">
     <div class="product-detail">
-      <div class="detail-media">${p.mark}</div>
-      <section class="panel">
-        <span class="badge">${p.cat} · ${p.type}</span><h1>${p.title}</h1>
-        <p class="price">${money(p.price)} <span class="muted">≈ $${p.usd.toFixed(2)}</span></p>
-        <div class="grid metrics">
-          <div class="metric panel"><strong>${p.stock}</strong><span>в наличии</span></div>
-          <div class="metric panel"><strong>5 мин</strong><span>выдача</span></div>
-          <div class="metric panel"><strong>${p.rating}</strong><span>рейтинг</span></div>
-          <div class="metric panel"><strong>${p.sales}</strong><span>продаж</span></div>
+      <section class="product-main panel">
+        <div class="detail-media" style="--thumb-a:${p.colors[0]};--thumb-b:${p.colors[1]}"><span>${p.mark}</span></div>
+        <div class="product-main-copy">
+          <span class="badge">${p.cat} · ${p.type}</span>
+          <h1>${p.title}</h1>
+          <p class="lead">Проверенный цифровой товар с историей продаж, рейтингом продавца и поддержкой арбитража внутри заказа.</p>
+          <div class="grid metrics product-metrics">
+            <div class="metric"><strong>${p.stock}</strong><span>в наличии</span></div>
+            <div class="metric"><strong>5 мин</strong><span>типовая выдача</span></div>
+            <div class="metric"><strong>${p.rating}</strong><span>рейтинг</span></div>
+            <div class="metric"><strong>${p.sales}</strong><span>продаж</span></div>
+          </div>
         </div>
-        <div class="product-actions section"><a class="btn primary" href="/checkout" data-link>Купить</a><a class="btn" href="/chats" data-link>Написать продавцу</a><a class="status ok" href="/seller/pixeltrade" data-link>Проверенный продавец: ${p.seller}</a></div>
-        <section class="section"><h2>Описание</h2><p class="muted">Покупатель получает код пополнения и короткую инструкцию сразу после подтверждения оплаты. Для ручных заказов открывается чат с продавцом.</p></section>
-        <section class="section"><h2>Условия получения</h2><div class="list">${["Оплата только выбранной монетой и сетью", "Автовыдача после подтверждений сети", "Покупатель подтверждает получение", "Спор доступен со страницы заказа"].map(row).join("")}</div></section>
-        <section class="section"><h2>Что получает покупатель</h2><div class="list">${["Код или инструкция для получения товара", "Срок проверки после выдачи: 24 часа", "Чат с продавцом по этому заказу", "История действий и платежа в заказе"].map(row).join("")}</div></section>
-        <section class="section"><h2>Важные предупреждения</h2><div class="list">${["Не отправляйте оплату в другой сети", "Не закрывайте заказ до проверки товара", "Не передавайте продавцу лишние данные аккаунта", "Сохраняйте переписку внутри чата заказа"].map((x) => row(x, "важно")).join("")}</div></section>
       </section>
+      <aside class="buy-box panel">
+        <span class="muted">Цена</span>
+        <strong class="buy-price">${money(p.price)}</strong>
+        <span class="muted">≈ $${p.usd.toFixed(2)}</span>
+        <a class="btn primary" href="/checkout" data-link>Купить</a>
+        <a class="btn" href="/chats" data-link>Написать продавцу</a>
+        <div class="seller-mini">
+          <div class="seller-avatar">${p.seller.slice(0, 2).toUpperCase()}</div>
+          <div>
+            <strong>${p.seller}</strong>
+            <span>★ ${p.rating} · ${p.sales} продаж</span>
+          </div>
+        </div>
+        <div class="list">
+          ${["Гарантия сделки", "Арбитраж по заказу", "Чат с продавцом", "Безопасная выдача"].map(row).join("")}
+        </div>
+      </aside>
     </div>
+    <section class="product-info-grid section">
+      <article class="panel"><h2>Описание</h2><p class="muted">Покупатель получает код, аккаунт или инструкцию после подтверждения оплаты. Для ручных заказов открывается чат с продавцом, все действия остаются в истории заказа.</p></article>
+      <article class="panel"><h2>Условия получения</h2><div class="list">${["Проверьте регион и тип товара до оплаты", "Автовыдача доступна после подтверждения заказа", "Покупатель подтверждает получение", "Спор доступен со страницы заказа"].map(row).join("")}</div></article>
+    </section>
     <section class="section"><div class="section-head"><h2>Отзывы</h2></div><div class="grid sellers">${[
       ["Быстрая выдача, код подошел", "5.0"],
       ["Продавец ответил в чате за пару минут", "4.9"],
