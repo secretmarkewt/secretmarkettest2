@@ -89,8 +89,11 @@ if (!app.innerHTML.includes('src="/secretmarket1/assets/secret-market-logo.png"'
 
 context.location.pathname = "/secretmarket1/";
 context.render();
-if (!app.innerHTML.includes('src="/secretmarket1/assets/hero-mascot.png"')) {
-  throw new Error("home hero asset path failed");
+if (!app.innerHTML.includes('class="market-intro"')) {
+  throw new Error("home marketplace intro failed");
+}
+if (app.innerHTML.includes("hero-mascot.png") || app.innerHTML.includes("home-hero")) {
+  throw new Error("legacy home hero should not render");
 }
 
 console.log("github pages assets OK");

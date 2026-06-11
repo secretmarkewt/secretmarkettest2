@@ -28,32 +28,21 @@ function productCards(list = products) {
 }
 
 const homeCategories = [
-  ["IG", "Игровая валюта", "Robux, VP, UC и донат для популярных игр"],
-  ["AC", "Аккаунты", "Игровые и сервисные аккаунты с проверкой"],
-  ["KY", "Ключи", "Steam, Minecraft, Xbox, PlayStation и подписки"],
-  ["SB", "Подписки", "Telegram, Discord, Spotify и цифровые сервисы"],
-  ["UP", "Пополнение", "Баланс, подарочные карты и быстрые платежи"],
-  ["SK", "Скины", "Инвентарь, предметы и косметика"],
-  ["SV", "Услуги", "Буст, настройка, помощь и ручная выдача"],
-  ["OT", "Другое", "Редкие цифровые товары и кастомные офферы"],
+  ["AC", "Аккаунты", "Игровые и сервисные аккаунты"],
+  ["KY", "Ключи", "Steam, Xbox, PlayStation"],
+  ["IG", "Игровая валюта", "Robux, VP, UC, донат"],
+  ["SB", "Подписки", "Telegram, Discord, Spotify"],
+  ["SF", "Софт", "Лицензии, утилиты, VPN"],
+  ["SV", "Услуги", "Буст, настройка, помощь"],
 ];
 
 const homeRecommendedProducts = [
-  ["RB", "Roblox 10 000, выдача 5 минут", "Автовыдача", "84.90", "4.98", "8 420", ["#133d24", "#35ff6a"]],
-  ["ST", "Steam Gift Card 50 USDT", "Автовыдача", "50.00", "4.95", "6 104", ["#132b3a", "#35ff6a"]],
-  ["TG", "Telegram Premium 12 месяцев", "Ручная", "31.50", "4.88", "902", ["#122b38", "#20c8ff"]],
-  ["MC", "Minecraft Java аккаунт", "Автовыдача", "12.80", "4.92", "1 840", ["#1c3b21", "#35ff6a"]],
-  ["VP", "Valorant VP регион EU", "Ручная", "22.40", "4.96", "1 120", ["#3a1420", "#35ff6a"]],
-  ["DN", "Discord Nitro 1 месяц", "Автовыдача", "7.20", "4.91", "3 240", ["#1f2344", "#35ff6a"]],
-];
-
-const homeNewProducts = [
-  ["UC", "PUBG UC, быстрая отправка", "Ручная", "18.60", "4.90", "1 320", ["#30230f", "#35ff6a"]],
-  ["PS", "PlayStation Plus Deluxe", "Автовыдача", "14.40", "4.89", "870", ["#102842", "#35ff6a"]],
-  ["BS", "Brawl Stars аккаунт", "Ручная", "19.90", "4.87", "514", ["#331f10", "#35ff6a"]],
-  ["XB", "Xbox Game Pass Ultimate", "Автовыдача", "9.80", "4.93", "2 104", ["#102f1a", "#35ff6a"]],
-  ["TH", "Clash of Clans аккаунт TH15", "Ручная", "44.20", "4.84", "388", ["#2f1e14", "#35ff6a"]],
-  ["SP", "Spotify Premium 12 месяцев", "Автовыдача", "24.00", "4.94", "1 742", ["#102a18", "#35ff6a"]],
+  ["RB", "Roblox 10 000 Robux", "PixelTrade", "Автовыдача", "84.90", "4.98", "8 420", ["#222a36", "#394252"]],
+  ["ST", "Steam Gift Card 50$", "KeyDock", "Автовыдача", "50.00", "4.95", "6 104", ["#1f2b38", "#324150"]],
+  ["TG", "Telegram Premium 12 месяцев", "SubLine", "Ручная", "31.50", "4.88", "902", ["#202936", "#344154"]],
+  ["MC", "Minecraft Java аккаунт", "GameVault", "Автовыдача", "12.80", "4.92", "1 840", ["#222a24", "#394638"]],
+  ["VP", "Valorant VP EU", "AimShop", "Ручная", "22.40", "4.96", "1 120", ["#2f2228", "#47333b"]],
+  ["DN", "Discord Nitro 1 месяц", "NitroHub", "Автовыдача", "7.20", "4.91", "3 240", ["#24263b", "#3b3e56"]],
 ];
 
 const homeSellers = [
@@ -80,11 +69,11 @@ function homeStats() {
 
 function trustBar() {
   return `<section class="trust-bar">${[
-    ["Escrow-защита", "Деньги удерживаются до подтверждения заказа"],
-    ["Чат и спор", "Контекст сделки всегда рядом"],
-    ["USDT TRC20 / TON / BEP20", "Три сети для оплаты"],
-    ["Быстрая выдача", "Авто-коды и ручные услуги"],
-  ].map(([title, text]) => `<article><strong>${title}</strong><span>${text}</span></article>`).join("")}</section>`;
+    ["Гарантия"],
+    ["Автовыдача"],
+    ["Арбитраж"],
+    ["USDT"],
+  ].map(([title]) => `<article><span aria-hidden="true">✓</span><strong>${title}</strong></article>`).join("")}</section>`;
 }
 
 function homeCategoryGrid() {
@@ -95,17 +84,32 @@ function homeCategoryGrid() {
 }
 
 function homeProductGrid(list) {
-  return `<div class="home-product-grid">${list.map(([mark, title, delivery, price, rating, sales, colors], index) => `
+  return `<div class="home-product-grid">${list.map(([mark, title, seller, delivery, price, rating, sales, colors], index) => `
     <article class="home-product-card" style="--thumb-a:${colors[0]};--thumb-b:${colors[1]}">
-      <div class="home-product-thumb"><span>${mark}</span></div>
+      <a class="home-product-thumb" href="/product/${products[index % products.length].id}" data-link><span>${mark}</span></a>
       <div class="home-product-body">
-        <span class="badge">${delivery}</span>
         <h3>${title}</h3>
+        <p class="home-seller-line"><span>${seller}</span><span>★ ${rating}</span></p>
+        <p class="meta">${delivery} · ${sales} продаж</p>
         <strong class="home-price">${price} USDT</strong>
-        <p class="meta">★ ${rating} · ${sales} продаж</p>
         <a class="btn primary" href="/product/${products[index % products.length].id}" data-link>Купить</a>
       </div>
     </article>`).join("")}</div>`;
+}
+
+function marketplaceIntro() {
+  return `<section class="market-intro">
+    <div>
+      <p class="eyebrow">Маркетплейс цифровых товаров</p>
+      <h1>Покупайте аккаунты, ключи, валюту и подписки</h1>
+      <p class="lead">Быстрый поиск по товарам, рейтинги продавцов, автовыдача и арбитраж по каждому заказу.</p>
+    </div>
+    <form class="market-search" data-search-form>
+      <span>⌕</span>
+      <input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" />
+      <button class="btn primary">Найти</button>
+    </form>
+  </section>`;
 }
 
 function paymentBlock() {
@@ -131,22 +135,10 @@ function homeSellerGrid() {
 
 function home() {
   return `${header()}<main class="main">
-    <section class="home-hero">
-      <div class="home-hero-copy">
-        <p class="eyebrow">Крипто-MVP для цифровых товаров</p>
-        <h1>Secret <span>Market</span></h1>
-        <p class="lead">Покупайте ключи, аккаунты, игровую валюту, подписки и услуги с оплатой в USDT. Деньги удерживаются до подтверждения заказа, а чат и спор всегда привязаны к сделке.</p>
-        <div class="actions"><a class="btn primary" href="/catalog" data-link>Открыть каталог</a><a class="btn ghost" href="/seller/products/create" data-link>Стать продавцом</a></div>
-      </div>
-      <div class="home-hero-visual mascot-hero"><img src="${assetPath("assets/hero-mascot.png")}" alt="Зеленый маскот Secret Market" /></div>
-    </section>
-    ${homeStats()}
+    ${marketplaceIntro()}
     ${trustBar()}
     ${homeSection("Популярные категории", homeCategoryGrid(), `<a class="btn ghost" href="/catalog" data-link>Все категории</a>`)}
     ${homeSection("Рекомендованные товары", homeProductGrid(homeRecommendedProducts), `<a class="btn ghost" href="/catalog" data-link>Смотреть все</a>`)}
-    ${homeSection("Новые товары", homeProductGrid(homeNewProducts))}
-    ${paymentBlock()}
-    ${homeSection("Лучшие продавцы", homeSellerGrid())}
     ${footer()}
   </main>`;
 }

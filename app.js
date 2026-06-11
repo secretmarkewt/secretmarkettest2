@@ -61,14 +61,15 @@ function header() {
           ["/chats", "Чаты"],
         ].map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
         <a href="/support" data-link>Поддержка</a>
+        <a class="nav-balance" href="/account/payments" data-link>0.00 USDT</a>
         <a class="login-link ${activeClass("/auth")}" href="/auth" data-link>${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
         <a class="btn primary nav-register" href="/auth" data-link>Регистрация</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему" aria-pressed="${state.theme === "light"}">
+          <span class="theme-track-icon theme-track-icon-sun">${themeIcon("sun")}</span>
+          <span class="theme-knob">${state.theme === "light" ? themeIcon("sun") : themeIcon("moon")}</span>
+        </button>
       </nav>
     </header>
-    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему" aria-pressed="${state.theme === "light"}">
-      <span class="theme-track-icon theme-track-icon-sun">${themeIcon("sun")}</span>
-      <span class="theme-knob">${state.theme === "light" ? themeIcon("sun") : themeIcon("moon")}</span>
-    </button>
     <nav class="mobile-tabbar">
       ${[
         ["/", "⌂", "Главная"],
