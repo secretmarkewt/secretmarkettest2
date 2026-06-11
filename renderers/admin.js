@@ -34,7 +34,7 @@ function adminPayments() {
   const demoRows = demoPayments
     .filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id)))
     .map((paymentItem) => `<a class="list-row" href="/admin/payments/${paymentItem.id}" data-link><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></a>`);
-  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Крипто-транзакции</h2><button class="btn primary" data-live-action="sync-payment" data-payment-id="pay-12345">Синхронизировать</button></div><div class="list">${[...liveRows, ...demoRows].join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
+  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Платежи заказов</h2><button class="btn primary" data-live-action="sync-payment" data-payment-id="pay-12345">Синхронизировать</button></div><div class="list">${[...liveRows, ...demoRows].join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
 }
 
 function adminPaymentDetail(id = "pay-12345") {
@@ -150,7 +150,7 @@ function adminTickets() {
 function roleDescription(role) {
   const map = {
     "Гость": "смотрит каталог и товары, затем регистрируется",
-    "Покупатель": "покупает, оплачивает криптой, общается, открывает споры",
+    "Покупатель": "покупает товары, общается с продавцами и открывает споры",
     "Продавец": "создает товары, выполняет заказы, получает выплаты",
     "Администратор": "управляет сайтом, платежами, выплатами и модерацией",
   };

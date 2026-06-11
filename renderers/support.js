@@ -34,7 +34,7 @@ function support(path = "") {
   if (path.includes("/payment")) return supportTopic("Проблемы с оплатой", ["Проверьте сеть и точную сумму", "Сохраните tx hash", "Если сумма недостаточная, доплатите только после ответа поддержки", "Не отправляйте другой токен на адрес USDT"]);
   if (path.includes("/order")) return supportTopic("Проблемы с заказом", ["Откройте страницу заказа", "Проверьте данные выдачи", "Напишите продавцу в чат", "Если ответа нет, откройте спор"]);
   if (path.includes("/seller")) return supportTopic("Проблемы с продавцом", ["Не выводите общение из чата заказа", "Приложите скриншоты или файлы", "Поддержка увидит платеж и историю", "Средства можно заблокировать до решения"]);
-  if (path.includes("/faq")) return supportTopic("FAQ", ["Как оплатить USDT", "Как работает escrow", "Когда продавец получает деньги", "Как открыть спор", "Как вывести средства продавцу"]);
+  if (path.includes("/faq")) return supportTopic("FAQ", ["Как оплатить заказ", "Как работает гарантия сделки", "Когда продавец получает деньги", "Как открыть спор", "Как вывести средства продавцу"]);
 
   const items = [
     ["FAQ", "/support/faq"],
@@ -45,7 +45,7 @@ function support(path = "") {
     ["Проблемы с заказом", "/support/order"],
     ["Проблемы с продавцом", "/support/seller"],
   ];
-  return page("Поддержка", `<div class="grid categories">${items.map(([label, href]) => `<a class="category-card" href="${href}" data-link><span class="category-icon">?</span><strong>${label}</strong><span class="muted">Раздел поддержки</span></a>`).join("")}</div>`, "Support");
+  return page("Поддержка", `<div class="support-grid">${items.map(([label, href]) => `<a class="category-card support-card" href="${href}" data-link><span class="category-icon">i</span><strong>${label}</strong><span class="muted">Раздел поддержки</span></a>`).join("")}</div>`, "Support");
 }
 
 function supportTicket() {

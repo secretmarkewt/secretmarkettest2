@@ -8,7 +8,30 @@
   if (path.includes("withdraw")) return withdraw();
   if (path.includes("reviews")) return dashboard("Отзывы продавца", sellerLinks, ["5★: 92%", "4★: 7%", "Негативные: 1%", "Последний отзыв: товар выдан за 4 минуты"], "Seller");
   if (path.includes("settings")) return sellerSettings();
-  return dashboard("Кабинет продавца", sellerLinks, ["Продажи за день: 14", "Продажи за месяц: 390", "Активные заказы: 8", "Рейтинг: 4.98", "Баланс к выплате: 1 240 USDT", "В холде: 480 USDT", "Споры: 1"], "Seller");
+  return sellerOverview();
+}
+
+function sellerOverview() {
+  return page("Кабинет продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
+    <div class="section-head"><div><p class="eyebrow">Магазин</p><h1>PixelTrade</h1><p class="lead">Рабочий стол продавца: товары, заказы, остатки, рейтинг и выплаты.</p></div><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div>
+    <div class="grid metrics seller-overview">${[
+      ["14", "продаж сегодня"],
+      ["390", "продаж за месяц"],
+      ["8", "активных заказов"],
+      ["4.98", "рейтинг"],
+      ["1 240 USDT", "доступно к выплате"],
+      ["480 USDT", "в гарантийном холде"],
+      ["1", "открытый спор"],
+      ["5 мин", "средняя выдача"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
+    <section class="panel section"><div class="section-head"><h2>Очередь заказов</h2><a class="btn" href="/seller/orders" data-link>Все заказы</a></div><div class="list">${demoOrders.slice(0, 4).map(orderListRow).join("")}</div></section>
+    <section class="panel section"><div class="section-head"><h2>Быстрые действия</h2></div><div class="seller-actions">${[
+      ["Добавить товар", "/seller/products/create"],
+      ["Проверить остатки", "/seller/products"],
+      ["Открыть финансы", "/seller/finance"],
+      ["Настроить автовыдачу", "/seller/settings"],
+    ].map(([label, href]) => `<a class="btn" href="${href}" data-link>${label}</a>`).join("")}</div></section>
+  </section></div>`, "Seller");
 }
 
 function sellerProfile() {
@@ -40,7 +63,7 @@ function sellerOrders() {
 }
 
 function publicSeller() {
-  return page("Продавец PixelTrade", `<div class="two-col"><section>
+  return page("Продавец PixelTrade", `<div class="two-col seller-storefront"><section>
     <div class="panel"><div class="section-head"><div><h2>PixelTrade</h2><p class="muted">Проверенный продавец Roblox и игровых пополнений.</p></div><span class="status ok">верифицирован</span></div><div class="grid metrics">${[
       ["4.98", "рейтинг"],
       ["12 840", "продаж"],
@@ -48,7 +71,7 @@ function publicSeller() {
       ["0.6%", "споров"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></div>
     <section class="section"><div class="section-head"><h2>Товары продавца</h2></div>${productCards(products.slice(0, 4))}</section>
-  </section><aside class="panel"><h2>Отзывы</h2><div class="list">${["Быстрая автовыдача", "Отвечает в чате", "Коды рабочие", "Возвратов почти нет"].map((x) => row(x, "5★")).join("")}</div><a class="btn primary section" href="/chats" data-link>Написать продавцу</a></aside></div>`, "Seller");
+  </section><aside class="panel seller-sidebar"><h2>Отзывы</h2><div class="list">${["Быстрая автовыдача", "Отвечает в чате", "Коды рабочие", "Возвратов почти нет"].map((x) => row(x, "5★")).join("")}</div><a class="btn primary section" href="/chats" data-link>Написать продавцу</a></aside></div>`, "Seller");
 }
 
 function createProduct(mode = "create", id = 12345) {

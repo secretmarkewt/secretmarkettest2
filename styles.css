@@ -823,6 +823,31 @@ textarea:focus-visible {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.seller-overview {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.seller-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seller-storefront {
+  align-items: start;
+}
+
+.seller-sidebar {
+  position: sticky;
+  top: 86px;
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .chip {
   display: inline-flex;
   min-height: 36px;
@@ -853,6 +878,16 @@ textarea:focus-visible {
   background: var(--panel);
   text-decoration: none;
   color: var(--text);
+  transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
+}
+
+.category-card:hover,
+.seller-card:hover,
+.admin-tile:hover,
+.trust-item:hover {
+  border-color: #343b49;
+  background: #1a1e26;
+  transform: translateY(-2px);
 }
 
 .category-icon {
@@ -863,6 +898,12 @@ textarea:focus-visible {
   border-radius: 8px;
   background: rgba(103, 170, 249, 0.12);
   color: var(--blue);
+}
+
+.support-card .category-icon {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 850;
 }
 
 .product-card {
@@ -1516,11 +1557,6 @@ a.admin-tile {
   text-decoration: none;
 }
 
-a.admin-tile:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.04);
-}
-
 .toast {
   position: fixed;
   right: 18px;
@@ -1604,6 +1640,11 @@ a.admin-tile:hover {
 
   .grid.products {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .seller-overview,
+  .support-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1784,8 +1825,14 @@ a.admin-tile:hover {
   .home-categories,
   .home-sellers,
   .home-stats,
-  .trust-bar {
+  .trust-bar,
+  .seller-overview,
+  .support-grid {
     grid-template-columns: 1fr;
+  }
+
+  .seller-sidebar {
+    position: static;
   }
 
   .home-product-card {
