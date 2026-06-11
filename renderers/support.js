@@ -49,11 +49,22 @@ function support(path = "") {
 }
 
 function supportTicket() {
-  return page("Создать тикет", `<div class="two-col"><section class="panel"><div class="form-grid">${field("Тема", "select", ["Проблема с оплатой", "Проблема с заказом", "Проблема с продавцом", "Выплаты", "Другое"])}${field("Связанный заказ", "input", "#12345")}${field("Описание", "textarea", "Опишите проблему подробно")}${field("Контакт", "input", "@telegram")}</div><button class="btn primary section">Создать тикет</button></section><aside class="panel"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}</aside></div>`, "Support");
+  return page("Создать тикет", `<div class="two-col"><section class="panel"><form data-support-ticket-form><div class="form-grid">
+    <label class="field"><span>Тема</span><select name="topic"><option>Проблема с оплатой</option><option>Проблема с заказом</option><option>Проблема с продавцом</option><option>Выплаты</option><option>Другое</option></select></label>
+    <label class="field"><span>Связанный заказ</span><input name="orderId" value="#12345" /></label>
+    <label class="field"><span>Описание</span><textarea name="description">Опишите проблему подробно</textarea></label>
+    <label class="field"><span>Контакт</span><input name="contact" value="@telegram" /></label>
+  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside class="panel"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}</aside></div>`, "Support");
 }
 
 function supportRequests() {
-  return page("Мои обращения", `<section class="panel"><div class="list">${window.SECMARKET_DATA.demoTickets.map(ticketListRow).join("")}</div></section>`, "Support");
+  const liveRows = liveItems("tickets").map((ticket) => ticketListRow({
+    id: ticket.id,
+    topic: ticket.topic,
+    order: ticket.orderId || "—",
+    status: statusLabel(ticket.status),
+  }));
+  return page("Мои обращения", `<section class="panel"><div class="list">${[...liveRows, ...window.SECMARKET_DATA.demoTickets.map(ticketListRow)].join("")}</div></section>`, "Support");
 }
 
 function supportTicketDetail(id = "SUP-104") {

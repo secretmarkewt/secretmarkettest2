@@ -15,6 +15,9 @@
     saveState();
     render();
   });
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    toggleTheme();
+  });
   document.querySelector("[data-search-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
     setSearch(new FormData(event.currentTarget).get("query") || "");
@@ -62,6 +65,30 @@
       go(session.user.role === "seller" ? "/seller" : "/account");
     } catch (error) {
       notify(`Регистрация не выполнена: ${error.message}`);
+    }
+  });
+  document.querySelector("[data-support-ticket-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const orderId = String(formData.get("orderId") || "").replace(/^#/, "").trim();
+    const payload = {
+      id: `SUP-${Date.now()}`,
+      orderId: orderId || "general",
+      topic: formData.get("topic"),
+      description: formData.get("description"),
+      contact: formData.get("contact"),
+      messages: [],
+      status: "open",
+    };
+    try {
+      await ensureLiveRole("buyer");
+      const ticket = await api.live.create("tickets", payload);
+      upsertLiveItem("tickets", ticket);
+      notify(ticket.ticketNotice?.sent ? "Тикет создан и отправлен в Telegram" : "Тикет создан, Telegram уведомление не настроено");
+      go("/support/requests");
+    } catch (error) {
+      notify(`Тикет не создан: ${error.message}`);
     }
   });
   document.querySelectorAll("[data-filter]").forEach((control) => {

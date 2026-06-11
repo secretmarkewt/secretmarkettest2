@@ -27,6 +27,26 @@ const validationRules = window.SECMARKET_VALIDATION_RULES;
 const sessionApi = window.SECMARKET_SESSION;
 const app = document.querySelector("#app");
 
+function themeIcon(name) {
+  if (name === "sun") {
+    return `<svg class="theme-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2"></path>
+      <path d="M12 20v2"></path>
+      <path d="m4.93 4.93 1.41 1.41"></path>
+      <path d="m17.66 17.66 1.41 1.41"></path>
+      <path d="M2 12h2"></path>
+      <path d="M20 12h2"></path>
+      <path d="m6.34 17.66-1.41 1.41"></path>
+      <path d="m19.07 4.93-1.41 1.41"></path>
+    </svg>`;
+  }
+
+  return `<svg class="theme-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.99 12.49a9 9 0 1 1-9.48-9.48 6.8 6.8 0 0 0 9.48 9.48Z"></path>
+  </svg>`;
+}
+
 function header() {
   const session = sessionApi.currentSession();
   return `
@@ -45,6 +65,10 @@ function header() {
         <a class="btn primary nav-register" href="/auth" data-link>Регистрация</a>
       </nav>
     </header>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему" aria-pressed="${state.theme === "light"}">
+      <span class="theme-track-icon theme-track-icon-sun">${themeIcon("sun")}</span>
+      <span class="theme-knob">${state.theme === "light" ? themeIcon("sun") : themeIcon("moon")}</span>
+    </button>
     <nav class="mobile-tabbar">
       ${[
         ["/", "⌂", "Главная"],

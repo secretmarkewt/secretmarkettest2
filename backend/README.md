@@ -103,6 +103,8 @@ Auth is demo-level but now password-gated: `POST /api/auth/login` accepts an act
 
 `POST /api/auth/register` accepts nickname, email, password, Telegram username and role (`buyer` or `seller`). The backend hashes the password immediately and never sends the plaintext password to Telegram. Telegram registration notifications use `SECMARKET_TELEGRAM_BOT_TOKEN` and `SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID`; the default chat id is `7391093210`.
 
+`POST /api/tickets` creates a support ticket for an authenticated buyer/seller/admin and sends a Telegram notification to the same configured chat. The notification includes ticket id, topic, linked order, contact, user id, status and description.
+
 ## Role Guards
 
 - Public: `GET /api/products`

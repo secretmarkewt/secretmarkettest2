@@ -96,6 +96,7 @@ Ready as a public MVP demo:
 - Live API contract for products, orders, payments, delivery, disputes, withdrawals, audit and auth sessions.
 - Password-gated demo auth with PBKDF2 hashes and bearer sessions.
 - Registration flow with safe Telegram notifications that never include plaintext passwords.
+- Support ticket flow with Telegram notifications to the same support chat.
 - File-backed JSON store for MVP persistence.
 - CORS allowlist, reset protection, rate limiting and basic security headers.
 - CI verification before Pages deployment.

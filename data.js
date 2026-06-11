@@ -135,7 +135,7 @@ const SECMARKET_DATA = {
     ["POST /api/orders/:id/confirm", "подтверждение получения, release escrow и начисление продавцу"],
     ["POST /api/disputes", "открытие спора"],
     ["PATCH /api/disputes/:id/decision", "решение поддержки и возврат"],
-    ["POST /api/support/tickets", "создание тикета"],
+    ["POST /api/tickets", "создание тикета поддержки и Telegram-уведомление"],
     ["GET /api/withdrawals/balance", "доступный баланс продавца после ledger и активных заявок"],
     ["POST /api/withdrawals", "заявка продавца на вывод в пределах доступного баланса"],
     ["POST /api/withdrawals/:id/settle", "admin завершает выплату, пишет tx hash и payout ledger"],

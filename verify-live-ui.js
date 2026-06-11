@@ -11,6 +11,7 @@ const liveState = {
     orders: [{ id: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", productId: 12345, amount: 88.3, paymentStatus: "paid", status: "awaiting_buyer" }],
     payments: [{ id: "pay-live", orderId: 12345, amount: 88.3, coin: "USDT", network: "TRC20", txHash: "TX-LIVE-UI", confirmations: 24, status: "paid" }],
     products: [{ id: "products-live", sellerId: "usr-seller", title: "Live UI Product", category: "discord", price: 8.5, stock: 10, deliveryType: "auto", status: "moderation" }],
+    tickets: [{ id: "SUP-LIVE", orderId: 12345, userId: "usr-buyer", topic: "Live support ticket", description: "Live UI ticket", contact: "@buyer", status: "open" }],
     withdrawals: [{ id: "WD-LIVE", sellerId: "usr-seller", amount: 25, coin: "USDT", network: "TRC20", address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB", status: "review" }],
   },
 };
@@ -129,6 +130,16 @@ context.location.pathname = "/account/settings";
 context.render();
 if (!app.innerHTML.includes("Live API") || !app.innerHTML.includes('data-api-settings-form')) {
   throw new Error("live API settings did not render");
+}
+
+context.location.pathname = "/support/ticket";
+context.render();
+if (!app.innerHTML.includes('data-support-ticket-form')) throw new Error("support ticket form did not render");
+
+context.location.pathname = "/support/requests";
+context.render();
+if (!app.innerHTML.includes("SUP-LIVE") || !app.innerHTML.includes("Live support ticket")) {
+  throw new Error("live support ticket did not render");
 }
 
 context.location.pathname = "/launch-readiness";

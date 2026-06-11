@@ -205,6 +205,30 @@ function authHeader(token) {
     }).then((res) => res.json());
     if (buyerPayments.items.some((payment) => payment.id === "pay-90001")) throw new Error("buyer payment ownership filter failed");
 
+    const ticket = await request(port, "/api/tickets", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({
+        id: "SUP-BACKEND",
+        orderId: 12345,
+        topic: "Backend support ticket",
+        description: "Payment was not found in backend verification",
+        contact: "@backend_buyer",
+        messages: [],
+        status: "open",
+      }),
+    }).then((res) => res.json());
+    if (ticket.id !== "SUP-BACKEND" || ticket.userId !== "usr-buyer" || ticket.ticketNotice?.enabled !== false) {
+      throw new Error("support ticket create failed");
+    }
+
+    const invalidTicket = await request(port, "/api/tickets", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({ id: "SUP-BAD", orderId: 12345, topic: "", description: "" }),
+    });
+    if (invalidTicket.status !== 422) throw new Error("support ticket validation failed");
+
     const adminOrders = await request(port, "/api/orders", {
       headers: authHeader(adminLogin.token),
     }).then((res) => res.json());

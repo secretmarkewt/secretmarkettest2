@@ -6,7 +6,7 @@ const { syncPayment } = require("./paymentWatcher");
 const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
 const { hashPassword, verifyPassword } = require("./passwords");
-const { notifyRegistration } = require("./telegramNotifier");
+const { notifyRegistration, notifyTicket } = require("./telegramNotifier");
 const packageInfo = require("../package.json");
 
 const rateBuckets = new Map();
@@ -233,6 +233,14 @@ function normalizeCreatePayload(resource, payload, auth) {
   return payload;
 }
 
+async function notifyTicketSafely(ticket) {
+  try {
+    return await notifyTicket(ticket);
+  } catch (error) {
+    return { enabled: true, sent: false, error: error.message };
+  }
+}
+
 function authorize(req, res, store, resource) {
   const roles = allowedRoles(resource, req.method);
   if (roles.includes("guest")) return { role: "guest", user: null, session: null };
@@ -452,7 +460,12 @@ async function handleApi(req, res, store) {
     const payload = await readBody(req);
     const validation = validateCreate(resource, payload);
     if (!validation.ok) return json(req, res, 422, { errors: validation.errors });
-    return json(req, res, 201, store.create(resource, { ...normalizeCreatePayload(resource, payload, auth), _actorId: auth.user?.id }));
+    const item = store.create(resource, { ...normalizeCreatePayload(resource, payload, auth), _actorId: auth.user?.id });
+    if (resource === "tickets") {
+      const ticketNotice = await notifyTicketSafely(item);
+      return json(req, res, 201, { ...item, ticketNotice });
+    }
+    return json(req, res, 201, item);
   }
   if ((req.method === "PATCH" || req.method === "PUT") && id) {
     const existing = store.find(resource, id);

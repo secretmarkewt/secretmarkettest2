@@ -3,6 +3,7 @@ let activeStep = 1;
 const APP_BASE_PATH = location.hostname.endsWith("github.io") ? `/${location.pathname.split("/").filter(Boolean)[0] || ""}` : "";
 
 const state = {
+  theme: "dark",
   query: "",
   maxPrice: 100,
   delivery: "all",
@@ -20,6 +21,7 @@ const state = {
     orders: [],
     payments: [],
     products: [],
+    tickets: [],
     withdrawals: [],
   },
   liveHealth: null,
@@ -31,6 +33,7 @@ const state = {
 window.SECMARKET_STATE = state;
 
 loadState();
+applyTheme();
 
 function assetPath(relativePath) {
   const cleanPath = String(relativePath || "").replace(/^\/+/, "");
@@ -50,6 +53,7 @@ function notify(message) {
 
 function saveState() {
   const payload = {
+    theme: state.theme,
     currency,
     favorites: [...state.favorites],
     orderConfirmed: state.orderConfirmed,
@@ -69,6 +73,7 @@ function loadState() {
     const raw = localStorage.getItem("secmarket-demo-state");
     if (!raw) return;
     const payload = JSON.parse(raw);
+    if (payload.theme === "light" || payload.theme === "dark") state.theme = payload.theme;
     if (payload.currency) currency = payload.currency;
     state.favorites = new Set(payload.favorites || []);
     state.orderConfirmed = Boolean(payload.orderConfirmed);
@@ -87,6 +92,19 @@ function loadState() {
   }
 }
 
+function applyTheme() {
+  if (typeof document === "undefined") return;
+  if (!document.documentElement?.dataset) return;
+  document.documentElement.dataset.theme = state.theme;
+}
+
+function toggleTheme() {
+  state.theme = state.theme === "light" ? "dark" : "light";
+  applyTheme();
+  saveState();
+  render();
+}
+
 function liveItems(collectionName) {
   return Array.isArray(state.live[collectionName]) ? state.live[collectionName] : [];
 }
@@ -103,8 +121,8 @@ function upsertLiveItem(collectionName, item) {
 }
 
 function liveCollectionsForRole(role) {
-  if (role === "admin" || role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "withdrawals"];
-  if (role === "buyer") return ["deliveries", "disputes", "ledger", "orders", "payments", "products"];
+  if (role === "admin" || role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets", "withdrawals"];
+  if (role === "buyer") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets"];
   return ["products"];
 }
 
@@ -164,7 +182,7 @@ function resetDemoState() {
   state.disputeCreated = false;
   state.copiedAddress = false;
   state.chatMessages = [];
-  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], products: [], withdrawals: [] };
+  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], products: [], tickets: [], withdrawals: [] };
   state.liveHealth = null;
   state.liveStatus = "idle";
   state.liveSyncedAt = "";

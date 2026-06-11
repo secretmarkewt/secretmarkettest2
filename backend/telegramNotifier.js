@@ -22,7 +22,20 @@ function registrationTelegramMessage(user) {
   ].join("\n");
 }
 
-async function notifyRegistration(user) {
+function ticketTelegramMessage(ticket) {
+  return [
+    "Новый тикет поддержки Secret Market",
+    `ID: ${ticket.id || ""}`,
+    `Тема: ${ticket.topic || ""}`,
+    `Заказ: ${ticket.orderId || ""}`,
+    `Контакт: ${ticket.contact || ""}`,
+    `Пользователь: ${ticket.userId || "guest"}`,
+    `Статус: ${ticket.status || ""}`,
+    `Описание: ${ticket.description || ""}`,
+  ].join("\n");
+}
+
+async function sendTelegramMessage(text) {
   const { botToken, registrationChatId } = telegramConfig();
   if (!botToken || !registrationChatId) return { enabled: false, sent: false };
 
@@ -31,7 +44,7 @@ async function notifyRegistration(user) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: registrationChatId,
-      text: registrationTelegramMessage(user),
+      text,
       disable_web_page_preview: true,
     }),
   });
@@ -40,4 +53,12 @@ async function notifyRegistration(user) {
   return { enabled: true, sent: response.ok, status: response.status, error: body.description || "" };
 }
 
-module.exports = { DEFAULT_REGISTRATION_CHAT_ID, notifyRegistration, registrationTelegramMessage, telegramConfig };
+function notifyRegistration(user) {
+  return sendTelegramMessage(registrationTelegramMessage(user));
+}
+
+function notifyTicket(ticket) {
+  return sendTelegramMessage(ticketTelegramMessage(ticket));
+}
+
+module.exports = { DEFAULT_REGISTRATION_CHAT_ID, notifyRegistration, notifyTicket, registrationTelegramMessage, telegramConfig, ticketTelegramMessage };

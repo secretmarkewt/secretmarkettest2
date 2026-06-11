@@ -94,6 +94,17 @@ const { createStore } = require("./backend/repository");
     });
     if (order.status !== "awaiting_payment" || payment.orderId !== order.id) throw new Error("live checkout create failed");
 
+    const ticket = await api.live.create("tickets", {
+      id: "SUP-CLIENT",
+      orderId: order.id,
+      topic: "Client support ticket",
+      description: "Created by API client verification",
+      contact: "@client_buyer",
+      messages: [],
+      status: "open",
+    });
+    if (ticket.id !== "SUP-CLIENT" || ticket.ticketNotice?.enabled !== false) throw new Error("live support ticket create failed");
+
     await api.live.login("seller@example.com", "seller");
     const withdrawal = await api.live.requestWithdrawal({
       amount: 25,

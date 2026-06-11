@@ -18,6 +18,25 @@
   --glow: 0 0 34px rgba(53, 255, 106, 0.18);
 }
 
+:root[data-theme="light"] {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-2: #eef3f8;
+  --line: rgba(17, 24, 39, 0.12);
+  --text: #101820;
+  --muted: #607080;
+  --teal: #19c64f;
+  --accent: #19c64f;
+  --accent-soft: rgba(25, 198, 79, 0.12);
+  --amber: #b98010;
+  --rose: #be345f;
+  --blue: #256fc7;
+  --green: #16803a;
+  --danger: #c93131;
+  --shadow: 0 18px 48px rgba(25, 38, 60, 0.12);
+  --glow: 0 0 28px rgba(25, 198, 79, 0.12);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -54,6 +73,14 @@ a {
     var(--bg);
 }
 
+:root[data-theme="light"] .shell {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(25, 198, 79, 0.12), transparent 340px),
+    radial-gradient(circle at 84% 16%, rgba(37, 111, 199, 0.08), transparent 300px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 520px),
+    var(--bg);
+}
+
 .topbar {
   position: sticky;
   top: 0;
@@ -67,6 +94,11 @@ a {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(5, 10, 15, 0.86);
   backdrop-filter: blur(18px);
+}
+
+:root[data-theme="light"] .topbar {
+  border-bottom-color: rgba(17, 24, 39, 0.1);
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .brand {
@@ -99,6 +131,14 @@ a {
   background: rgba(16, 24, 32, 0.92);
 }
 
+:root[data-theme="light"] .searchbar,
+:root[data-theme="light"] .field input,
+:root[data-theme="light"] .field select,
+:root[data-theme="light"] .field textarea,
+:root[data-theme="light"] .result-counter {
+  background: #ffffff;
+}
+
 .searchbar input {
   min-width: 0;
   border: 0;
@@ -128,6 +168,83 @@ a {
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
+}
+
+.theme-toggle {
+  position: relative;
+  width: 112px;
+  height: 44px;
+  margin: 18px clamp(16px, 3vw, 36px) 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(48, 53, 68, 0.42);
+  color: rgba(220, 227, 239, 0.62);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+}
+
+.theme-track-icon {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  z-index: 1;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  color: rgba(255, 214, 86, 0.72);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.theme-svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.theme-track-icon-sun .theme-svg {
+  filter: drop-shadow(0 0 10px rgba(255, 211, 62, 0.18));
+}
+
+.theme-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 2;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(238, 243, 247, 0.92);
+  color: rgba(18, 24, 33, 0.86);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 240ms ease, color 240ms ease, background-color 240ms ease;
+}
+
+.theme-knob .theme-svg {
+  width: 19px;
+  height: 19px;
+}
+
+:root[data-theme="light"] .theme-knob {
+  transform: translateX(68px);
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(202, 133, 0, 0.9);
+}
+
+:root[data-theme="light"] .theme-toggle {
+  border-color: rgba(17, 24, 39, 0.08);
+  background: rgba(48, 53, 68, 0.24);
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid rgba(71, 214, 81, 0.65);
+  outline-offset: 3px;
 }
 
 .mobile-tabbar {
@@ -291,6 +408,19 @@ h3 {
   text-wrap: balance;
 }
 
+:root[data-theme="light"] .home-hero h1,
+:root[data-theme="light"] .trust-bar strong,
+:root[data-theme="light"] .home-category-card strong,
+:root[data-theme="light"] .home-product-card h3,
+:root[data-theme="light"] .home-seller-card strong,
+:root[data-theme="light"] .home-stat strong {
+  color: #101820;
+}
+
+:root[data-theme="light"] .home-hero .lead {
+  color: #607080;
+}
+
 .home-hero h1 span {
   color: var(--accent);
   text-shadow: 0 0 28px rgba(53, 255, 106, 0.34);
@@ -325,6 +455,14 @@ h3 {
     radial-gradient(circle at 66% 18%, rgba(53, 255, 106, 0.2), transparent 28%),
     #101820;
   box-shadow: var(--shadow), var(--glow);
+}
+
+:root[data-theme="light"] .home-hero-visual,
+:root[data-theme="light"] .home-hero-visual.mascot-hero {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(25, 198, 79, 0.18), transparent 38%),
+    linear-gradient(145deg, rgba(25, 198, 79, 0.08), transparent 48%),
+    #ffffff;
 }
 
 .home-hero-visual img {
@@ -370,6 +508,25 @@ h3 {
   border-radius: var(--card-radius);
   background: linear-gradient(180deg, rgba(18, 28, 39, 0.98), rgba(16, 24, 32, 0.92));
   box-shadow: 0 12px 42px rgba(0, 0, 0, 0.22);
+}
+
+:root[data-theme="light"] .home-stat,
+:root[data-theme="light"] .trust-bar article,
+:root[data-theme="light"] .home-category-card,
+:root[data-theme="light"] .home-product-card,
+:root[data-theme="light"] .payment-block,
+:root[data-theme="light"] .home-seller-card,
+:root[data-theme="light"] .stat,
+:root[data-theme="light"] .trust-item,
+:root[data-theme="light"] .product-card,
+:root[data-theme="light"] .panel,
+:root[data-theme="light"] .list-row,
+:root[data-theme="light"] .chat-message,
+:root[data-theme="light"] .metric,
+:root[data-theme="light"] .admin-tile,
+:root[data-theme="light"] .sidebar {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
 }
 
 .home-stat {
@@ -634,6 +791,10 @@ h3 {
   color: var(--text);
 }
 
+:root[data-theme="light"] .btn {
+  background: #eef3f8;
+}
+
 .btn.primary {
   border-color: rgba(53, 255, 106, 0.48);
   background: var(--teal);
@@ -894,6 +1055,11 @@ a.status {
   padding: 9px 10px;
 }
 
+:root[data-theme="light"] .detail-media,
+:root[data-theme="light"] .step {
+  background: #ffffff;
+}
+
 .field textarea {
   min-height: 110px;
   resize: vertical;
@@ -1022,6 +1188,14 @@ a.list-row:hover {
   padding: 12px;
   border-radius: 8px;
   background: #eef3f7;
+}
+
+:root[data-theme="light"] .qr {
+  background: #101820;
+}
+
+:root[data-theme="light"] .qr span {
+  background: #ffffff;
 }
 
 .qr span {
@@ -1222,6 +1396,11 @@ a.admin-tile:hover {
     display: none;
   }
 
+  .theme-toggle {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
   .brand {
     justify-content: center;
   }
@@ -1264,6 +1443,10 @@ a.admin-tile:hover {
     box-shadow: var(--shadow);
     padding: 6px;
     backdrop-filter: blur(16px);
+  }
+
+  :root[data-theme="light"] .mobile-tabbar {
+    background: rgba(255, 255, 255, 0.94);
   }
 
   .mobile-tabbar a {
