@@ -1158,6 +1158,97 @@ a.status {
   gap: 20px;
 }
 
+.checkout-layout,
+.payment-layout,
+.order-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  align-items: start;
+  gap: 24px;
+}
+
+.checkout-panel,
+.order-summary,
+.payment-panel,
+.payment-status {
+  align-self: start;
+}
+
+.order-summary {
+  position: sticky;
+  top: 86px;
+  display: grid;
+  gap: 14px;
+}
+
+.summary-product {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  padding: 10px;
+}
+
+.summary-product > span {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 850;
+}
+
+.summary-product small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.checkout-confirm {
+  display: grid;
+  gap: 12px;
+}
+
+.payment-address {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  padding: 10px;
+}
+
+.payment-address strong {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.payment-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.order-card {
+  display: grid;
+  gap: 2px;
+}
+
 .product-detail {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -1297,7 +1388,8 @@ a.list-row:hover {
   gap: 5px;
   padding: 12px;
   border-radius: 8px;
-  background: #eef3f7;
+  border: 1px solid var(--line);
+  background: #ffffff;
 }
 
 :root[data-theme="light"] .qr {
@@ -1319,9 +1411,35 @@ a.list-row:hover {
   gap: 16px;
 }
 
+.marketplace-chat {
+  align-items: start;
+}
+
+.chat-list {
+  position: sticky;
+  top: 86px;
+}
+
+.chat-panel {
+  min-height: 620px;
+}
+
+.chat-thread {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 430px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #11141a;
+  padding: 14px;
+}
+
 .chat-message {
   max-width: 78%;
   padding: 12px;
+  border-radius: 8px;
+  background: var(--panel-2);
 }
 
 .chat-message.me {
@@ -1339,9 +1457,9 @@ a.list-row:hover {
 .delivery-box {
   display: grid;
   gap: 8px;
-  border: 1px solid rgba(71, 214, 81, 0.35);
+  border: 1px solid rgba(52, 208, 88, 0.26);
   border-radius: 8px;
-  background: rgba(71, 214, 81, 0.08);
+  background: rgba(52, 208, 88, 0.08);
   padding: 14px;
 }
 
@@ -1431,6 +1549,9 @@ a.admin-tile:hover {
   .market-intro,
   .payment-block,
   .two-col,
+  .checkout-layout,
+  .payment-layout,
+  .order-layout,
   .product-detail,
   .product-main,
   .product-info-grid,
@@ -1444,7 +1565,9 @@ a.admin-tile:hover {
     position: static;
   }
 
-  .buy-box {
+  .buy-box,
+  .order-summary,
+  .chat-list {
     position: static;
   }
 
@@ -1527,6 +1650,15 @@ a.admin-tile:hover {
   .market-search .btn {
     grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .payment-methods,
+  .payment-body {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-address {
+    grid-template-columns: 1fr;
   }
 
   .mobile-tabbar {

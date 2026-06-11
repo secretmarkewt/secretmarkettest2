@@ -7,14 +7,14 @@
   const isConfirmed = state.orderConfirmed || orderItem.order === "Завершен";
   const isDispute = state.disputeCreated || orderItem.order === "Спор";
   const statusRows = isConfirmed
-    ? [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, "Escrow: средства начислены продавцу", "Заказ: завершен"]
-    : [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, isDispute ? "Escrow: средства заморожены из-за спора" : "Escrow: средства удерживаются", `Заказ: ${orderItem.order}`];
+    ? [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, "Гарантия: сделка завершена", "Заказ: завершен"]
+    : [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, isDispute ? "Гарантия: открыт арбитраж" : "Гарантия: активна", `Заказ: ${orderItem.order}`];
   const timeline = isConfirmed
-    ? ["Заказ создан", "Покупатель выбрал USDT TRC20", "Оплата найдена", "Средства помещены в escrow", "Продавец выдал товар", "Покупатель подтвердил получение", "Средства доступны продавцу"]
-    : ["Заказ создан", "Покупатель выбрал USDT TRC20", "Оплата найдена", "Средства помещены в escrow", "Продавец выдал товар", "Покупатель читает инструкцию"];
+    ? ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель подтвердил получение", "Сделка завершена"]
+    : ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель читает инструкцию"];
   const doneSteps = isConfirmed ? 5 : isDispute ? 4 : orderItem.order === "В работе" ? 3 : 4;
-  return page(`Заказ #${orderItem.id}`, `<div class="two-col">
-    <section class="panel"><h2>Информация</h2><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Платеж</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Инструкция: активируйте данные после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статусы заказа</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Ожидает подтверждения", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : `${issueButton}<button class="btn primary" data-confirm-order>Подтвердить получение</button><button class="btn danger" data-open-dispute>Открыть спор</button>`}</div></section>
+  return page(`Заказ #${orderItem.id}`, `<div class="order-layout">
+    <section class="panel order-card"><div class="section-head"><div><p class="eyebrow">Сделка</p><h2>${orderItem.product}</h2><p class="muted">${orderItem.seller} · ${money(orderItem.amount)}</p></div><span class="status ${isDispute ? "wait" : "ok"}">${orderItem.order}</span></div><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Оплата</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Проверьте товар после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статус</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Проверка", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : `${issueButton}<button class="btn primary" data-confirm-order>Подтвердить получение</button><button class="btn danger" data-open-dispute>Открыть спор</button>`}</div></section>
     <aside class="panel timeline"><h2>История</h2>${timeline.map((x, i) => `<div class="list-row"><span>${i + 1}</span><span>${x}</span><span class="status ok">OK</span></div>`).join("")}</aside>
   </div>`, "Orders");
 }
@@ -23,7 +23,7 @@ function notifications() {
   return page("Уведомления", `<div class="two-col"><section class="panel"><h2>Лента событий</h2><div class="list">${[
     ["Оплата найдена по заказу #12345", "только что"],
     ["Продавец выдал товар", "3 мин назад"],
-    ["Средства помещены в escrow", "5 мин назад"],
+    ["Гарантия сделки активирована", "5 мин назад"],
     ["Тикет #SUP-104 получил ответ", "сегодня"],
     ["Вывод #WD-120 ожидает проверки", "вчера"],
   ].map(([left, right]) => row(left, right)).join("")}</div></section><aside class="panel"><h2>Настройки</h2><div class="list">${["Email-уведомления", "Telegram-уведомления", "Системные события", "Платежи и подтверждения", "Споры и тикеты"].map((x) => row(x, "вкл")).join("")}</div></aside></div>`, "Account");
@@ -38,9 +38,9 @@ function chats() {
     `<div class="chat-message system">Система: покупатель может подтвердить получение или открыть спор.</div>`,
     ...state.chatMessages.map((message) => `<div class="chat-message me">${escapeHtml(message)}</div>`),
   ].join("");
-  return page("Чаты", `<div class="chat-shell">
-    <aside class="panel"><h3>Диалоги</h3>${["#12345 · PixelTrade", "#22341 · KeyDock", "Поддержка", "Спор #12345"].map((x, i) => `<a class="side-link ${i === 0 ? "active" : ""}" href="/chats" data-link>${x}<span>›</span></a>`).join("")}</aside>
-    <section class="panel"><div class="section-head"><div><h2>Заказ #12345</h2><p class="muted">Контекст доступен поддержке: товар, платеж, выдача и история действий.</p></div><a class="btn" href="/orders/12345" data-link>Открыть заказ</a></div><div class="list">${messages}</div><form class="form-actions section" data-chat-form>${field("Сообщение", "input", "Написать ответ")}<button class="btn primary">Отправить</button><button class="btn" type="button" data-file-action>Файл</button></form></section>
+  return page("Чаты", `<div class="chat-shell marketplace-chat">
+    <aside class="panel chat-list"><h3>Диалоги</h3>${["#12345 · PixelTrade", "#22341 · KeyDock", "Поддержка", "Спор #12345"].map((x, i) => `<a class="side-link ${i === 0 ? "active" : ""}" href="/chats" data-link>${x}<span>›</span></a>`).join("")}</aside>
+    <section class="panel chat-panel"><div class="section-head"><div><h2>Заказ #12345</h2><p class="muted">Товар, оплата и выдача закреплены за этим диалогом.</p></div><a class="btn" href="/orders/12345" data-link>Открыть заказ</a></div><div class="chat-thread">${messages}</div><form class="form-actions section" data-chat-form>${field("Сообщение", "input", "Написать ответ")}<button class="btn primary">Отправить</button><button class="btn" type="button" data-file-action>Файл</button></form></section>
   </div>`, "Chats");
 }
 

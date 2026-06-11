@@ -245,14 +245,23 @@ function product(id = 12345) {
 }
 
 function checkout() {
-  const steps = ["Проверка товара", "Данные покупателя", "Выбор криптовалюты", "Подтверждение"];
-  return page("Оформление заказа", `<div class="two-col">
-    <section class="panel">
+  const steps = ["Товар", "Данные", "Оплата", "Подтверждение"];
+  return page("Оформление заказа", `<div class="checkout-layout">
+    <section class="panel checkout-panel">
       <div class="checkout-steps">${steps.map((x, i) => `<button class="step ${i + 1 === activeStep ? "active" : ""}" data-step="${i + 1}">${i + 1}. ${x}</button>`).join("")}</div>
       ${checkoutStepBody()}
       <div class="form-actions section"><button class="btn" data-step-prev>Назад</button><button class="btn primary" data-step-next>Далее</button><button class="btn warn" data-live-action="create-checkout">Перейти к оплате</button></div>
     </section>
-    <aside class="panel"><h2>Итого</h2>${row("Robux 10 000", "84.90 USDT")}${row("Комиссия платформы", "3.40 USDT")}${row("К оплате", "88.30 USDT")}<p class="muted section">Отправляйте только выбранную валюту и сеть. Ошибка сети может задержать заказ.</p></aside>
+    <aside class="panel order-summary">
+      <h2>Ваш заказ</h2>
+      <div class="summary-product"><span>RB</span><div><strong>Robux 10 000</strong><small>PixelTrade · 4.98</small></div></div>
+      <div class="list">${[
+        ["Товар", "84.90 USDT"],
+        ["Комиссия сервиса", "3.40 USDT"],
+        ["К оплате", "88.30 USDT"],
+      ].map(([left, right]) => row(left, right)).join("")}</div>
+      <p class="muted section">Платёж закрепляется за заказом, выдача и чат остаются внутри сделки.</p>
+    </aside>
   </div>`, "Checkout");
 }
 
@@ -270,23 +279,23 @@ function checkoutStepBody() {
     return `<div class="form-grid">${field("Никнейм", "input", "Artem")}${field("Email", "input", "buyer@example.com")}${field("Telegram", "input", "@buyer")}${field("ID аккаунта", "input", "123456789")}${field("Комментарий", "textarea", "Нужна выдача на EU регион")}</div>`;
   }
   if (activeStep === 3) {
-    return `<div class="grid trust">${["USDT TRC20", "USDT TON", "USDT BEP20"].map((network, index) => `<button class="trust-item panel ${index === 0 ? "chip active" : ""}" data-network="${network}"><h3>${network}</h3><p class="muted">${index === 0 ? "Быстрая проверка, удобна для MVP" : "Доступно для оплаты заказа"}</p></button>`).join("")}</div>`;
+    return `<div class="payment-methods">${["USDT TRC20", "USDT TON", "USDT BEP20"].map((network, index) => `<button class="trust-item panel ${index === 0 ? "chip active" : ""}" data-network="${network}"><h3>${network}</h3><p class="muted">${index === 0 ? "Рекомендуемый способ" : "Доступно для заказа"}</p></button>`).join("")}</div>`;
   }
-  return `<div class="panel"><h2>Подтверждение</h2><p class="lead">К оплате 88.30 USDT в выбранной сети. Отправляйте точную сумму только на адрес, который будет создан для этого заказа.</p><div class="list">${["После оплаты система ищет транзакцию", "Средства попадают в escrow", "Товар выдается автоматически или через чат", "После подтверждения деньги доступны продавцу"].map(row).join("")}</div></div>`;
+  return `<div class="checkout-confirm"><h2>Подтверждение</h2><p class="lead">Проверьте товар, данные аккаунта и выбранный способ оплаты. После оплаты заказ перейдёт продавцу на выдачу.</p><div class="list">${["Заказ создаётся с отдельным платёжным реквизитом", "Средства удерживаются до подтверждения получения", "Товар выдаётся автоматически или через чат", "Арбитраж доступен со страницы заказа"].map(row).join("")}</div></div>`;
 }
 
 function payment(id = 12345) {
   const paymentItem = paymentByOrderId(id === "order-id" ? 12345 : id);
   const paymentAddress = window.SECMARKET_DATA.paymentWallets[paymentItem.network] || window.SECMARKET_DATA.paymentWallets.TRC20;
   const qrCells = Array.from({ length: 49 }, (_, i) => [0, 1, 2, 7, 14, 8, 16, 34, 35, 42, 43, 44, 6, 13, 20, 28, 36, 48, 5, 19, 24, 30, 39, 46].includes(i));
-  return page("Крипто-оплата заказа", `<div class="two-col">
-    <section class="panel"><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.coin} ${paymentItem.network}</h2><p class="muted">Адрес для оплаты</p><div class="list-row"><strong>${paymentAddress}</strong><button class="btn" data-copy-address="${paymentAddress}">${state.copiedAddress ? "Скопировано" : "Копировать"}</button></div><div class="section qr">${qrCells.map((on) => `<span style="opacity:${on ? 1 : 0}"></span>`).join("")}</div><div class="list section">${[
+  return page("Оплата заказа", `<div class="payment-layout">
+    <section class="panel payment-panel"><div class="section-head"><div><p class="eyebrow">Оплата заказа</p><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status wait">ожидает</span></div><p class="muted">Скопируйте реквизит и отправьте точную сумму. После подтверждения заказ автоматически перейдёт к выдаче.</p><div class="payment-address"><strong>${paymentAddress}</strong><button class="btn" data-copy-address="${paymentAddress}">${state.copiedAddress ? "Скопировано" : "Копировать"}</button></div><div class="payment-body"><div class="qr">${qrCells.map((on) => `<span style="opacity:${on ? 1 : 0}"></span>`).join("")}</div><div class="list">${[
       ["Монета", paymentItem.coin],
       ["Сеть", paymentItem.network],
       ["Точная сумма", `${paymentItem.amount.toFixed(2)} ${paymentItem.coin}`],
-      ["Уникальность заказа", "отдельный адрес"],
+      ["Реквизит", "закреплён за заказом"],
       ["Окно оплаты", "30 минут"],
-    ].map(([left, right]) => row(left, right)).join("")}</div></section>
-    <aside class="panel"><h2>Статус</h2>${["Ожидает оплату", "Транзакция найдена", "Ожидает подтверждений", "Оплата подтверждена", "Средства в escrow", "Товар можно выдавать"].map((x, i) => `<div class="list-row"><span>${x}</span><span class="status ${i < 3 ? "ok" : "wait"}">${i < 3 ? "готово" : "ожидание"}</span></div>`).join("")}<p class="muted section">Таймер оплаты: 29:42. Подтверждений: 1 из 3. Если сумма меньше нужной, заказ перейдет в статус “Недостаточная сумма”.</p></aside>
+    ].map(([left, right]) => row(left, right)).join("")}</div></div></section>
+    <aside class="panel payment-status"><h2>Статус заказа</h2>${["Ожидает оплату", "Платёж найден", "Подтверждается", "Готов к выдаче"].map((x, i) => `<div class="list-row"><span>${x}</span><span class="status ${i < 2 ? "ok" : "wait"}">${i < 2 ? "готово" : "ожидание"}</span></div>`).join("")}<p class="muted section">Если сумма или сеть отличаются, заказ попадёт на ручную проверку поддержки.</p><a class="btn" href="/orders/${paymentItem.order}" data-link>Открыть заказ</a></aside>
   </div>`, "Payment");
 }
