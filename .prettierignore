@@ -1,0 +1,6 @@
+dist
+node_modules
+outputs
+assets/*.png
+assets/*.jpg
+package-lock.json

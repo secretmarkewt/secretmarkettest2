@@ -306,7 +306,7 @@ async function handleAuth(req, res, store, id) {
       _actorId: "registration",
     });
 
-    let notification = { enabled: false, sent: false };
+    let notification;
     try {
       notification = await notifyRegistration(user);
     } catch (error) {

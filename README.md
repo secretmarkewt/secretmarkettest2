@@ -88,6 +88,12 @@ In production, `/api/ready` returns `503` with `deploymentIssues` if CORS is ope
 
 After the API is deployed, add a GitHub repository variable named `SECMARKET_PUBLIC_API_URL` with the public API origin, for example `https://secret-market-api.onrender.com`. The Pages workflow writes that value into `dist/config.js` during deployment. Local builds keep `apiBaseUrl` empty and fall back to `http://127.0.0.1:4174`.
 
+## Frontend Tooling
+
+The project includes a modern redesign toolchain without forcing a React migration: Tailwind CSS, Tailwind animation utilities, class composition helpers, Zod, ESLint, Prettier, VS Code recommendations and MCP server templates.
+
+See `FRONTEND_TOOLING.md` for the installed tools, scripts and the React-only packages that should wait until a React/Vite or Next.js migration.
+
 ## Current Launch State
 
 Ready as a public MVP demo:
