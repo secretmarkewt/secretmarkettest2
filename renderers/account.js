@@ -66,7 +66,8 @@ function accountOrders() {
   const liveOrderIds = new Set(liveItems("orders").map((orderItem) => String(orderItem.id)));
   const liveRows = liveItems("orders").map((orderItem) => orderListRow(normalizeLiveOrder(orderItem)));
   const demoRows = demoOrders.filter((orderItem) => !liveOrderIds.has(String(orderItem.id))).map((orderItem) => orderListRow(orderItem));
-  return page("Мои заказы", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Активные и завершенные</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div></section></div>`, "Account");
+  const rows = mixDemoRows("orders", demoRows, liveRows);
+  return page("Мои заказы", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Активные и завершенные</h2><div class="list">${rows.length ? rows.join("") : emptyAccountState("Заказов пока нет")}</div></section></div>`, "Account");
 }
 
 function accountFavorites() {
@@ -81,7 +82,12 @@ function accountPayments() {
   const livePaymentIds = new Set(liveItems("payments").map((paymentItem) => String(paymentItem.id)));
   const liveRows = liveItems("payments").map((paymentItem) => paymentListRow(normalizeLivePayment(paymentItem)));
   const demoRows = demoPayments.filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id))).map((paymentItem) => paymentListRow(paymentItem));
-  return page("История оплат", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Платежи заказов</h2>${[...liveRows, ...demoRows].join("")}</section></div>`, "Account");
+  const rows = mixDemoRows("payments", demoRows, liveRows);
+  return page("История оплат", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Платежи заказов</h2>${rows.length ? rows.join("") : emptyAccountState("Платежей пока нет")}</section></div>`, "Account");
+}
+
+function emptyAccountState(text) {
+  return `<div class="list-row"><span class="muted">${text}</span><span class="status wait">live</span></div>`;
 }
 
 function accountReviews() {

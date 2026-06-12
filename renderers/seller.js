@@ -12,6 +12,7 @@
 }
 
 function sellerOverview() {
+  const orders = mixDemoRows("orders", demoOrders.slice(0, 4), liveItems("orders").slice(0, 4).map((orderItem) => normalizeLiveOrder(orderItem)));
   return page("Кабинет продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
     <div class="section-head"><div><p class="eyebrow">Магазин</p><h1>PixelTrade</h1><p class="lead">Рабочий стол продавца: товары, заказы, остатки, рейтинг и выплаты.</p></div><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div>
     <div class="grid metrics seller-overview">${[
@@ -24,7 +25,7 @@ function sellerOverview() {
       ["1", "открытый спор"],
       ["5 мин", "средняя выдача"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
-    <section class="panel section"><div class="section-head"><h2>Очередь заказов</h2><a class="btn" href="/seller/orders" data-link>Все заказы</a></div><div class="list">${demoOrders.slice(0, 4).map(orderListRow).join("")}</div></section>
+    <section class="panel section"><div class="section-head"><h2>Очередь заказов</h2><a class="btn" href="/seller/orders" data-link>Все заказы</a></div><div class="list">${orders.length ? orders.map(orderListRow).join("") : emptySellerState("Заказов пока нет")}</div></section>
     <section class="panel section"><div class="section-head"><h2>Быстрые действия</h2></div><div class="seller-actions">${[
       ["Добавить товар", "/seller/products/create"],
       ["Проверить остатки", "/seller/products"],
@@ -52,14 +53,16 @@ function sellerProducts() {
     .filter((product) => !liveProductIds.has(String(product.id)))
     .slice(0, 5)
     .map((product, index) => `<a class="list-row" href="/seller/products/${product.id}/edit" data-link><span>${product.title}<br><span class="muted">${product.cat} · ${product.stock} шт. · ${money(product.price)}</span></span><span class="status ${index === 2 ? "wait" : "ok"}">${index === 2 ? "на модерации" : "опубликован"}</span></a>`);
-  return page("Мои товары", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><div class="section-head"><h2>Активные товары</h2><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div><div class="list">${[...liveRows, ...demoRows].join("")}</div></section></div>`, "Seller");
+  const rows = mixDemoRows("products", demoRows, liveRows);
+  return page("Мои товары", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><div class="section-head"><h2>Активные товары</h2><a class="btn primary" href="/seller/products/create" data-link>Создать товар</a></div><div class="list">${rows.length ? rows.join("") : emptySellerState("Товаров пока нет")}</div></section></div>`, "Seller");
 }
 
 function sellerOrders() {
   const liveOrderIds = new Set(liveItems("orders").map((orderItem) => String(orderItem.id)));
   const liveRows = liveItems("orders").map((orderItem) => orderListRow(normalizeLiveOrder(orderItem)));
   const demoRows = demoOrders.filter((orderItem) => !liveOrderIds.has(String(orderItem.id))).map((orderItem) => orderListRow(orderItem));
-  return page("Заказы продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><h2>Очередь выполнения</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div></section></div>`, "Seller");
+  const rows = mixDemoRows("orders", demoRows, liveRows);
+  return page("Заказы продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section class="panel"><h2>Очередь выполнения</h2><div class="list">${rows.length ? rows.join("") : emptySellerState("Заказов пока нет")}</div></section></div>`, "Seller");
 }
 
 function publicSeller() {
@@ -78,11 +81,29 @@ function createProduct(mode = "create", id = 12345) {
   const p = mode === "edit" ? productById(id) : productById(12345);
   const title = mode === "edit" ? `Редактирование товара #${p.id}` : "Создание товара";
   return page(title, `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
-    <div class="panel"><div class="section-head"><h2>Основные поля</h2><span class="status ${mode === "edit" ? "wait" : "ok"}">${mode === "edit" ? "на модерации после правок" : "новый товар"}</span></div><div class="form-grid">${field("Категория", "select", categories.map((c) => c[0]))}${field("Подкатегория", "input", p.cat === "Roblox" ? "Robux" : p.cat)}${field("Название", "input", p.title)}${field("Цена в USDT", "input", p.price.toFixed(2))}${field("Наличие", "input", String(p.stock))}${field("Тип выдачи", "select", ["Автоматическая", "Ручная"])}${field("Регион", "select", ["EU", "US", "CIS", "Любой"])}${field("Платформа", "input", p.cat)}${field("Срок выполнения", "input", "5 минут")}${field("Гарантия", "input", "24 часа")}${field("Изображение", "input", "Загрузить файл")}${field("Статус", "select", ["Черновик", "На модерации", "Опубликован"])}</div></div>
-    <div class="panel section"><h2>Описание и выдача</h2><div class="form-grid">${field("Описание", "textarea", "Что получает покупатель")}${field("Инструкция покупателю", "textarea", "Как активировать товар")}${field("Данные для автовыдачи", "textarea", "Один код, ключ или аккаунт на строку")}</div><div class="list section">${["Автовыдача списывает одну строку после подтверждения оплаты", "Ручная выдача открывает чат и ставит заказ в работу", "Модерация может проверять новые товары перед публикацией", "После публикации товар появится в каталоге"].map(row).join("")}</div></div>
+    <form data-product-form>
+    <div class="panel"><div class="section-head"><h2>Основные поля</h2><span class="status ${mode === "edit" ? "wait" : "ok"}">${mode === "edit" ? "на модерации после правок" : "новый товар"}</span></div><div class="form-grid">${productSelect("category", "Категория", categories.map((c) => c[0]), p.cat)}${productInput("subcategory", "Подкатегория", p.cat === "Roblox" ? "Robux" : p.cat)}${productInput("title", "Название", p.title)}${productInput("price", "Цена в USDT", p.price.toFixed(2), "number")}${productInput("stock", "Наличие", String(p.stock), "number")}${productSelect("deliveryType", "Тип выдачи", [["auto", "Автоматическая"], ["manual", "Ручная"]], "auto")}${productSelect("region", "Регион", ["EU", "US", "CIS", "Любой"], "Любой")}${productInput("platform", "Платформа", p.cat)}${productInput("deliveryTime", "Срок выполнения", "5 минут")}${productInput("warranty", "Гарантия", "24 часа")}${productInput("image", "Изображение", "")}${productSelect("status", "Статус", [["draft", "Черновик"], ["moderation", "На модерации"], ["published", "Опубликован"]], "moderation")}</div></div>
+    <div class="panel section"><h2>Описание и выдача</h2><div class="form-grid">${productTextarea("description", "Описание", "Что получает покупатель")}${productTextarea("instructions", "Инструкция покупателю", "Как активировать товар")}${productTextarea("deliverySecrets", "Данные для автовыдачи", "Один код, ключ или аккаунт на строку")}</div><div class="list section">${["Автовыдача списывает одну строку после подтверждения оплаты", "Ручная выдача открывает чат и ставит заказ в работу", "Модерация может проверять новые товары перед публикацией", "После публикации товар появится в каталоге"].map(row).join("")}</div></div>
     <section class="section"><div class="section-head"><h2>Предпросмотр</h2><a class="btn" href="/product/${p.id}" data-link>Открыть карточку</a></div>${productCards([p])}<section class="panel section"><h2>Остатки автовыдачи</h2><div class="list">${[["Всего строк", String(p.stock)], ["Зарезервировано заказами", "2"], ["Использовано", "18"], ["При нуле", "снять товар с публикации"]].map(([left, right]) => row(left, right)).join("")}</div></section></section>
-    <div class="form-actions section"><button class="btn">Сохранить черновик</button><button class="btn warn">Отправить на модерацию</button><button class="btn primary" data-live-action="create-product">${mode === "edit" ? "Сохранить правки" : "Опубликовать"}</button></div>
+    <div class="form-actions section"><button class="btn" type="button">Сохранить черновик</button><button class="btn warn" type="button">Отправить на модерацию</button><button class="btn primary" type="button" data-live-action="create-product">${mode === "edit" ? "Сохранить правки" : "Опубликовать"}</button></div>
+    </form>
   </section></div>`, "Seller");
+}
+
+function productInput(name, label, value, type = "text") {
+  return `<label class="field"><span>${label}</span><input name="${name}" type="${type}" value="${value}" /></label>`;
+}
+
+function productTextarea(name, label, value) {
+  return `<label class="field"><span>${label}</span><textarea name="${name}">${value}</textarea></label>`;
+}
+
+function productSelect(name, label, options, selected) {
+  return `<label class="field"><span>${label}</span><select name="${name}">${options.map((item) => {
+    const value = Array.isArray(item) ? item[0] : item;
+    const text = Array.isArray(item) ? item[1] : item;
+    return `<option value="${value}" ${String(value) === String(selected) || String(text) === String(selected) ? "selected" : ""}>${text}</option>`;
+  }).join("")}</select></label>`;
 }
 
 function finance() {
@@ -108,6 +129,10 @@ function withdraw() {
     .map(([left, status]) => `<div class="list-row"><span>${left}</span><span class="status ${status === "Выполнен" ? "ok" : status === "Отклонен" ? "bad" : "wait"}">${status}</span></div>`);
   return page("Вывод средств", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
     <section class="panel"><h2>Новый вывод</h2><div class="form-grid">${field("Валюта", "select", ["USDT"])}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Адрес кошелька", "input", "T...")}${field("Сумма", "input", "500")}${field("Комиссия сети", "input", "1 USDT")}${field("Итого к получению", "input", "499 USDT")}</div><div class="form-actions section"><button class="btn primary" data-live-action="request-withdrawal">Запросить вывод</button><span class="status wait">MVP: ручное подтверждение админом</span></div></section>
-    <section class="panel section"><h2>История выплат</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div></section>
+    <section class="panel section"><h2>История выплат</h2><div class="list">${mixDemoRows("withdrawals", demoRows, liveRows).join("") || emptySellerState("Выплат пока нет")}</div></section>
   </section></div>`, "Seller");
+}
+
+function emptySellerState(text) {
+  return `<div class="list-row"><span class="muted">${text}</span><span class="status wait">live</span></div>`;
 }

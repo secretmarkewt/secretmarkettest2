@@ -17,12 +17,17 @@
   if (path.includes("/moderation")) return adminModeration();
   if (path !== "/admin") return adminTable(adminLinks.find((item) => item[1] === path)?.[0] || "Раздел админки", ["Список записей", "Фильтры", "Ручные действия", "История изменений"]);
 
+  const orders = mixDemoRows("orders", demoOrders, liveItems("orders"));
+  const payments = mixDemoRows("payments", demoPayments, liveItems("payments"));
+  const tickets = mixDemoRows("tickets", demoTickets, liveItems("tickets"));
+  const catalogProducts = mixDemoRows("products", products, liveItems("products"));
+  const paymentRows = payments.map((paymentItem) => paymentListRow(paymentItem.order ? paymentItem : normalizeLivePayment(paymentItem)));
   return page("Админ-панель", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section><div class="grid metrics">${[
-    [demoOrders.length, "заказа в системе"],
-    [demoPayments.filter((paymentItem) => paymentItem.status === "Оплачено").length, "оплачено"],
-    [demoTickets.filter((ticket) => ticket.status !== "Закрыт").length, "активных тикета"],
-    [products.length, "товаров"],
-  ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div><div class="grid admin section">${adminLinks.slice(1).map(([label, href]) => `<a class="admin-tile panel" href="${href}" data-link><h3>${label}</h3><p class="muted">Смена статусов, история действий, ручная проверка и модерация.</p></a>`).join("")}</div><section class="section panel"><h2>Последние платежи</h2>${demoPayments.map(paymentListRow).join("")}</section></section></div>`, "Admin");
+    [orders.length, "заказа в системе"],
+    [payments.filter((paymentItem) => ["Оплачено", "paid", "completed"].includes(paymentItem.status)).length, "оплачено"],
+    [tickets.filter((ticket) => !["Закрыт", "closed", "resolved"].includes(ticket.status)).length, "активных тикета"],
+    [catalogProducts.length, "товаров"],
+  ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div><div class="grid admin section">${adminLinks.slice(1).map(([label, href]) => `<a class="admin-tile panel" href="${href}" data-link><h3>${label}</h3><p class="muted">Смена статусов, история действий, ручная проверка и модерация.</p></a>`).join("")}</div><section class="section panel"><h2>Последние платежи</h2>${paymentRows.length ? paymentRows.join("") : emptyAdminState("Платежей пока нет")}</section></section></div>`, "Admin");
 }
 
 function adminPayments() {
@@ -34,7 +39,8 @@ function adminPayments() {
   const demoRows = demoPayments
     .filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id)))
     .map((paymentItem) => `<a class="list-row" href="/admin/payments/${paymentItem.id}" data-link><span>${paymentItem.amount.toFixed(2)} ${paymentItem.coin} · ${paymentItem.network}<br><span class="muted">#${paymentItem.order} · ${paymentItem.tx} · ${paymentItem.confirmations}</span></span><span class="status ${statusTone(paymentItem.status)}">${paymentItem.status}</span></a>`);
-  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Платежи заказов</h2><button class="btn primary" data-live-action="sync-payment" data-payment-id="pay-12345">Синхронизировать</button></div><div class="list">${[...liveRows, ...demoRows].join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
+  const rows = mixDemoRows("payments", demoRows, liveRows);
+  return page("Админка платежей", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Платежи заказов</h2><button class="btn primary" data-live-action="sync-payment" data-payment-id="pay-12345">Синхронизировать</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Платежей пока нет")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть заказ</button><button class="btn danger">Пометить ошибку сети</button></div></section></div>`, "Admin");
 }
 
 function adminPaymentDetail(id = "pay-12345") {
@@ -60,7 +66,7 @@ function adminPayouts() {
     .filter((withdrawalItem) => !liveWithdrawalIds.has(String(withdrawalItem.id).toLowerCase()))
     .map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${withdrawalItem.seller}<br><span class="muted">${withdrawalItem.amount.toFixed(2)} USDT · ${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></a>`);
   return page("Админка выплат", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и tx hash после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${[...liveRows, ...demoRows].join("")}</div></section>
+    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и tx hash после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${mixDemoRows("withdrawals", demoRows, liveRows).join("") || emptyAdminState("Заявок на вывод пока нет")}</div></section>
     <section class="panel section"><h2>Проверки перед выплатой</h2><div class="grid trust">${["Адрес совпадает с профилем", "Баланс доступен без холда", "Нет открытого спора", "2FA продавца подтверждена"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Админ подтверждает вручную в MVP.</p></div>`).join("")}</div></section>
   </section></div>`, "Admin");
 }
@@ -84,11 +90,14 @@ function adminTable(title, rows) {
 }
 
 function adminUsers() {
-  return page("Пользователи", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Аккаунты</h2><button class="btn">Экспорт</button></div><div class="list">${[
+  const liveRows = liveItems("profiles").map((profile) => `<div class="list-row"><span>${profile.name || profile.email}<br><span class="muted">${profile.email}${profile.telegram ? ` · ${profile.telegram}` : ""}</span></span><span class="status ${profile.role === "admin" ? "warn" : profile.role === "seller" ? "wait" : "ok"}">${roleName(profile.role)}</span></div>`);
+  const demoRows = [
     ["Artem · buyer@example.com", "Покупатель"],
     ["PixelTrade · seller@example.com", "Продавец"],
     ["SupportOne · support@example.com", "Администратор"],
-  ].map(([left, role]) => `<div class="list-row"><span>${left}</span><span class="status ok">${role}</span></div>`).join("")}</div><section class="section"><h2>Роли</h2><div class="grid trust">${["Гость", "Покупатель", "Продавец", "Администратор"].map((role) => `<div class="trust-item panel"><h3>${role}</h3><p class="muted">${roleDescription(role)}</p></div>`).join("")}</div></section></section></div>`, "Admin");
+  ].map(([left, role]) => `<div class="list-row"><span>${left}</span><span class="status ok">${role}</span></div>`);
+  const rows = mixDemoRows("profiles", demoRows, liveRows);
+  return page("Пользователи", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Аккаунты</h2><button class="btn">Экспорт</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Пользователей пока нет")}</div><section class="section"><h2>Роли</h2><div class="grid trust">${["Гость", "Покупатель", "Продавец", "Администратор"].map((role) => `<div class="trust-item panel"><h3>${role}</h3><p class="muted">${roleDescription(role)}</p></div>`).join("")}</div></section></section></div>`, "Admin");
 }
 
 function adminSellers() {
@@ -107,7 +116,8 @@ function adminProducts() {
     .filter((product) => !liveProductIds.has(String(product.id)))
     .slice(0, 6)
     .map((product, index) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.seller} · ${product.cat}</span></span><span class="status ${index % 3 === 0 ? "wait" : "ok"}">${index % 3 === 0 ? "на проверке" : "активен"}</span></div>`);
-  return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Модерация товаров</h2><div class="list">${[...liveRows, ...demoRows].join("")}</div><div class="form-actions section"><button class="btn primary" data-live-action="approve-product" data-product-id="33412">Одобрить</button><button class="btn danger">Снять с публикации</button></div></section></div>`, "Admin");
+  const rows = mixDemoRows("products", demoRows, liveRows);
+  return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Модерация товаров</h2><div class="list">${rows.length ? rows.join("") : emptyAdminState("Товаров на модерации пока нет")}</div><div class="form-actions section"><button class="btn primary" data-live-action="approve-product" data-product-id="33412">Одобрить</button><button class="btn danger">Снять с публикации</button></div></section></div>`, "Admin");
 }
 
 function adminModeration() {
@@ -144,7 +154,27 @@ function adminAudit() {
 }
 
 function adminTickets() {
-  return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Очередь обращений</h2><div class="list">${demoTickets.map(ticketListRow).join("")}</div><div class="form-actions section"><button class="btn warn">Запросить данные</button><button class="btn primary">Ответить</button></div></section></div>`, "Admin");
+  const liveRows = liveItems("tickets").map((ticket) => ticketListRow({
+    id: ticket.id,
+    title: ticket.topic || "Обращение",
+    order: ticket.orderId || "general",
+    status: statusLabel(ticket.status),
+  }));
+  const rows = mixDemoRows("tickets", demoTickets.map(ticketListRow), liveRows);
+  return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Очередь обращений</h2><div class="list">${rows.length ? rows.join("") : emptyAdminState("Тикетов пока нет")}</div><div class="form-actions section"><button class="btn warn">Запросить данные</button><button class="btn primary">Ответить</button></div></section></div>`, "Admin");
+}
+
+function roleName(role) {
+  const map = {
+    admin: "Администратор",
+    buyer: "Покупатель",
+    seller: "Продавец",
+  };
+  return map[role] || role || "Гость";
+}
+
+function emptyAdminState(text) {
+  return `<div class="list-row"><span class="muted">${text}</span><span class="status wait">live</span></div>`;
 }
 
 function roleDescription(role) {

@@ -155,8 +155,23 @@ async function logout(token = getSupabaseToken()) {
 }
 
 async function list(collectionName) {
+  if (collectionName === "profiles") return listProfiles();
   const rows = await supabaseRequest(`/rest/v1/${SUPABASE_TABLE}?collection=eq.${encodeURIComponent(collectionName)}&select=*&order=created_at.desc`);
   return rows.map(rowToItem);
+}
+
+async function listProfiles() {
+  const rows = await supabaseRequest("/rest/v1/profiles?select=id,email,name,telegram,role,status,created_at,updated_at&order=created_at.desc");
+  return rows.map((profile) => ({
+    id: profile.id,
+    email: profile.email,
+    name: profile.name,
+    telegram: profile.telegram,
+    role: profile.role,
+    status: profile.status,
+    createdAt: profile.created_at,
+    updatedAt: profile.updated_at,
+  }));
 }
 
 async function findById(collectionName, id) {

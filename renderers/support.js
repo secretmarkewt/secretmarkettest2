@@ -64,7 +64,8 @@ function supportRequests() {
     order: ticket.orderId || "—",
     status: statusLabel(ticket.status),
   }));
-  return page("Мои обращения", `<section class="panel"><div class="list">${[...liveRows, ...window.SECMARKET_DATA.demoTickets.map(ticketListRow)].join("")}</div></section>`, "Support");
+  const rows = mixDemoRows("tickets", window.SECMARKET_DATA.demoTickets.map(ticketListRow), liveRows);
+  return page("Мои обращения", `<section class="panel"><div class="list">${rows.length ? rows.join("") : `<div class="list-row"><span class="muted">Обращений пока нет</span><span class="status wait">live</span></div>`}</div></section>`, "Support");
 }
 
 function supportTicketDetail(id = "SUP-104") {

@@ -20,6 +20,7 @@ const state = {
     ledger: [],
     orders: [],
     payments: [],
+    profiles: [],
     products: [],
     tickets: [],
     withdrawals: [],
@@ -121,9 +122,18 @@ function upsertLiveItem(collectionName, item) {
 }
 
 function liveCollectionsForRole(role) {
-  if (role === "admin" || role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets", "withdrawals"];
+  if (role === "admin") return ["deliveries", "disputes", "ledger", "orders", "payments", "profiles", "products", "tickets", "withdrawals"];
+  if (role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets", "withdrawals"];
   if (role === "buyer") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets"];
   return ["products"];
+}
+
+function productionDataMode() {
+  return Boolean(window.SECMARKET_API?.isSupabaseEnabled?.());
+}
+
+function mixDemoRows(_collectionName, demoRows, liveRows) {
+  return productionDataMode() ? liveRows : [...liveRows, ...demoRows];
 }
 
 async function syncLiveData(options = {}) {
@@ -182,7 +192,7 @@ function resetDemoState() {
   state.disputeCreated = false;
   state.copiedAddress = false;
   state.chatMessages = [];
-  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], products: [], tickets: [], withdrawals: [] };
+  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], profiles: [], products: [], tickets: [], withdrawals: [] };
   state.liveHealth = null;
   state.liveStatus = "idle";
   state.liveSyncedAt = "";

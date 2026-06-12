@@ -354,14 +354,26 @@ async function runLiveAction(button) {
     } else if (action === "create-product") {
       await ensureLiveRole("seller");
       const sellerId = sessionApi.currentSession().user?.id || "usr-seller";
+      const form = button.closest("[data-product-form]");
+      const formData = form ? new FormData(form) : null;
+      const deliverySecrets = String(formData?.get("deliverySecrets") || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
       const product = await api.live.create("products", {
         sellerId,
-        title: "Discord Nitro 1 мес",
-        category: "discord",
-        price: 8.5,
-        stock: 10,
-        deliveryType: "auto",
-        status: "moderation",
+        title: String(formData?.get("title") || "Новый товар").trim(),
+        category: String(formData?.get("category") || "catalog").trim(),
+        subcategory: String(formData?.get("subcategory") || "").trim(),
+        platform: String(formData?.get("platform") || "").trim(),
+        price: Number(formData?.get("price") || 0),
+        stock: Number(formData?.get("stock") || deliverySecrets.length || 0),
+        deliveryType: String(formData?.get("deliveryType") || "auto"),
+        region: String(formData?.get("region") || "Любой"),
+        deliveryTime: String(formData?.get("deliveryTime") || "5 минут"),
+        warranty: String(formData?.get("warranty") || "24 часа"),
+        image: String(formData?.get("image") || ""),
+        description: String(formData?.get("description") || ""),
+        instructions: String(formData?.get("instructions") || ""),
+        deliverySecrets,
+        status: String(formData?.get("status") || "moderation"),
       });
       upsertLiveItem("products", product);
       notify(`Товар #${product.id} создан и отправлен на модерацию`);
