@@ -128,8 +128,19 @@ function liveCollectionsForRole(role) {
   return ["products"];
 }
 
+function hasLiveProvider() {
+  const apiClient = window.SECMARKET_API;
+  const apiBaseUrl = apiClient?.getApiBaseUrl?.() || "";
+  return Boolean(apiClient?.isSupabaseEnabled?.() || (apiBaseUrl && !apiBaseUrl.includes("127.0.0.1")));
+}
+
+function liveProviderName() {
+  if (window.SECMARKET_API?.isSupabaseEnabled?.()) return "Supabase";
+  return "Live API";
+}
+
 function productionDataMode() {
-  return Boolean(window.SECMARKET_API?.isSupabaseEnabled?.());
+  return hasLiveProvider() && state.liveStatus === "connected";
 }
 
 function mixDemoRows(_collectionName, demoRows, liveRows) {

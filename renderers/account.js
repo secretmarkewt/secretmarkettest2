@@ -105,6 +105,7 @@ function accountSettings() {
     ["Заказ подтвержден", state.orderConfirmed ? "да" : "нет"],
   ].map(([left, right]) => row(left, right)).join("")}</div>
   <section class="section"><h2>Live API</h2><div class="list">${[
+    ["Провайдер", hasLiveProvider() ? liveProviderName() : "не настроен"],
     ["Текущий адрес", apiBaseUrl],
     ["Статус", state.liveStatus],
     ["Последняя синхронизация", state.liveSyncedAt ? new Date(state.liveSyncedAt).toLocaleString("ru-RU") : "нет"],

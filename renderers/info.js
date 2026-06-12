@@ -24,13 +24,16 @@ function readinessItem(label, ready, detail) {
 function launchReadiness() {
   const apiBaseUrl = api.getApiBaseUrl();
   const liveConnected = state.liveStatus === "connected";
-  const hasApiUrl = Boolean(apiBaseUrl && !apiBaseUrl.includes("127.0.0.1"));
+  const liveProvider = liveProviderName();
+  const hasLive = hasLiveProvider();
+  const publicEndpoint = api.isSupabaseEnabled?.() ? window.SECMARKET_CONFIG?.supabaseUrl : apiBaseUrl;
   const mvpItems = [
     ["Frontend Pages build", true, "dist собирается через scripts/build-pages.js и публикует только статические файлы"],
     ["CI verification", true, "GitHub Actions запускает npm run verify до Pages deploy"],
     ["Live API contract", true, "товары, заказы, платежи, выдача, споры, выплаты и audit покрыты verify"],
+    ["Live provider", hasLive, `${liveProvider}: ${publicEndpoint || "не настроен"}`],
     ["API health", liveConnected, `текущий статус: ${state.liveStatus}`],
-    ["Public API URL", hasApiUrl, apiBaseUrl],
+    ["Data fallback", true, productionDataMode() ? "используются live-данные" : "до подключения показываются локальные демо-данные"],
     ["Backend safety", true, "CORS allowlist, disabled reset, rate limit и security headers добавлены"],
   ];
   const productionItems = [
@@ -42,13 +45,13 @@ function launchReadiness() {
     ["Operations", false, "нужны backup, monitoring, payout batching и refund tooling"],
   ];
   return page("Готовность к запуску", `<div class="two-col">
-    <section class="panel"><div class="section-head"><div><h2>MVP запуск</h2><p class="muted">Что нужно, чтобы показать рабочее демо на GitHub Pages с live backend.</p></div><span class="status ${hasApiUrl && liveConnected ? "ok" : "wait"}">${hasApiUrl && liveConnected ? "ready" : "connect API"}</span></div><div class="list section">${mvpItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></section>
+    <section class="panel"><div class="section-head"><div><h2>MVP запуск</h2><p class="muted">Что нужно, чтобы показать рабочее демо на GitHub Pages с live backend.</p></div><span class="status ${hasLive && liveConnected ? "ok" : "wait"}">${hasLive && liveConnected ? "ready" : "connect API"}</span></div><div class="list section">${mvpItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></section>
     <aside class="panel"><h2>Production блокеры</h2><div class="list section">${productionItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></aside>
     <section class="panel section"><h2>Следующие действия</h2><div class="list">${[
       ["1", "Закоммитить и запушить текущие изменения"],
       ["2", "Дождаться GitHub Actions verify и Pages deploy"],
-      ["3", "Развернуть backend API через render.yaml или аналог"],
-      ["4", "Вписать публичный API URL в config.js"],
+      ["3", "Проверить live provider: Supabase или backend API"],
+      ["4", "Если используется backend API, вписать публичный API URL в config.js"],
       ["5", "Проверить checkout, оплату, выдачу, спор и вывод"],
     ].map(([left, right]) => row(left, right)).join("")}</div></section>
   </div>`, "Launch");
