@@ -73,7 +73,7 @@ function trustBar() {
   return `<section class="trust-bar">${[
     ["Гарантия"],
     ["Автовыдача"],
-    ["Арбитраж"],
+    ["Доверие"],
     ["USDT"],
   ].map(([title]) => `<article><span aria-hidden="true">✓</span><strong>${title}</strong></article>`).join("")}</section>`;
 }
