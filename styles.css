@@ -285,6 +285,19 @@ a {
   color: var(--text);
 }
 
+:root[data-theme="light"] .nav .login-link {
+  border-color: rgba(17, 24, 39, 0.12);
+  background: #eef3f8;
+  color: #101820;
+}
+
+:root[data-theme="light"] .nav .login-link:hover,
+:root[data-theme="light"] .nav .login-link.active {
+  border-color: rgba(25, 198, 79, 0.35);
+  background: #ffffff;
+  color: #101820;
+}
+
 .nav-balance {
   border-color: rgba(52, 208, 88, 0.24) !important;
   background: rgba(52, 208, 88, 0.08);
