@@ -211,10 +211,18 @@ function go(path) {
 
 function currentPath() {
   if (location.protocol === "file:") {
-    return location.hash.replace(/^#/, "") || "/";
+    return (location.hash.replace(/^#/, "").split("?")[0]) || "/";
   }
   const path = location.pathname.replace(APP_BASE_PATH, "") || "/";
   return path.startsWith("/") ? path : `/${path}`;
+}
+
+function queryParam(name) {
+  if (location.protocol === "file:") {
+    const query = location.hash.includes("?") ? location.hash.split("?").slice(1).join("?") : "";
+    return new URLSearchParams(query).get(name);
+  }
+  return new URLSearchParams(location.search).get(name);
 }
 
 function activeClass(path) {
@@ -259,6 +267,18 @@ function catalogProducts() {
   if (productionDataMode()) return liveProducts;
   const liveIds = new Set(liveProducts.map((product) => String(product.id)));
   return [...liveProducts, ...window.SECMARKET_DATA.products.filter((product) => !liveIds.has(String(product.id)))];
+}
+
+function checkoutProduct() {
+  return productById(queryParam("product") || 12345);
+}
+
+function checkoutFee(product) {
+  return Number((Number(product.price || 0) * 0.04).toFixed(2));
+}
+
+function checkoutTotal(product) {
+  return Number((Number(product.price || 0) + checkoutFee(product)).toFixed(2));
 }
 
 function productMatchesSearch(product, query = state.query) {

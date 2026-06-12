@@ -323,13 +323,15 @@ async function runLiveAction(button) {
     if (action === "create-checkout") {
       await ensureLiveRole("buyer");
       const buyerId = sessionApi.currentSession().user?.id || "usr-buyer";
+      const product = checkoutProduct();
       const orderId = `ord-${Date.now()}`;
       const order = await api.live.create("orders", {
         id: orderId,
         buyerId,
-        sellerId: "usr-seller",
-        productId: 12345,
-        amount: 88.3,
+        sellerId: product.sellerId || product.seller,
+        productId: product.id,
+        productTitle: product.title,
+        amount: checkoutTotal(product),
         paymentStatus: "waiting",
         orderStatus: "awaiting_payment",
         escrowStatus: "hold",

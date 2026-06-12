@@ -25,7 +25,7 @@ function productCards(list = products) {
           <span class="price">${money(p.price)}</span>
         </div>
       </a>
-      <a class="btn primary product-buy" href="/product/${p.id}" data-link>Купить</a>
+      <a class="btn primary product-buy" href="/checkout?product=${encodeURIComponent(p.id)}" data-link>Купить</a>
     </article>`).join("")}</div>`;
 }
 
@@ -234,7 +234,7 @@ function product(id = 12345) {
         <span class="muted">Цена</span>
         <strong class="buy-price">${money(p.price)}</strong>
         <span class="muted">≈ $${p.usd.toFixed(2)}</span>
-        <a class="btn primary" href="/checkout" data-link>Купить</a>
+        <a class="btn primary" href="/checkout?product=${encodeURIComponent(p.id)}" data-link>Купить</a>
         <a class="btn" href="/chats" data-link>Написать продавцу</a>
         <div class="seller-mini">
           <div class="seller-avatar">${p.seller.slice(0, 2).toUpperCase()}</div>
@@ -262,6 +262,9 @@ function product(id = 12345) {
 }
 
 function checkout() {
+  const p = checkoutProduct();
+  const fee = checkoutFee(p);
+  const total = checkoutTotal(p);
   const steps = ["Товар", "Данные", "Оплата", "Подтверждение"];
   return page("Оформление заказа", `<div class="checkout-layout">
     <section class="panel checkout-panel">
@@ -271,11 +274,11 @@ function checkout() {
     </section>
     <aside class="panel order-summary">
       <h2>Ваш заказ</h2>
-      <div class="summary-product"><span>RB</span><div><strong>Robux 10 000</strong><small>PixelTrade · 4.98</small></div></div>
+      <div class="summary-product"><span>${p.mark}</span><div><strong>${p.title}</strong><small>${p.seller} · ${p.rating}</small></div></div>
       <div class="list">${[
-        ["Товар", "84.90 USDT"],
-        ["Комиссия сервиса", "3.40 USDT"],
-        ["К оплате", "88.30 USDT"],
+        ["Товар", money(p.price)],
+        ["Комиссия сервиса", money(fee)],
+        ["К оплате", money(total)],
       ].map(([left, right]) => row(left, right)).join("")}</div>
       <p class="muted section">Платёж закрепляется за заказом, выдача и чат остаются внутри сделки.</p>
     </aside>
@@ -283,13 +286,16 @@ function checkout() {
 }
 
 function checkoutStepBody() {
+  const p = checkoutProduct();
+  const fee = checkoutFee(p);
+  const total = checkoutTotal(p);
   if (activeStep === 1) {
     return `<div class="list">${[
-      ["Товар", "Robux 10 000"],
-      ["Продавец", "PixelTrade · 4.98"],
-      ["Цена", "84.90 USDT"],
-      ["Комиссия", "3.40 USDT"],
-      ["Итоговая сумма", "88.30 USDT"],
+      ["Товар", p.title],
+      ["Продавец", `${p.seller} · ${p.rating}`],
+      ["Цена", money(p.price)],
+      ["Комиссия", money(fee)],
+      ["Итоговая сумма", money(total)],
     ].map(([left, right]) => row(left, right)).join("")}</div>`;
   }
   if (activeStep === 2) {
