@@ -21,8 +21,11 @@ function requestWithdrawal(store, payload, options = {}) {
   const sellerId = options.sellerId || payload.sellerId;
   if (!sellerId) return { error: "seller_required" };
 
-  const amount = Number(payload.amount || 0);
+  const amount = Number(payload.grossAmount || payload.amount || 0);
   if (!(amount > 0)) return { error: "amount_required" };
+  const networkFee = Math.max(Number(payload.networkFee || 0), 0);
+  const netAmount = Math.max(Number(payload.netAmount || (amount - networkFee)), 0);
+  if (networkFee >= amount) return { error: "network_fee_too_high" };
 
   const available = sellerAvailableBalance(store, sellerId);
   if (amount > available) {
@@ -32,6 +35,9 @@ function requestWithdrawal(store, payload, options = {}) {
   const withdrawal = store.create("withdrawals", {
     sellerId,
     amount,
+    grossAmount: amount,
+    networkFee,
+    netAmount,
     coin: payload.coin || "USDT",
     network: payload.network || "TRC20",
     address: payload.address || "",

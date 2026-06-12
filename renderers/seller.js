@@ -176,7 +176,14 @@ function withdraw() {
   ].filter(([, , id]) => !liveWithdrawalIds.has(id.toLowerCase()))
     .map(([left, status]) => `<div class="list-row"><span>${left}</span><span class="status ${status === "Выполнен" ? "ok" : status === "Отклонен" ? "bad" : "wait"}">${status}</span></div>`);
   return page("Вывод средств", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
-    <section class="panel"><h2>Новый вывод</h2><div class="form-grid">${field("Валюта", "select", ["USDT"])}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Адрес кошелька", "input", "T...")}${field("Сумма", "input", "500")}${field("Комиссия сети", "input", "1 USDT")}${field("Итого к получению", "input", "499 USDT")}</div><div class="form-actions section"><button class="btn primary" data-live-action="request-withdrawal">Запросить вывод</button><span class="status wait">MVP: ручное подтверждение админом</span></div></section>
+    <section class="panel"><h2>Новый вывод</h2><form data-withdrawal-form><div class="form-grid">
+      <label class="field"><span>Валюта</span><select name="coin"><option>USDT</option></select></label>
+      <label class="field"><span>Сеть</span><select name="network" data-withdrawal-network><option>TRC20</option><option>TON</option><option>BEP20</option></select></label>
+      <label class="field"><span>Адрес кошелька</span><input name="address" placeholder="T..." /></label>
+      <label class="field"><span>Сумма списания</span><input name="amount" inputmode="decimal" placeholder="25.00" data-withdrawal-amount /></label>
+      <label class="field"><span>Комиссия сети</span><input name="networkFee" value="1.00 USDT" data-withdrawal-fee readonly /></label>
+      <label class="field"><span>К получению</span><input name="netAmount" value="0.00 USDT" data-withdrawal-net readonly /></label>
+    </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="request-withdrawal">Запросить вывод</button><span class="status wait">ручное подтверждение админом</span></div></form></section>
     <section class="panel section"><h2>История выплат</h2><div class="list">${mixDemoRows("withdrawals", demoRows, liveRows).join("") || emptySellerState("Выплат пока нет")}</div></section>
   </section></div>`, "Seller");
 }

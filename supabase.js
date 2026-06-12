@@ -266,9 +266,16 @@ async function withdrawalBalance() {
 }
 
 async function requestWithdrawal(payload) {
+  const grossAmount = Number(payload.grossAmount || payload.amount || 0);
+  const networkFee = Math.max(Number(payload.networkFee || 0), 0);
+  const netAmount = Math.max(Number(payload.netAmount || (grossAmount - networkFee)), 0);
   const withdrawal = await create("withdrawals", {
     ...payload,
     id: `wd-${Date.now()}`,
+    amount: grossAmount,
+    grossAmount,
+    networkFee,
+    netAmount,
     status: "review",
   });
   return { withdrawal };

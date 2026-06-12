@@ -341,12 +341,18 @@ function authHeader(token) {
       headers: authHeader(sellerLogin.token),
       body: JSON.stringify({
         amount: 25,
+        grossAmount: 25,
         coin: "USDT",
         network: "TRC20",
         address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB",
+        networkFee: 1,
+        netAmount: 24,
       }),
     }).then((res) => res.json());
     if (withdrawalRequest.withdrawal?.status !== "review" || withdrawalRequest.withdrawal?.sellerId !== "usr-seller") throw new Error("withdrawal request failed");
+    if (withdrawalRequest.withdrawal?.networkFee !== 1 || withdrawalRequest.withdrawal?.netAmount !== 24 || withdrawalRequest.withdrawal?.grossAmount !== 25) {
+      throw new Error("withdrawal fee fields failed");
+    }
 
     const sellerSettleWithdrawal = await request(port, `/api/withdrawals/${withdrawalRequest.withdrawal.id}/settle`, {
       method: "POST",
@@ -390,6 +396,19 @@ function authHeader(token) {
       }),
     });
     if (overWithdrawal.status !== 422) throw new Error("withdrawal balance guard failed");
+
+    const invalidWithdrawalFee = await request(port, "/api/withdrawals", {
+      method: "POST",
+      headers: authHeader(sellerLogin.token),
+      body: JSON.stringify({
+        amount: 1,
+        coin: "USDT",
+        network: "TRC20",
+        address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB",
+        networkFee: 1,
+      }),
+    });
+    if (invalidWithdrawalFee.status !== 422) throw new Error("withdrawal network fee guard failed");
 
     const confirmedAgain = await request(port, "/api/orders/88001/confirm", {
       method: "POST",

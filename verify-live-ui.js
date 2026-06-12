@@ -118,10 +118,19 @@ context.location.pathname = "/admin/payments";
 context.render();
 if (!app.innerHTML.includes("TX-LIVE-UI")) throw new Error("live admin payment did not render");
 
+context.location.pathname = "/admin/payouts/WD-LIVE";
+context.render();
+if (!app.innerHTML.includes('data-payout-form') || !app.innerHTML.includes("К получению")) {
+  throw new Error("live admin payout form did not render");
+}
+
 setSession("seller");
 context.location.pathname = "/seller/withdraw";
 context.render();
 if (!app.innerHTML.includes("WD-LIVE")) throw new Error("live withdrawal did not render");
+if (!app.innerHTML.includes('data-withdrawal-form') || !app.innerHTML.includes('data-withdrawal-net')) {
+  throw new Error("withdrawal fee form did not render");
+}
 
 setSession("buyer");
 context.location.pathname = "/account/orders";

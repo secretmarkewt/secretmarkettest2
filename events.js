@@ -255,6 +255,12 @@
   document.querySelector("[data-live-sync]")?.addEventListener("click", async () => {
     await syncLiveData({ notify: true });
   });
+  const withdrawalForm = document.querySelector("[data-withdrawal-form]");
+  if (withdrawalForm) {
+    updateWithdrawalPreview(withdrawalForm);
+    withdrawalForm.addEventListener("input", () => updateWithdrawalPreview(withdrawalForm));
+    withdrawalForm.addEventListener("change", () => updateWithdrawalPreview(withdrawalForm));
+  }
   document.querySelectorAll("[data-step]").forEach((button) => button.addEventListener("click", () => {
     activeStep = Number(button.dataset.step);
     render();
@@ -271,6 +277,50 @@
     button.addEventListener("click", () => runLiveAction(button));
   });
   bindHeroCursorGlow();
+}
+
+const NETWORK_WITHDRAWAL_FEES = {
+  BEP20: 0.35,
+  TON: 0.15,
+  TRC20: 1,
+};
+
+function withdrawalNetworkFee(network) {
+  return NETWORK_WITHDRAWAL_FEES[String(network || "TRC20").toUpperCase()] ?? NETWORK_WITHDRAWAL_FEES.TRC20;
+}
+
+function withdrawalDraftFromForm(form) {
+  const formData = new FormData(form);
+  const network = String(formData.get("network") || "TRC20").trim().toUpperCase();
+  const amount = Number(String(formData.get("amount") || "").replace(",", "."));
+  const networkFee = withdrawalNetworkFee(network);
+  const netAmount = Math.max((Number.isFinite(amount) ? amount : 0) - networkFee, 0);
+  return {
+    address: String(formData.get("address") || "").trim(),
+    amount: Number.isFinite(amount) ? amount : 0,
+    coin: String(formData.get("coin") || "USDT").trim() || "USDT",
+    network,
+    networkFee,
+    netAmount: Math.round(netAmount * 100) / 100,
+  };
+}
+
+function updateWithdrawalPreview(form) {
+  const draft = withdrawalDraftFromForm(form);
+  const feeInput = form.querySelector("[data-withdrawal-fee]");
+  const netInput = form.querySelector("[data-withdrawal-net]");
+  if (feeInput) feeInput.value = `${draft.networkFee.toFixed(2)} USDT`;
+  if (netInput) netInput.value = `${draft.netAmount.toFixed(2)} USDT`;
+}
+
+function payoutDraftFromButton(button, fallbackStatus = "completed") {
+  const form = button.closest("[data-payout-form]");
+  const formData = form ? new FormData(form) : new FormData();
+  return {
+    riskNote: String(formData.get("riskNote") || "").trim(),
+    status: String(formData.get("status") || fallbackStatus).trim() || fallbackStatus,
+    txHash: String(formData.get("txHash") || "").trim(),
+  };
 }
 
 function bindHeroCursorGlow() {
@@ -395,15 +445,29 @@ async function runLiveAction(button) {
     } else if (action === "request-withdrawal") {
       await ensureLiveRole("seller");
       const sellerId = sessionApi.currentSession().user?.id || "usr-seller";
-      const result = await api.live.requestWithdrawal({
-        sellerId,
+      const form = button.closest("[data-withdrawal-form]");
+      const draft = form ? withdrawalDraftFromForm(form) : {
+        address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB",
         amount: 25,
         coin: "USDT",
         network: "TRC20",
-        address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB",
+        networkFee: 1,
+        netAmount: 24,
+      };
+      if (!(draft.amount > draft.networkFee)) throw new Error("сумма должна быть больше комиссии сети");
+      if (!draft.address) throw new Error("укажите адрес кошелька");
+      const result = await api.live.requestWithdrawal({
+        sellerId,
+        amount: draft.amount,
+        grossAmount: draft.amount,
+        coin: draft.coin,
+        network: draft.network,
+        address: draft.address,
+        networkFee: draft.networkFee,
+        netAmount: draft.netAmount,
       });
       upsertLiveItem("withdrawals", result.withdrawal);
-      notify(`Вывод ${result.withdrawal.id} создан: ${result.withdrawal.status}`);
+      notify(`Вывод ${result.withdrawal.id} создан: к получению ${draft.netAmount.toFixed(2)} USDT`);
     } else if (action === "sync-payment") {
       await ensureLiveRole("admin");
       const id = button.dataset.paymentId || currentPath().split("/").pop();
@@ -441,10 +505,26 @@ async function runLiveAction(button) {
     } else if (action === "settle-withdrawal") {
       await ensureLiveRole("admin");
       const id = button.dataset.withdrawalId || currentPath().split("/").pop();
-      const result = await api.live.settleWithdrawal(id, { txHash: `TX-OUT-${Date.now()}`, status: "completed" });
+      const draft = payoutDraftFromButton(button, "completed");
+      if ((draft.status === "sent" || draft.status === "completed") && !draft.txHash) throw new Error("укажите tx hash выплаты");
+      const result = await api.live.settleWithdrawal(id, draft);
       upsertLiveItem("withdrawals", result.withdrawal);
       if (result.ledgerEntry) upsertLiveItem("ledger", result.ledgerEntry);
       notify(`Выплата ${result.withdrawal.id}: ${result.withdrawal.status}`);
+    } else if (action === "review-withdrawal") {
+      await ensureLiveRole("admin");
+      const id = button.dataset.withdrawalId || currentPath().split("/").pop();
+      const draft = payoutDraftFromButton(button, "processing");
+      const result = await api.live.settleWithdrawal(id, { ...draft, status: "processing" });
+      upsertLiveItem("withdrawals", result.withdrawal);
+      notify(`Выплата ${result.withdrawal.id}: дополнительная проверка`);
+    } else if (action === "reject-withdrawal") {
+      await ensureLiveRole("admin");
+      const id = button.dataset.withdrawalId || currentPath().split("/").pop();
+      const draft = payoutDraftFromButton(button, "rejected");
+      const result = await api.live.settleWithdrawal(id, { ...draft, status: "rejected" });
+      upsertLiveItem("withdrawals", result.withdrawal);
+      notify(`Выплата ${result.withdrawal.id}: отклонена`);
     } else if (action === "approve-product") {
       await ensureLiveRole("admin");
       const product = await api.live.updateStatus("products", button.dataset.productId || 33412, "published");

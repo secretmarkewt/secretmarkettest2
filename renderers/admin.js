@@ -73,14 +73,28 @@ function adminPayouts() {
 
 function adminPayoutDetail(id = "WD-120") {
   const withdrawalItem = withdrawalById(id);
+  const coin = withdrawalItem.coin || "USDT";
+  const grossAmount = Number(withdrawalItem.grossAmount || withdrawalItem.amount || 0);
+  const networkFee = Number(withdrawalItem.networkFee || 0);
+  const netAmount = Number(withdrawalItem.netAmount || Math.max(grossAmount - networkFee, 0));
+  const txHash = withdrawalItem.tx || "";
   return page(`Выплата #${withdrawalItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>${withdrawalItem.seller} · ${withdrawalItem.amount.toFixed(2)} USDT</h2><p class="muted">${withdrawalItem.network} · ${withdrawalItem.address}</p></div><span class="status ${statusTone(withdrawalItem.status)}">${statusLabel(withdrawalItem.status)}</span></div><div class="grid metrics">${[
+    <section class="panel"><div class="section-head"><div><h2>${withdrawalItem.seller} · ${grossAmount.toFixed(2)} ${coin}</h2><p class="muted">${withdrawalItem.network} · ${withdrawalItem.address}</p></div><span class="status ${statusTone(withdrawalItem.status)}">${statusLabel(withdrawalItem.status)}</span></div><div class="grid metrics">${[
       [withdrawalItem.network, "сеть"],
-      [withdrawalItem.tx, "tx hash"],
-      [withdrawalItem.risk, "риск"],
+      [networkFee.toFixed(2), "комиссия сети"],
+      [netAmount.toFixed(2), "к получению"],
       [statusLabel(withdrawalItem.status), "статус"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
-    <section class="panel section"><h2>Ручное подтверждение</h2><div class="form-grid">${field("Адрес кошелька", "input", withdrawalItem.address)}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Сумма", "input", `${withdrawalItem.amount.toFixed(2)} USDT`)}${field("tx hash выплаты", "input", withdrawalItem.tx)}${field("Статус", "select", ["На проверке", "В обработке", "Отправлен", "Выполнен", "Отклонен"])}${field("Комментарий", "textarea", "Проверить адрес, холды и открытые споры перед отправкой")}</div><div class="form-actions section"><button class="btn primary" data-live-action="settle-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Подтвердить выплату</button><button class="btn warn">Запросить проверку</button><button class="btn danger">Отклонить</button></div></section>
+    <section class="panel section"><h2>Ручное подтверждение</h2><form data-payout-form><div class="form-grid">
+      <label class="field"><span>Адрес кошелька</span><input name="address" value="${escapeHtml(withdrawalItem.address)}" readonly /></label>
+      <label class="field"><span>Сеть</span><input name="network" value="${escapeHtml(withdrawalItem.network)}" readonly /></label>
+      <label class="field"><span>Сумма списания</span><input name="grossAmount" value="${grossAmount.toFixed(2)} ${coin}" readonly /></label>
+      <label class="field"><span>Комиссия сети</span><input name="networkFee" value="${networkFee.toFixed(2)} ${coin}" readonly /></label>
+      <label class="field"><span>К получению</span><input name="netAmount" value="${netAmount.toFixed(2)} ${coin}" readonly /></label>
+      <label class="field"><span>tx hash выплаты</span><input name="txHash" placeholder="TX-OUT-..." value="${escapeHtml(txHash)}" /></label>
+      <label class="field"><span>Статус</span><select name="status"><option value="processing">В обработке</option><option value="sent">Отправлен</option><option value="completed" selected>Выполнен</option><option value="rejected">Отклонен</option></select></label>
+      <label class="field"><span>Комментарий</span><textarea name="riskNote" placeholder="Проверить адрес, холды и открытые споры перед отправкой">${escapeHtml(withdrawalItem.risk || "")}</textarea></label>
+    </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="settle-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Подтвердить выплату</button><button class="btn warn" type="button" data-live-action="review-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Запросить проверку</button><button class="btn danger" type="button" data-live-action="reject-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Отклонить</button></div></form></section>
     <section class="panel section"><h2>История изменения статусов</h2><div class="list">${["Запрос создан продавцом", "Адрес прошел форматную проверку", `Риск: ${withdrawalItem.risk}`, `Текущий статус: ${statusLabel(withdrawalItem.status)}`].map(row).join("")}</div></section>
   </section></div>`, "Admin");
 }
