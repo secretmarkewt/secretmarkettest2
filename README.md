@@ -28,6 +28,19 @@ Default API health URL: `http://127.0.0.1:4174/api/health`
 
 The frontend API URL can be changed in `/account/settings`. GitHub Pages builds can inject a public API URL through the `SECMARKET_PUBLIC_API_URL` repository variable.
 
+## Supabase Mode
+
+The frontend can now use Supabase directly for registration, login, support tickets, product creation, checkout orders, payments, disputes and withdrawals.
+
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor.
+3. Add these GitHub repository variables for Pages deploys:
+   - `SECMARKET_PUBLIC_SUPABASE_URL`
+   - `SECMARKET_PUBLIC_SUPABASE_ANON_KEY`
+4. Rebuild Pages with `npm run build:pages`.
+
+The anon key is safe to expose in frontend code. Never expose a Supabase `service_role` key. If the Supabase variables are empty, the site keeps using the existing live/mock API fallback.
+
 ## Verification
 
 Run the full local check suite:
@@ -99,6 +112,7 @@ See `FRONTEND_TOOLING.md` for the installed tools, scripts and the React-only pa
 Ready as a public marketplace demo:
 
 - Static GitHub Pages frontend.
+- Optional Supabase mode for auth, marketplace records, support tickets and order flows.
 - Live API contract for products, orders, payments, delivery, disputes, withdrawals, audit and auth sessions.
 - Password-gated demo auth with PBKDF2 hashes and bearer sessions.
 - Registration flow with safe Telegram notifications that never include plaintext passwords.
@@ -110,9 +124,8 @@ Ready as a public marketplace demo:
 
 Still needed before real-money production:
 
-- Real account registration, password reset and 2FA.
+- Password reset, email confirmation copy and 2FA.
 - Real TRC20, TON and BEP20 payment watchers.
-- Production database such as PostgreSQL.
 - Encrypted auto-delivery secrets.
 - Attachment/file storage for disputes and tickets.
 - Operational admin controls for risk review, refunds and payout batching.

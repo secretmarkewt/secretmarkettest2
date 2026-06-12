@@ -35,6 +35,22 @@ function loginAs(role) {
   });
 }
 
+function loginUser(user, fallbackRole = "buyer") {
+  const role = user?.role || fallbackRole;
+  return writeSession({
+    role,
+    user: {
+      id: user?.id,
+      name: user?.name || user?.email?.split("@")[0] || "Пользователь",
+      email: user?.email || "",
+      telegram: user?.telegram || "",
+      role,
+      status: user?.status || "active",
+    },
+    loggedAt: new Date().toISOString(),
+  });
+}
+
 function logout() {
   localStorage.removeItem(SESSION_STORAGE_KEY);
   return defaultSession();
@@ -63,6 +79,7 @@ window.SECMARKET_SESSION = {
   currentSession,
   hasRole,
   loginAs,
+  loginUser,
   logout,
   roleLabel,
 };

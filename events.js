@@ -22,8 +22,28 @@
     event.preventDefault();
     setSearch(new FormData(event.currentTarget).get("query") || "");
   });
+  document.querySelector("[data-login-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const role = event.submitter?.dataset.loginRole || formData.get("role") || "buyer";
+    const email = String(formData.get("email") || "").trim();
+    const password = String(formData.get("password") || "");
+    try {
+      const session = await api.live.login(email, role, password);
+      if (sessionApi.loginUser) sessionApi.loginUser(session.user, role);
+      else sessionApi.loginAs(session.user?.role || role);
+      notify(session.provider === "supabase" ? "Вход выполнен через Supabase" : `Вход выполнен: ${sessionApi.roleLabel(role)} · live API подключен`);
+      if (session.user?.role === "seller") go("/seller");
+      else if (session.user?.role === "admin") go("/admin");
+      else go("/account");
+    } catch (error) {
+      notify(`Вход не выполнен: ${error.message}`);
+    }
+  });
   document.querySelectorAll("[data-login-role]").forEach((button) => {
     button.addEventListener("click", async () => {
+      if (button.closest("[data-login-form]")) return;
       const role = button.dataset.loginRole;
       sessionApi.loginAs(role);
       try {
@@ -60,8 +80,9 @@
     };
     try {
       const session = await api.live.register(payload);
-      sessionApi.loginAs(session.user.role);
-      notify(session.registrationNotice?.sent ? "Регистрация создана и отправлена в Telegram" : "Регистрация создана, Telegram уведомление не настроено");
+      if (sessionApi.loginUser) sessionApi.loginUser(session.user, payload.role);
+      else sessionApi.loginAs(session.user.role);
+      notify(session.provider === "supabase" ? "Регистрация создана через Supabase" : session.registrationNotice?.sent ? "Регистрация создана и отправлена в Telegram" : "Регистрация создана, Telegram уведомление не настроено");
       go(session.user.role === "seller" ? "/seller" : "/account");
     } catch (error) {
       notify(`Регистрация не выполнена: ${error.message}`);
@@ -75,6 +96,7 @@
     const payload = {
       id: `SUP-${Date.now()}`,
       orderId: orderId || "general",
+      buyerId: sessionApi.currentSession().user?.id || "usr-buyer",
       topic: formData.get("topic"),
       description: formData.get("description"),
       contact: formData.get("contact"),
@@ -156,7 +178,7 @@
       const dispute = await api.live.create("disputes", {
         id: `DSP-${Date.now()}`,
         orderId,
-        buyerId: "usr-buyer",
+        buyerId: sessionApi.currentSession().user?.id || "usr-buyer",
         sellerId: orderItem.seller || "usr-seller",
         reason: "Товар не работает",
         evidence: [],
@@ -280,6 +302,12 @@ async function loginLiveRole(role) {
 }
 
 async function ensureLiveRole(role) {
+  if (api.isSupabaseEnabled?.()) {
+    if (!api.getAuthToken()) throw new Error("сначала войдите в аккаунт");
+    const activeRole = sessionApi.currentSession().role;
+    if (activeRole !== role) throw new Error(`нужна роль: ${sessionApi.roleLabel(role)}`);
+    return api.getAuthToken();
+  }
   if (api.getAuthToken() && sessionApi.currentSession().role === role) return api.getAuthToken();
   await loginLiveRole(role);
   return api.getAuthToken();
@@ -294,9 +322,11 @@ async function runLiveAction(button) {
   try {
     if (action === "create-checkout") {
       await ensureLiveRole("buyer");
+      const buyerId = sessionApi.currentSession().user?.id || "usr-buyer";
       const orderId = `ord-${Date.now()}`;
       const order = await api.live.create("orders", {
         id: orderId,
+        buyerId,
         sellerId: "usr-seller",
         productId: 12345,
         amount: 88.3,
@@ -308,6 +338,8 @@ async function runLiveAction(button) {
       const payment = await api.live.create("payments", {
         id: `pay-${order.id}`,
         orderId: order.id,
+        buyerId,
+        sellerId: order.sellerId,
         amount: order.amount,
         coin: "USDT",
         network: "TRC20",
@@ -321,7 +353,9 @@ async function runLiveAction(button) {
       notify(`Заказ #${order.id} создан, счет готов к оплате`);
     } else if (action === "create-product") {
       await ensureLiveRole("seller");
+      const sellerId = sessionApi.currentSession().user?.id || "usr-seller";
       const product = await api.live.create("products", {
+        sellerId,
         title: "Discord Nitro 1 мес",
         category: "discord",
         price: 8.5,
@@ -333,7 +367,9 @@ async function runLiveAction(button) {
       notify(`Товар #${product.id} создан и отправлен на модерацию`);
     } else if (action === "request-withdrawal") {
       await ensureLiveRole("seller");
+      const sellerId = sessionApi.currentSession().user?.id || "usr-seller";
       const result = await api.live.requestWithdrawal({
+        sellerId,
         amount: 25,
         coin: "USDT",
         network: "TRC20",

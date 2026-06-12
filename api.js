@@ -108,6 +108,19 @@ function authHeader(token = getAuthToken()) {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+function supabaseProvider() {
+  return window.SECMARKET_SUPABASE;
+}
+
+function isSupabaseEnabled() {
+  return Boolean(supabaseProvider()?.enabled?.());
+}
+
+function syncSupabaseToken(session) {
+  if (session?.token) setAuthToken(session.token);
+  return session;
+}
+
 async function requestLive(path, options = {}) {
   const { token = getAuthToken(), ...requestOptions } = options;
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
@@ -130,6 +143,7 @@ async function requestLive(path, options = {}) {
 
 const live = {
   async register(payload) {
+    if (isSupabaseEnabled()) return syncSupabaseToken(await supabaseProvider().register(payload));
     const session = await requestLive("/api/auth/register", {
       method: "POST",
       token: "",
@@ -139,6 +153,7 @@ const live = {
     return session;
   },
   async login(email, role = "buyer", password = "password") {
+    if (isSupabaseEnabled()) return syncSupabaseToken(await supabaseProvider().login(email, password, role));
     const session = await requestLive("/api/auth/login", {
       method: "POST",
       token: "",
@@ -148,26 +163,36 @@ const live = {
     return session;
   },
   async session(token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().session(token);
     return requestLive("/api/auth/session", {
       token,
     });
   },
   async logout(token = getAuthToken()) {
+    if (isSupabaseEnabled()) {
+      const result = await supabaseProvider().logout(token);
+      if (token === getAuthToken()) setAuthToken("");
+      return result;
+    }
     const result = await requestLive("/api/auth/logout", { method: "POST", token });
     if (token === getAuthToken()) setAuthToken("");
     return result;
   },
   async health() {
+    if (isSupabaseEnabled()) return supabaseProvider().health();
     return requestLive("/api/health");
   },
   async list(collectionName) {
+    if (isSupabaseEnabled()) return supabaseProvider().list(collectionName);
     const response = await requestLive(`/api/${collectionName}`);
     return response.items || [];
   },
   async findById(collectionName, id) {
+    if (isSupabaseEnabled()) return supabaseProvider().findById(collectionName, id);
     return requestLive(`/api/${collectionName}/${id}`);
   },
   async create(collectionName, payload, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().create(collectionName, payload, token);
     return requestLive(`/api/${collectionName}`, {
       method: "POST",
       token,
@@ -175,6 +200,7 @@ const live = {
     });
   },
   async update(collectionName, id, payload, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().update(collectionName, id, payload, token);
     return requestLive(`/api/${collectionName}/${id}`, {
       method: "PATCH",
       token,
@@ -182,6 +208,7 @@ const live = {
     });
   },
   async updateStatus(collectionName, id, status, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().updateStatus(collectionName, id, status, token);
     return requestLive(`/api/${collectionName}/${id}/status`, {
       method: "PATCH",
       token,
@@ -189,6 +216,7 @@ const live = {
     });
   },
   async syncPayment(id, payload = {}, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().syncPayment(id, payload, token);
     return requestLive(`/api/payments/${id}/sync`, {
       method: "POST",
       token,
@@ -196,23 +224,27 @@ const live = {
     });
   },
   async issueDelivery(orderId, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().issueDelivery(orderId, token);
     return requestLive(`/api/orders/${orderId}/deliver`, {
       method: "POST",
       token,
     });
   },
   async confirmOrder(orderId, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().confirmOrder(orderId, token);
     return requestLive(`/api/orders/${orderId}/confirm`, {
       method: "POST",
       token,
     });
   },
   async withdrawalBalance(token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().withdrawalBalance(token);
     return requestLive("/api/withdrawals/balance", {
       token,
     });
   },
   async requestWithdrawal(payload, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().requestWithdrawal(payload, token);
     return requestLive("/api/withdrawals", {
       method: "POST",
       token,
@@ -220,6 +252,7 @@ const live = {
     });
   },
   async settleWithdrawal(id, payload = {}, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().settleWithdrawal(id, payload, token);
     return requestLive(`/api/withdrawals/${id}/settle`, {
       method: "POST",
       token,
@@ -227,6 +260,7 @@ const live = {
     });
   },
   async getSnapshot() {
+    if (isSupabaseEnabled()) return supabaseProvider().getSnapshot();
     return requestLive("/api/snapshot");
   },
   async reset() {
@@ -240,6 +274,7 @@ window.SECMARKET_API = {
   getAuthToken,
   getApiBaseUrl,
   getSnapshot,
+  isSupabaseEnabled,
   list,
   live,
   reset,
