@@ -225,15 +225,51 @@ function isCompactViewport() {
   return window.innerWidth <= 640;
 }
 
+function normalizeCatalogProduct(product, index = 0) {
+  const fallback = window.SECMARKET_DATA.products[index % window.SECMARKET_DATA.products.length];
+  const category = product.category || product.cat || fallback.cat;
+  const title = product.title || fallback.title;
+  const deliveryType = product.deliveryType === "manual" || product.type === "Ручная" ? "Ручная" : "Автовыдача";
+  return {
+    ...fallback,
+    ...product,
+    id: product.id,
+    title,
+    cat: category,
+    colors: product.colors || fallback.colors,
+    mark: product.mark || String(category || title).slice(0, 2).toUpperCase(),
+    price: Number(product.price || fallback.price || 0),
+    usd: Number(product.usd || product.price || fallback.usd || fallback.price || 0),
+    rating: Number(product.rating || fallback.rating || 4.9),
+    sales: Number(product.sales || 0),
+    seller: product.seller || product.sellerName || product.sellerId || fallback.seller,
+    stock: Number(product.stock ?? fallback.stock ?? 0),
+    type: deliveryType,
+  };
+}
+
+function liveCatalogProducts() {
+  return liveItems("products")
+    .filter((product) => product.status === "published")
+    .map(normalizeCatalogProduct);
+}
+
+function catalogProducts() {
+  const liveProducts = liveCatalogProducts();
+  if (productionDataMode()) return liveProducts;
+  const liveIds = new Set(liveProducts.map((product) => String(product.id)));
+  return [...liveProducts, ...window.SECMARKET_DATA.products.filter((product) => !liveIds.has(String(product.id)))];
+}
+
 function productMatchesSearch(product, query = state.query) {
-  const text = `${product.title} ${product.cat} ${product.seller} ${product.type}`.toLowerCase();
+  const text = `${product.title} ${product.cat} ${product.seller} ${product.type} ${product.subcategory || ""} ${product.platform || ""}`.toLowerCase();
   return text.includes(query.trim().toLowerCase());
 }
 
 function filteredProducts(category = "") {
   const cleanCategory = pretty(category).toLowerCase();
   const minRating = state.rating === "any" ? 0 : Number(state.rating);
-  const list = window.SECMARKET_DATA.products.filter((product) => {
+  const list = catalogProducts().filter((product) => {
     const inCategory = !category || product.cat.toLowerCase().includes(cleanCategory) || product.title.toLowerCase().includes(cleanCategory);
     const inSearch = productMatchesSearch(product);
     const inPrice = product.price <= state.maxPrice;

@@ -1,18 +1,7 @@
 function productById(id) {
   const { products } = window.SECMARKET_DATA;
   const liveProduct = liveItems("products").find((product) => String(product.id) === String(id));
-  if (liveProduct) {
-    return {
-      ...products[0],
-      id: liveProduct.id,
-      title: liveProduct.title,
-      cat: liveProduct.category || products[0].cat,
-      price: Number(liveProduct.price || 0),
-      usd: Number(liveProduct.price || 0),
-      stock: Number(liveProduct.stock || 0),
-      type: liveProduct.deliveryType === "manual" ? "Ручная" : "Автовыдача",
-    };
-  }
+  if (liveProduct) return normalizeCatalogProduct(liveProduct);
   return products.find((product) => String(product.id) === String(id)) || products[0];
 }
 
@@ -51,7 +40,7 @@ function normalizeLiveOrder(orderItem) {
     amount: Number(orderItem.amount || 0),
     payment: statusLabel(orderItem.paymentStatus),
     order: statusLabel(orderItem.status),
-    delivery: product?.type || "РђРІС‚РѕРІС‹РґР°С‡Р°",
+    delivery: product?.type || "Автовыдача",
   };
 }
 

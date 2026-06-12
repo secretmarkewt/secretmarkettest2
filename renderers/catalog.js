@@ -258,7 +258,7 @@ function product(id = 12345) {
       ["Оплатил TRC20, подтверждение пришло быстро", "5.0"],
       ["Все ок, заказ завершил сразу", "4.8"],
     ].map(([text, rating]) => `<div class="seller-card"><strong>★ ${rating}</strong><span>${text}</span><span class="muted">проверенный заказ</span></div>`).join("")}</div></section>
-    <section class="section"><div class="section-head"><h2>Похожие товары</h2></div>${productCards(products.filter((item) => item.id !== p.id).slice(0, 4))}</section>${footer()}</main>`;
+    <section class="section"><div class="section-head"><h2>Похожие товары</h2></div>${productCards(catalogProducts().filter((item) => String(item.id) !== String(p.id)).slice(0, 4))}</section>${footer()}</main>`;
 }
 
 function checkout() {
