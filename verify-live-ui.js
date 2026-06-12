@@ -151,8 +151,19 @@ if (!app.innerHTML.includes("Product #12345") && !app.innerHTML.includes("Robux"
 setSession("buyer");
 context.location.pathname = "/orders/12345";
 context.render();
-if (!app.innerHTML.includes("AUTO-LIVE-SECRET") || !app.innerHTML.includes("Товар выдан")) {
+if (!app.innerHTML.includes("AUTO-LIVE-SECRET")) {
   throw new Error("live delivery did not render on order detail");
+}
+
+if (app.innerHTML.includes('data-live-action="issue-delivery"')) {
+  throw new Error("buyer order detail rendered seller delivery action");
+}
+
+setSession("seller");
+context.location.pathname = "/orders/33412";
+context.render();
+if (!app.innerHTML.includes('data-live-action="issue-delivery"')) {
+  throw new Error("seller order detail did not render delivery action");
 }
 
 setSession("buyer");

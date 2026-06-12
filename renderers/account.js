@@ -2,10 +2,16 @@
   const orderItem = orderById(id);
   const paymentItem = paymentByOrderId(orderItem.id);
   const deliveryItem = deliveryByOrderId(orderItem.id);
+  const session = sessionApi.currentSession();
+  const isSellerView = session.role === "seller" || session.role === "admin";
+  const isBuyerView = session.role === "buyer";
   const deliverySecret = deliveryItem?.secret || (orderItem.delivery === "Автовыдача" ? "AUTO-DELIVERY-CODE-SEC-9K2" : "Ручная выдача через чат заказа");
-  const issueButton = deliveryItem ? `<span class="status ok">Товар выдан</span>` : `<button class="btn warn" data-live-action="issue-delivery" data-order-id="${orderItem.id}">Выдать товар</button>`;
+  const sellerActions = deliveryItem ? `<span class="status ok">Товар выдан</span>` : `<button class="btn warn" data-live-action="issue-delivery" data-order-id="${orderItem.id}">Выдать товар</button>`;
+  const buyerActions = `<button class="btn primary" data-confirm-order>Подтвердить получение</button><button class="btn danger" data-open-dispute>Открыть спор</button>`;
+  const guestActions = `<a class="btn primary" href="/login" data-link>Войти для действий</a>`;
   const isConfirmed = state.orderConfirmed || orderItem.order === "Завершен";
   const isDispute = state.disputeCreated || orderItem.order === "Спор";
+  const orderActions = isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : isSellerView ? sellerActions : isBuyerView ? buyerActions : guestActions;
   const statusRows = isConfirmed
     ? [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, "Гарантия: сделка завершена", "Заказ: завершен"]
     : [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, isDispute ? "Гарантия: открыта проверка" : "Гарантия: активна", `Заказ: ${orderItem.order}`];
@@ -14,7 +20,7 @@
     : ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель читает инструкцию"];
   const doneSteps = isConfirmed ? 5 : isDispute ? 4 : orderItem.order === "В работе" ? 3 : 4;
   return page(`Заказ #${orderItem.id}`, `<div class="order-layout">
-    <section class="panel order-card"><div class="section-head"><div><p class="eyebrow">Сделка</p><h2>${orderItem.product}</h2><p class="muted">${orderItem.seller} · ${money(orderItem.amount)}</p></div><span class="status ${isDispute ? "wait" : "ok"}">${orderItem.order}</span></div><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Оплата</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Проверьте товар после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статус</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Проверка", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : `${issueButton}<button class="btn primary" data-confirm-order>Подтвердить получение</button><button class="btn danger" data-open-dispute>Открыть спор</button>`}</div></section>
+    <section class="panel order-card"><div class="section-head"><div><p class="eyebrow">Сделка</p><h2>${orderItem.product}</h2><p class="muted">${orderItem.seller} · ${money(orderItem.amount)}</p></div><span class="status ${isDispute ? "wait" : "ok"}">${orderItem.order}</span></div><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Оплата</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Проверьте товар после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статус</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Проверка", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${orderActions}</div></section>
     <aside class="panel timeline"><h2>История</h2>${timeline.map((x, i) => `<div class="list-row"><span>${i + 1}</span><span>${x}</span><span class="status ok">OK</span></div>`).join("")}</aside>
   </div>`, "Orders");
 }
