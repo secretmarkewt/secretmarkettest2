@@ -1722,9 +1722,9 @@ a.status {
 .field textarea {
   width: 100%;
   min-height: 38px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 12px;
-  background: #11141a;
+  background: rgba(30, 41, 59, 0.62);
   color: var(--text);
   padding: 8px 10px;
 }
@@ -1780,7 +1780,7 @@ a.status {
 .publish-workspace .field textarea {
   min-height: 42px;
   border-radius: 10px;
-  background: rgba(7, 10, 18, 0.38);
+  background: rgba(30, 41, 59, 0.48);
 }
 
 .publish-workspace .field textarea {
