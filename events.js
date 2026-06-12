@@ -241,6 +241,30 @@
   document.querySelectorAll("[data-live-action]").forEach((button) => {
     button.addEventListener("click", () => runLiveAction(button));
   });
+  bindHeroCursorGlow();
+}
+
+function bindHeroCursorGlow() {
+  const hero = document.querySelector("[data-cursor-glow]");
+  if (!hero || !matchMedia("(pointer: fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  let frame = 0;
+  const setGlow = (event) => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      const rect = hero.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      hero.style.setProperty("--hero-glow-x", `${Math.max(0, Math.min(100, x))}%`);
+      hero.style.setProperty("--hero-glow-y", `${Math.max(0, Math.min(100, y))}%`);
+      hero.style.setProperty("--hero-glow-opacity", "0.86");
+    });
+  };
+
+  hero.addEventListener("pointermove", setGlow);
+  hero.addEventListener("pointerleave", () => {
+    hero.style.setProperty("--hero-glow-opacity", "0.46");
+  });
 }
 
 const liveDemoUsers = {

@@ -108,7 +108,7 @@ function homeProductGrid(list) {
 }
 
 function marketplaceIntro() {
-  return `<section class="market-intro">
+  return `<section class="market-intro" data-cursor-glow>
     <div class="market-intro-copy">
       <p class="eyebrow hero-badge">${uiIcon("info")} Безопасный маркетплейс цифровых товаров</p>
       <h1>Найди нужный товар <span>за секунды</span></h1>
