@@ -3,6 +3,7 @@ const SUPABASE_URL = String(SUPABASE_CONFIG.supabaseUrl || "").replace(/\/$/, ""
 const SUPABASE_ANON_KEY = String(SUPABASE_CONFIG.supabaseAnonKey || "").trim();
 const SUPABASE_TOKEN_KEY = "secmarket-supabase-token";
 const SUPABASE_TABLE = "secmarket_items";
+const SUPABASE_ADMIN_EMAILS = new Set(["milkiees6faceit@gmail.com", "hardpleilol@gmail.com"]);
 
 function supabaseEnabled() {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
@@ -49,14 +50,29 @@ async function supabaseRequest(path, options = {}) {
   return body;
 }
 
+async function notify(type, payload, token = getSupabaseToken()) {
+  if (!token) return { enabled: true, sent: false, error: "no_supabase_session" };
+  try {
+    return await supabaseRequest("/functions/v1/secmarket-notify", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ type, payload }),
+    });
+  } catch (error) {
+    return { enabled: true, sent: false, error: error.message };
+  }
+}
+
 function cleanUser(authUser, fallbackRole = "buyer") {
   const metadata = authUser?.user_metadata || authUser?.raw_user_meta_data || {};
+  const email = String(authUser?.email || "").toLowerCase();
+  const role = SUPABASE_ADMIN_EMAILS.has(email) ? "admin" : metadata.role || fallbackRole;
   return {
     id: authUser?.id,
     email: authUser?.email,
     name: metadata.name || authUser?.email?.split("@")[0] || "Пользователь",
     telegram: metadata.telegram || "",
-    role: metadata.role || fallbackRole,
+    role,
     status: "active",
   };
 }
@@ -87,6 +103,8 @@ function itemStatus(payload = {}) {
 }
 
 async function register(payload) {
+  const email = String(payload.email || "").toLowerCase();
+  const role = SUPABASE_ADMIN_EMAILS.has(email) ? "admin" : payload.role || "buyer";
   const body = await supabaseRequest("/auth/v1/signup", {
     method: "POST",
     token: "",
@@ -96,13 +114,20 @@ async function register(payload) {
       data: {
         name: payload.name,
         telegram: payload.telegram,
-        role: payload.role || "buyer",
+        role,
       },
     }),
   });
+  const session = sessionFromAuth(body, role);
+  const registrationNotice = await notify("registration", {
+    name: payload.name,
+    email: payload.email,
+    telegram: payload.telegram,
+    role,
+  }, session.token);
   return {
-    ...sessionFromAuth(body, payload.role || "buyer"),
-    registrationNotice: { enabled: false, sent: false },
+    ...session,
+    registrationNotice,
   };
 }
 
@@ -152,7 +177,7 @@ async function create(collectionName, payload) {
     }),
   });
   const item = rowToItem(rows[0]);
-  if (collectionName === "tickets") item.ticketNotice = { enabled: false, sent: false };
+  if (collectionName === "tickets") item.ticketNotice = await notify("ticket", item);
   return item;
 }
 
@@ -262,6 +287,7 @@ window.SECMARKET_SUPABASE = {
   list,
   login,
   logout,
+  notify,
   register,
   requestWithdrawal,
   session,

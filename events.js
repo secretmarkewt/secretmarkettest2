@@ -82,7 +82,7 @@
       const session = await api.live.register(payload);
       if (sessionApi.loginUser) sessionApi.loginUser(session.user, payload.role);
       else sessionApi.loginAs(session.user.role);
-      notify(session.provider === "supabase" ? "Регистрация создана через Supabase" : session.registrationNotice?.sent ? "Регистрация создана и отправлена в Telegram" : "Регистрация создана, Telegram уведомление не настроено");
+      notify(session.registrationNotice?.sent ? "Регистрация создана и отправлена в Telegram" : session.provider === "supabase" ? "Регистрация создана через Supabase, Telegram secret нужно проверить" : "Регистрация создана, Telegram уведомление не настроено");
       go(session.user.role === "seller" ? "/seller" : "/account");
     } catch (error) {
       notify(`Регистрация не выполнена: ${error.message}`);

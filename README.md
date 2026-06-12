@@ -41,6 +41,13 @@ The frontend can now use Supabase directly for registration, login, support tick
 
 The anon key is safe to expose in frontend code. Never expose a Supabase `service_role` key. If the Supabase variables are empty, the site keeps using the existing live/mock API fallback.
 
+Telegram notifications in Supabase mode are sent through the `secmarket-notify` Edge Function. Add these Supabase Edge Function secrets:
+
+- `SECMARKET_TELEGRAM_BOT_TOKEN`
+- `SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID=7391093210`
+
+Registration notifications include nickname, email, Telegram username and role. Plaintext passwords are never sent to Telegram.
+
 ## Verification
 
 Run the full local check suite:

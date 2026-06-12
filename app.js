@@ -112,9 +112,9 @@ function loginPanel() {
       <div class="form-grid">
         <label class="field"><span>Email</span><input name="email" type="email" value="buyer@example.com" required /></label>
         <label class="field"><span>Пароль</span><input name="password" type="password" value="password" required /></label>
-        <label class="field"><span>Роль</span><select name="role"><option value="buyer">Покупатель</option><option value="seller">Продавец</option><option value="admin">Админ</option></select></label>
+        <label class="field"><span>Роль</span><select name="role"><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></label>
       </div>
-      <div class="form-actions section"><button class="btn primary" data-login-role="buyer" type="submit">Войти как покупатель</button><button class="btn" data-login-role="seller" type="submit">Войти как продавец</button><button class="btn warn" data-login-role="admin" type="submit">Войти как админ</button><button class="btn danger" data-logout type="button">Выйти</button></div>
+      <div class="form-actions section"><button class="btn primary" data-login-role="buyer" type="submit">Войти как покупатель</button><button class="btn" data-login-role="seller" type="submit">Войти как продавец</button><button class="btn danger" data-logout type="button">Выйти</button></div>
     </form>
     <a class="auth-switch" href="/register" data-link>Нет аккаунта? Зарегистрироваться</a>
   </section>`;
