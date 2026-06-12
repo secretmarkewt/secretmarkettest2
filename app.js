@@ -61,6 +61,7 @@ function header() {
           ["/chats", "Чаты"],
         ].map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
         <a href="/support" data-link>Поддержка</a>
+        ${session.role === "admin" ? `<a href="/admin" data-link class="${currentPath().startsWith("/admin") ? "active" : ""}">Админ</a>` : ""}
         <a class="nav-balance" href="/account/payments" data-link>0.00 USDT</a>
         <a class="login-link ${["/login", "/auth"].includes(currentPath()) ? "active" : ""}" href="/login" data-link>${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
         <a class="btn primary nav-register ${activeClass("/register")}" href="/register" data-link>Регистрация</a>
