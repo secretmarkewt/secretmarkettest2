@@ -11,9 +11,13 @@ function productSketch(mark, label = "") {
   const key = String(mark || label || "SM").slice(0, 2).toLowerCase();
   const cleanLabel = escapeHtml(label || mark || "Товар");
   return `<span class="product-sketch product-sketch-${key}" aria-label="${cleanLabel}">
+    <span class="sketch-shadow"></span>
     <span class="sketch-base"></span>
     <span class="sketch-accent"></span>
+    <span class="sketch-prop"></span>
+    <span class="sketch-mark"></span>
     <span class="sketch-spark"></span>
+    <span class="sketch-shine"></span>
   </span>`;
 }
 
@@ -49,12 +53,12 @@ const homeCategories = [
 ];
 
 const homeRecommendedProducts = [
-  ["RB", "Roblox 10 000 Robux", "PixelTrade", "Автовыдача", "84.90", "4.98", "8 420", ["#222a36", "#394252"]],
-  ["ST", "Steam Gift Card 50$", "KeyDock", "Автовыдача", "50.00", "4.95", "6 104", ["#1f2b38", "#324150"]],
-  ["TG", "Telegram Premium 12 месяцев", "SubLine", "Ручная", "31.50", "4.88", "902", ["#202936", "#344154"]],
-  ["MC", "Minecraft Java аккаунт", "GameVault", "Автовыдача", "12.80", "4.92", "1 840", ["#222a24", "#394638"]],
-  ["VP", "Valorant VP EU", "AimShop", "Ручная", "22.40", "4.96", "1 120", ["#2f2228", "#47333b"]],
-  ["DN", "Discord Nitro 1 месяц", "NitroHub", "Автовыдача", "7.20", "4.91", "3 240", ["#24263b", "#3b3e56"]],
+  ["RB", "Roblox 10 000 Robux", "PixelTrade", "Автовыдача", "84.90", "4.98", "8 420", ["#173d2b", "#1fd86f"]],
+  ["ST", "Steam Gift Card 50$", "KeyDock", "Автовыдача", "50.00", "4.95", "6 104", ["#18253b", "#2c9df5"]],
+  ["TG", "Telegram Premium 12 месяцев", "SubLine", "Ручная", "31.50", "4.88", "902", ["#16334a", "#4cc9ff"]],
+  ["MC", "Minecraft Java аккаунт", "GameVault", "Автовыдача", "12.80", "4.92", "1 840", ["#1b3d25", "#78d95d"]],
+  ["VP", "Valorant VP EU", "AimShop", "Ручная", "22.40", "4.96", "1 120", ["#47202d", "#ff5f73"]],
+  ["DN", "Discord Nitro 1 месяц", "NitroHub", "Автовыдача", "7.20", "4.91", "3 240", ["#272a68", "#7b85ff"]],
 ];
 
 const homeSellers = [
