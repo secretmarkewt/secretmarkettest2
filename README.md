@@ -1,6 +1,6 @@
 # Secret Market
 
-Secret Market is an MVP prototype for a digital-goods marketplace with USDT payments, escrow-style order flow, seller payouts, disputes, admin moderation and a lightweight Node API.
+Secret Market is a digital-goods marketplace prototype focused on game accounts, keys, subscriptions, seller ratings, protected orders, chats, disputes, admin moderation and a lightweight Node API.
 
 ## Local Run
 
@@ -96,7 +96,7 @@ See `FRONTEND_TOOLING.md` for the installed tools, scripts and the React-only pa
 
 ## Current Launch State
 
-Ready as a public MVP demo:
+Ready as a public marketplace demo:
 
 - Static GitHub Pages frontend.
 - Live API contract for products, orders, payments, delivery, disputes, withdrawals, audit and auth sessions.

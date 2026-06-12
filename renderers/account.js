@@ -32,14 +32,14 @@ function notifications() {
 function chats() {
   const messages = [
     `<div class="chat-message system">Система: заказ создан, ожидается оплата.</div>`,
-    `<div class="chat-message system">Система: оплата получена, средства в escrow.</div>`,
+    `<div class="chat-message system">Система: оплата получена, гарантия сделки активирована.</div>`,
     `<div class="chat-message me">Проверьте выдачу на EU регион.</div>`,
     `<div class="chat-message">Продавец: данные выданы, инструкция в заказе.</div>`,
     `<div class="chat-message system">Система: покупатель может подтвердить получение или открыть спор.</div>`,
     ...state.chatMessages.map((message) => `<div class="chat-message me">${escapeHtml(message)}</div>`),
   ].join("");
   return page("Чаты", `<div class="chat-shell marketplace-chat">
-    <aside class="panel chat-list"><h3>Диалоги</h3>${["#12345 · PixelTrade", "#22341 · KeyDock", "Поддержка", "Спор #12345"].map((x, i) => `<a class="side-link ${i === 0 ? "active" : ""}" href="/chats" data-link>${x}<span>›</span></a>`).join("")}</aside>
+    <aside class="panel chat-list"><h3>Диалоги</h3>${["#12345 · PixelTrade", "#22341 · KeyDock", "Поддержка", "Спор #12345"].map((x, i) => `<a class="side-link ${i === 0 ? "active" : ""}" href="/chats" data-link>${x}<span>${uiIcon("chevron")}</span></a>`).join("")}</aside>
     <section class="panel chat-panel"><div class="section-head"><div><h2>Заказ #12345</h2><p class="muted">Товар, оплата и выдача закреплены за этим диалогом.</p></div><a class="btn" href="/orders/12345" data-link>Открыть заказ</a></div><div class="chat-thread">${messages}</div><form class="form-actions section" data-chat-form>${field("Сообщение", "input", "Написать ответ")}<button class="btn primary">Отправить</button><button class="btn" type="button" data-file-action>Файл</button></form></section>
   </div>`, "Chats");
 }
@@ -81,7 +81,7 @@ function accountPayments() {
   const livePaymentIds = new Set(liveItems("payments").map((paymentItem) => String(paymentItem.id)));
   const liveRows = liveItems("payments").map((paymentItem) => paymentListRow(normalizeLivePayment(paymentItem)));
   const demoRows = demoPayments.filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id))).map((paymentItem) => paymentListRow(paymentItem));
-  return page("История оплат", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Крипто-платежи</h2>${[...liveRows, ...demoRows].join("")}</section></div>`, "Account");
+  return page("История оплат", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section class="panel"><h2>Платежи заказов</h2>${[...liveRows, ...demoRows].join("")}</section></div>`, "Account");
 }
 
 function accountReviews() {

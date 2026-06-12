@@ -14,7 +14,7 @@ function productCards(list = products) {
 
   return `<div class="grid products">${list.map((p) => `
     <article class="product-card" style="--thumb-a:${p.colors[0]};--thumb-b:${p.colors[1]}">
-      <button class="favorite-btn ${state.favorites.has(p.id) ? "active" : ""}" data-favorite="${p.id}" title="В избранное" aria-label="В избранное">☆</button>
+      <button class="favorite-btn ${state.favorites.has(p.id) ? "active" : ""}" data-favorite="${p.id}" title="В избранное" aria-label="В избранное">${uiIcon("star")}</button>
       <a class="product-link" href="/product/${p.id}" data-link>
         <div class="product-thumb"><span>${p.mark}</span></div>
         <div class="product-body">
@@ -85,6 +85,14 @@ function homeCategoryGrid() {
     </a>`).join("")}</div>`;
 }
 
+function quickPicks() {
+  return `<div class="quick-picks">${[
+    ["Roblox сегодня", "Robux, аккаунты, донат", "/catalog/roblox"],
+    ["Steam выходные", "Ключи, гифт-карты, кошелёк", "/catalog/steam"],
+    ["Подписки без лишнего", "Telegram, Discord, Spotify", "/catalog/telegram"],
+  ].map(([title, text, href]) => `<a class="quick-pick" href="${href}" data-link><strong>${title}</strong><span>${text}</span></a>`).join("")}</div>`;
+}
+
 function homeProductGrid(list) {
   return `<div class="home-product-grid">${list.map(([mark, title, seller, delivery, price, rating, sales, colors], index) => `
     <article class="home-product-card" style="--thumb-a:${colors[0]};--thumb-b:${colors[1]}">
@@ -105,12 +113,22 @@ function marketplaceIntro() {
       <p class="eyebrow">Маркетплейс цифровых товаров</p>
       <h1>Покупайте аккаунты, ключи, валюту и подписки</h1>
       <p class="lead">Быстрый поиск по товарам, рейтинги продавцов, автовыдача и арбитраж по каждому заказу.</p>
+      <div class="market-pulse">${["Онлайн 1 284", "Новые товары 42", "Средняя выдача 7 мин"].map((item) => `<span>${item}</span>`).join("")}</div>
     </div>
-    <form class="market-search" data-search-form>
-      <span>⌕</span>
-      <input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" />
-      <button class="btn primary">Найти</button>
-    </form>
+    <div class="market-tools">
+      <form class="market-search" data-search-form>
+        <span>${uiIcon("search")}</span>
+        <input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" />
+        <button class="btn primary">Найти</button>
+      </form>
+      <aside class="market-mascot">
+        <img src="${assetPath("assets/hero-mascot.png")}" alt="Secret Market" />
+        <div>
+          <strong>Сделка под контролем</strong>
+          <span>Проверяйте рейтинг, выдачу и чат перед оплатой.</span>
+        </div>
+      </aside>
+    </div>
   </section>`;
 }
 
@@ -139,6 +157,7 @@ function home() {
   return `${header()}<main class="main">
     ${marketplaceIntro()}
     ${trustBar()}
+    ${quickPicks()}
     ${homeSection("Популярные категории", homeCategoryGrid(), `<a class="btn ghost" href="/catalog" data-link>Все категории</a>`)}
     ${homeSection("Рекомендованные товары", homeProductGrid(homeRecommendedProducts), `<a class="btn ghost" href="/catalog" data-link>Смотреть все</a>`)}
     ${footer()}
@@ -154,8 +173,8 @@ function catalog(category = "") {
     <div class="layout">
       <aside class="sidebar catalog-sidebar">
         <h3>Категории</h3>
-        ${["Все товары", ...homeCategories.map((item) => item[1])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все товары") ? "active" : ""}" href="${x === "Все товары" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>›</span></a>`).join("")}
-        <section class="section"><h3>Игры и сервисы</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>›</span></a>`).join("")}</section>
+        ${["Все товары", ...homeCategories.map((item) => item[1])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все товары") ? "active" : ""}" href="${x === "Все товары" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>${uiIcon("chevron")}</span></a>`).join("")}
+        <section class="section"><h3>Игры и сервисы</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>${uiIcon("chevron")}</span></a>`).join("")}</section>
       </aside>
       <section class="catalog-content">
         <div class="catalog-head">

@@ -195,6 +195,12 @@ a {
   height: 15px;
 }
 
+.ui-svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+}
+
 .theme-track-icon-sun .theme-svg {
   filter: none;
 }
@@ -402,6 +408,30 @@ h3 {
   margin-bottom: 0;
 }
 
+.market-pulse {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.market-pulse span {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.market-tools {
+  display: grid;
+  gap: 12px;
+}
+
 .market-search {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -425,6 +455,36 @@ h3 {
   outline: 0;
   background: transparent;
   color: var(--text);
+}
+
+.market-mascot {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(52, 208, 88, 0.08), transparent 42%),
+    var(--panel);
+  padding: 12px;
+}
+
+.market-mascot img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+}
+
+.market-mascot strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.market-mascot span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .home-stat,
@@ -505,6 +565,36 @@ h3 {
 .trust-bar article > span {
   color: var(--accent);
   font-weight: 900;
+}
+
+.quick-picks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.quick-pick {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  text-decoration: none;
+  padding: 14px;
+  transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
+}
+
+.quick-pick:hover {
+  border-color: #343b49;
+  background: #1a1e26;
+  transform: translateY(-2px);
+}
+
+.quick-pick span {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .home-section {
@@ -1691,6 +1781,19 @@ a.admin-tile {
   .market-search .btn {
     grid-column: 1 / -1;
     width: 100%;
+  }
+
+  .market-mascot {
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+
+  .market-mascot img {
+    width: 58px;
+    height: 58px;
+  }
+
+  .quick-picks {
+    grid-template-columns: 1fr;
   }
 
   .payment-methods,

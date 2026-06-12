@@ -52,7 +52,7 @@ function header() {
   return `
     <header class="topbar">
       <a class="brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a>
-      <form class="searchbar" data-search-form><span>⌕</span><input name="query" value="${state.query}" placeholder="Поиск товаров..." /><button class="icon-btn search-submit" title="Искать" aria-label="Искать">⌕</button></form>
+      <form class="searchbar" data-search-form><span>${uiIcon("search")}</span><input name="query" value="${state.query}" placeholder="Поиск товаров..." /><button class="icon-btn search-submit" title="Искать" aria-label="Искать">${uiIcon("search")}</button></form>
       <nav class="nav">
         ${[
           ["/catalog", "Каталог"],
@@ -72,11 +72,11 @@ function header() {
     </header>
     <nav class="mobile-tabbar">
       ${[
-        ["/", "⌂", "Главная"],
-        ["/catalog", "⌕", "Каталог"],
-        ["/orders/12345", "#", "Заказы"],
-        ["/chats", "✉", "Чаты"],
-        ["/account", "◉", "Профиль"],
+        ["/", uiIcon("home"), "Главная"],
+        ["/catalog", uiIcon("catalog"), "Каталог"],
+        ["/orders/12345", uiIcon("orders"), "Заказы"],
+        ["/chats", uiIcon("chat"), "Чаты"],
+        ["/account", uiIcon("user"), "Профиль"],
       ].map(([href, icon, label]) => `<a href="${href}" data-link class="${activeClass(href)}"><span>${icon}</span>${label}</a>`).join("")}
     </nav>`;
 }
@@ -85,7 +85,7 @@ function footer() {
   return `
     <footer class="footer">
       <div class="footer-grid">
-        <div><a class="brand footer-brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a><p>Тёмный маркетплейс цифровых товаров с оплатой в USDT, escrow-логикой и ручной модерацией спорных заказов.</p></div>
+        <div><a class="brand footer-brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a><p>Маркетплейс цифровых товаров с гарантиями сделки, рейтингами продавцов, чатами и арбитражем.</p></div>
         ${[
           ["Покупателям", ["/buyer-rules", "/refund-policy", "/crypto-payment-guide"]],
           ["Продавцам", ["/seller-rules", "/fees", "/seller/withdraw"]],

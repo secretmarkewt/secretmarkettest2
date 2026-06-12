@@ -92,7 +92,10 @@ context.render();
 if (!app.innerHTML.includes('class="market-intro"')) {
   throw new Error("home marketplace intro failed");
 }
-if (app.innerHTML.includes("hero-mascot.png") || app.innerHTML.includes("home-hero")) {
+if (!app.innerHTML.includes('class="market-mascot"')) {
+  throw new Error("compact mascot card failed");
+}
+if (app.innerHTML.includes("home-hero")) {
   throw new Error("legacy home hero should not render");
 }
 
