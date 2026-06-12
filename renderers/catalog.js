@@ -109,24 +109,24 @@ function homeProductGrid(list) {
 
 function marketplaceIntro() {
   return `<section class="market-intro">
-    <div>
-      <p class="eyebrow">Маркетплейс цифровых товаров</p>
-      <h1>Покупайте аккаунты, ключи, валюту и подписки</h1>
-      <p class="lead">Быстрый поиск по товарам, рейтинги продавцов, автовыдача и арбитраж по каждому заказу.</p>
+    <div class="market-intro-copy">
+      <p class="eyebrow hero-badge">${uiIcon("info")} Безопасный маркетплейс цифровых товаров</p>
+      <h1>Найди нужный товар <span>за секунды</span></h1>
+      <p class="lead">Сравнивай аккаунты, ключи, подписки и игровую валюту у продавцов с рейтингом, чатом и защитой заказа.</p>
       <div class="market-pulse">${["Онлайн 1 284", "Новые товары 42", "Средняя выдача 7 мин"].map((item) => `<span>${item}</span>`).join("")}</div>
-    </div>
-    <div class="market-tools">
       <form class="market-search" data-search-form>
         <span>${uiIcon("search")}</span>
-        <input name="query" value="${state.query}" placeholder="Robux, Steam, Telegram Premium" />
+        <input name="query" value="${state.query}" placeholder="Найти Robux, Steam key, Telegram Premium..." />
         <button class="btn primary">Найти</button>
       </form>
-      <aside class="market-mascot">
+      <div class="hero-tags">${["Robux", "Steam", "Minecraft", "VPN", "Windows 11", "Telegram Premium"].map((tag) => `<a href="/catalog?query=${encodeURIComponent(tag)}" data-link>${tag}</a>`).join("")}</div>
+    </div>
+    <div class="market-tools">
+      <aside class="market-mascot" aria-label="Secret Market assistant">
+        <div class="mascot-glow"></div>
         <img src="${assetPath("assets/hero-mascot.png")}" alt="Secret Market" />
-        <div>
-          <strong>Сделка под контролем</strong>
-          <span>Проверяйте рейтинг, выдачу и чат перед оплатой.</span>
-        </div>
+        <div class="mascot-card mascot-card-top"><strong>4.91</strong><span>средний рейтинг</span></div>
+        <div class="mascot-card mascot-card-bottom"><strong>28k+</strong><span>сделок закрыто</span></div>
       </aside>
     </div>
   </section>`;
