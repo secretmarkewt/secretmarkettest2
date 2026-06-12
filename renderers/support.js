@@ -51,9 +51,9 @@ function support(path = "") {
 function supportTicket() {
   return page("Создать тикет", `<div class="two-col"><section class="panel"><form data-support-ticket-form><div class="form-grid">
     <label class="field"><span>Тема</span><select name="topic"><option>Проблема с оплатой</option><option>Проблема с заказом</option><option>Проблема с продавцом</option><option>Выплаты</option><option>Другое</option></select></label>
-    <label class="field"><span>Связанный заказ</span><input name="orderId" value="#12345" /></label>
-    <label class="field"><span>Описание</span><textarea name="description">Опишите проблему подробно</textarea></label>
-    <label class="field"><span>Контакт</span><input name="contact" value="@telegram" /></label>
+    <label class="field"><span>Связанный заказ</span><input name="orderId" placeholder="#12345" /></label>
+    <label class="field"><span>Описание</span><textarea name="description" placeholder="Опишите проблему подробно"></textarea></label>
+    <label class="field"><span>Контакт</span><input name="contact" placeholder="@telegram" /></label>
   </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside class="panel"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}</aside></div>`, "Support");
 }
 

@@ -28,8 +28,8 @@ function sideLinks(links) {
 
 function field(label, type, value) {
   if (type === "select") return `<label class="field"><span>${label}</span><select>${value.map((x) => `<option>${x}</option>`).join("")}</select></label>`;
-  if (type === "textarea") return `<label class="field"><span>${label}</span><textarea>${value}</textarea></label>`;
-  return `<label class="field"><span>${label}</span><input value="${value}" /></label>`;
+  if (type === "textarea") return `<label class="field"><span>${label}</span><textarea placeholder="${escapeHtml(value)}"></textarea></label>`;
+  return `<label class="field"><span>${label}</span><input placeholder="${escapeHtml(value)}" /></label>`;
 }
 
 function option(value, label, selected) {

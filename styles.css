@@ -462,8 +462,10 @@ h3 {
   color: #101820;
 }
 
-:root[data-theme="light"] .market-search input::placeholder {
-  color: rgba(96, 112, 128, 0.72);
+:root[data-theme="light"] .market-search input::placeholder,
+:root[data-theme="light"] .field input::placeholder,
+:root[data-theme="light"] .field textarea::placeholder {
+  color: rgba(96, 112, 128, 0.58);
 }
 
 :root[data-theme="light"] .mascot-card {
@@ -1729,6 +1731,13 @@ a.status {
   padding: 8px 10px;
 }
 
+.field input::placeholder,
+.field textarea::placeholder,
+.searchbar input::placeholder,
+.market-search input::placeholder {
+  color: rgba(203, 213, 225, 0.48);
+}
+
 :root[data-theme="light"] .detail-media,
 :root[data-theme="light"] .step {
   background: #ffffff;
@@ -2417,8 +2426,10 @@ a.admin-tile {
   color: #101820;
 }
 
-:root[data-theme="light"] .market-search input::placeholder {
-  color: rgba(96, 112, 128, 0.72);
+:root[data-theme="light"] .market-search input::placeholder,
+:root[data-theme="light"] .field input::placeholder,
+:root[data-theme="light"] .field textarea::placeholder {
+  color: rgba(96, 112, 128, 0.58);
 }
 
 :root[data-theme="light"] .market-pulse span:hover,
