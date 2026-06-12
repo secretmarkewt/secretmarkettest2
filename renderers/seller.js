@@ -80,12 +80,60 @@ function publicSeller() {
 function createProduct(mode = "create", id = 12345) {
   const p = mode === "edit" ? productById(id) : productById(12345);
   const title = mode === "edit" ? `Редактирование товара #${p.id}` : "Создание товара";
+  const modeLabel = mode === "edit" ? "на модерации после правок" : "новый товар";
   return page(title, `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
-    <form data-product-form>
-    <div class="panel"><div class="section-head"><h2>Основные поля</h2><span class="status ${mode === "edit" ? "wait" : "ok"}">${mode === "edit" ? "на модерации после правок" : "новый товар"}</span></div><div class="form-grid">${productSelect("category", "Категория", categories.map((c) => c[0]), p.cat)}${productInput("subcategory", "Подкатегория", p.cat === "Roblox" ? "Robux" : p.cat)}${productInput("title", "Название", p.title)}${productInput("price", "Цена в USDT", p.price.toFixed(2), "number")}${productInput("stock", "Наличие", String(p.stock), "number")}${productSelect("deliveryType", "Тип выдачи", [["auto", "Автоматическая"], ["manual", "Ручная"]], "auto")}${productSelect("region", "Регион", ["EU", "US", "CIS", "Любой"], "Любой")}${productInput("platform", "Платформа", p.cat)}${productInput("deliveryTime", "Срок выполнения", "5 минут")}${productInput("warranty", "Гарантия", "24 часа")}${productInput("image", "Изображение", "")}${productSelect("status", "Статус", [["draft", "Черновик"], ["moderation", "На модерации"], ["published", "Опубликован"]], "moderation")}</div></div>
-    <div class="panel section"><h2>Описание и выдача</h2><div class="form-grid">${productTextarea("description", "Описание", "Что получает покупатель")}${productTextarea("instructions", "Инструкция покупателю", "Как активировать товар")}${productTextarea("deliverySecrets", "Данные для автовыдачи", "Один код, ключ или аккаунт на строку")}</div><div class="list section">${["Автовыдача списывает одну строку после подтверждения оплаты", "Ручная выдача открывает чат и ставит заказ в работу", "Модерация может проверять новые товары перед публикацией", "После публикации товар появится в каталоге"].map(row).join("")}</div></div>
-    <section class="section"><div class="section-head"><h2>Предпросмотр</h2><a class="btn" href="/product/${p.id}" data-link>Открыть карточку</a></div>${productCards([p])}<section class="panel section"><h2>Остатки автовыдачи</h2><div class="list">${[["Всего строк", String(p.stock)], ["Зарезервировано заказами", "2"], ["Использовано", "18"], ["При нуле", "снять товар с публикации"]].map(([left, right]) => row(left, right)).join("")}</div></section></section>
-    <div class="form-actions section"><button class="btn" type="button">Сохранить черновик</button><button class="btn warn" type="button">Отправить на модерацию</button><button class="btn primary" type="button" data-live-action="create-product">${mode === "edit" ? "Сохранить правки" : "Опубликовать"}</button></div>
+    <form class="publish-workspace" data-product-form>
+      <section class="panel publish-main">
+        <div class="section-head publish-head">
+          <div><p class="eyebrow">Публикация</p><h2>${mode === "edit" ? "Карточка товара" : "Новый товар"}</h2><p class="muted">Заполните только то, что покупатель должен увидеть до оплаты.</p></div>
+          <span class="status ${mode === "edit" ? "wait" : "ok"}">${modeLabel}</span>
+        </div>
+        <div class="publish-grid">
+          ${productInput("title", "Название", p.title)}
+          ${productInput("price", "Цена, USDT", p.price.toFixed(2), "number")}
+          ${productInput("stock", "Остаток", String(p.stock), "number")}
+          ${productSelect("category", "Категория", categories.map((c) => c[0]), p.cat)}
+          ${productSelect("deliveryType", "Выдача", [["auto", "Автовыдача"], ["manual", "Через чат"]], "auto")}
+          ${productInput("deliveryTime", "Срок", "5 минут")}
+        </div>
+        <details class="publish-more section">
+          <summary>Дополнительно</summary>
+          <div class="publish-grid section">
+            ${productInput("subcategory", "Подкатегория", p.cat === "Roblox" ? "Robux" : p.cat)}
+            ${productInput("platform", "Платформа", p.cat)}
+            ${productSelect("region", "Регион", ["EU", "US", "CIS", "Любой"], "Любой")}
+            ${productInput("warranty", "Гарантия", "24 часа")}
+            ${productInput("image", "Изображение", "")}
+            ${productSelect("status", "Статус", [["draft", "Черновик"], ["moderation", "На модерации"], ["published", "Опубликован"]], "moderation")}
+          </div>
+        </details>
+        <section class="publish-delivery section">
+          <h2>Описание и выдача</h2>
+          <div class="publish-stack">
+            ${productTextarea("description", "Короткое описание", "Что получает покупатель")}
+            ${productTextarea("instructions", "Инструкция после оплаты", "Как активировать товар")}
+            ${productTextarea("deliverySecrets", "Коды для автовыдачи", "Один код, ключ или аккаунт на строку")}
+          </div>
+        </section>
+        <div class="form-actions publish-actions section">
+          <button class="btn primary" type="button" data-live-action="create-product">${mode === "edit" ? "Сохранить" : "Опубликовать"}</button>
+        </div>
+      </section>
+      <aside class="publish-side">
+        <section class="panel publish-preview">
+          <div class="section-head"><h2>Предпросмотр</h2><a class="btn ghost" href="/product/${p.id}" data-link>Открыть</a></div>
+          ${productCards([p])}
+        </section>
+        <section class="panel section publish-checklist">
+          <h2>Перед публикацией</h2>
+          <div class="list">${[
+            ["Название", "понятно без лишних слов"],
+            ["Цена", `${p.price.toFixed(2)} USDT`],
+            ["Выдача", "код или чат после оплаты"],
+            ["Остаток", `${p.stock} шт.`],
+          ].map(([left, right]) => row(left, right)).join("")}</div>
+        </section>
+      </aside>
     </form>
   </section></div>`, "Seller");
 }

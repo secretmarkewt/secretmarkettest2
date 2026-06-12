@@ -1739,6 +1739,99 @@ a.status {
   resize: vertical;
 }
 
+.publish-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.publish-main,
+.publish-side {
+  min-width: 0;
+}
+
+.publish-head {
+  align-items: start;
+}
+
+.publish-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.publish-grid .field:first-child {
+  grid-column: span 2;
+}
+
+.publish-workspace .field {
+  gap: 6px;
+}
+
+.publish-workspace .field > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.publish-workspace .field input,
+.publish-workspace .field select,
+.publish-workspace .field textarea {
+  min-height: 42px;
+  border-radius: 10px;
+  background: rgba(7, 10, 18, 0.38);
+}
+
+.publish-workspace .field textarea {
+  min-height: 86px;
+}
+
+.publish-more {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.publish-more summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.publish-delivery h2,
+.publish-checklist h2 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.publish-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.publish-actions {
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.publish-side {
+  position: sticky;
+  top: 78px;
+}
+
+.publish-preview .grid.products {
+  grid-template-columns: 1fr;
+}
+
+.publish-preview .product-card {
+  min-height: auto;
+}
+
+.publish-preview .product-buy {
+  display: none;
+}
+
 .result-counter {
   display: flex;
   min-height: 40px;
@@ -2376,6 +2469,14 @@ a.admin-tile {
     position: static;
   }
 
+  .publish-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .publish-side {
+    position: static;
+  }
+
   .buy-box,
   .order-summary,
   .chat-list {
@@ -2533,6 +2634,26 @@ a.admin-tile {
 
   .payment-address {
     grid-template-columns: 1fr;
+  }
+
+  .publish-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .publish-grid .field:first-child {
+    grid-column: auto;
+  }
+
+  .publish-main {
+    padding: 12px;
+  }
+
+  .publish-actions {
+    justify-content: stretch;
+  }
+
+  .publish-actions .btn {
+    flex: 1;
   }
 
   .mobile-tabbar {
