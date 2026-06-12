@@ -11,10 +11,14 @@ function requiredConfirmations(network) {
 function nextPaymentState(payment, payload = {}) {
   const required = requiredConfirmations(payment.network);
   const txHash = payload.txHash || payment.txHash || `mock-${String(payment.network || "chain").toLowerCase()}-${payment.orderId}`;
-  const confirmations = Math.max(Number(payload.confirmations ?? payment.confirmations ?? 0), required);
-  const status = confirmations >= required ? "paid" : "confirming";
+  const manualStatus = String(payload.status || "").trim();
+  const confirmations = manualStatus
+    ? Math.max(Number(payload.confirmations ?? payment.confirmations ?? 0), 0)
+    : Math.max(Number(payload.confirmations ?? payment.confirmations ?? 0), required);
+  const status = manualStatus || (confirmations >= required ? "paid" : "confirming");
 
   return {
+    adminNote: payload.adminNote || payment.adminNote || "",
     confirmations,
     status,
     txHash,
@@ -34,14 +38,22 @@ function syncPayment(store, paymentId, options = {}) {
   });
 
   let updatedOrder = null;
-  if (updatedPayment.status === "paid" && updatedPayment.orderId) {
+  if (updatedPayment.orderId) {
     const order = store.find("orders", updatedPayment.orderId);
-    if (order) {
+    if (order && updatedPayment.status === "paid") {
       const nextOrderStatus = ["created", "awaiting_payment"].includes(order.status) ? "paid" : order.status;
       updatedOrder = store.patch("orders", order.id, {
         paymentStatus: "paid",
         orderStatus: nextOrderStatus,
         status: nextOrderStatus,
+        escrowStatus: order.escrowStatus || "hold",
+        _actorId: options.actorId || "system",
+      });
+    } else if (order && ["underpaid", "network_error"].includes(updatedPayment.status)) {
+      updatedOrder = store.patch("orders", order.id, {
+        paymentStatus: updatedPayment.status,
+        orderStatus: "awaiting_payment",
+        status: "awaiting_payment",
         escrowStatus: order.escrowStatus || "hold",
         _actorId: options.actorId || "system",
       });

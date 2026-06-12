@@ -224,15 +224,21 @@ async function updateStatus(collectionName, id, status) {
 async function syncPayment(id, payload = {}) {
   const payment = await update("payments", id, {
     ...payload,
-    confirmations: payload.confirmations || 24,
-    status: "paid",
+    confirmations: payload.confirmations ?? 24,
+    status: payload.status || "paid",
   });
   let order = null;
-  if (payment?.orderId) {
+  if (payment?.orderId && payment.status === "paid") {
     order = await update("orders", payment.orderId, {
       paymentStatus: "paid",
       orderStatus: "paid",
       status: "paid",
+    });
+  } else if (payment?.orderId && ["underpaid", "network_error"].includes(payment.status)) {
+    order = await update("orders", payment.orderId, {
+      paymentStatus: payment.status,
+      orderStatus: "awaiting_payment",
+      status: "awaiting_payment",
     });
   }
   return { payment, order };

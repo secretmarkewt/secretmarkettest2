@@ -290,6 +290,48 @@ function authHeader(token) {
     }).then((res) => res.json());
     if (synced.payment?.status !== "paid" || synced.order?.paymentStatus !== "paid") throw new Error("payment watcher sync failed");
 
+    const problemOrder = await request(port, "/api/orders", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({
+        id: 88002,
+        buyerId: "usr-buyer",
+        sellerId: "usr-seller",
+        productId: 12345,
+        amount: 11,
+        paymentStatus: "waiting",
+        orderStatus: "awaiting_payment",
+        escrowStatus: "hold",
+        status: "awaiting_payment",
+      }),
+    }).then((res) => res.json());
+    if (problemOrder.status !== "awaiting_payment") throw new Error("problem order create failed");
+
+    await request(port, "/api/payments", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({
+        id: "pay-problem",
+        orderId: 88002,
+        amount: 11,
+        coin: "USDT",
+        network: "TRC20",
+        address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB",
+        confirmations: 0,
+        status: "waiting",
+      }),
+    }).then((res) => res.json());
+
+    const problemPayment = await request(port, "/api/payments/pay-problem/sync", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({ txHash: "TX-PROBLEM", confirmations: 1, status: "network_error", adminNote: "wrong network" }),
+    }).then((res) => res.json());
+    if (problemPayment.payment?.status !== "network_error" || problemPayment.order?.paymentStatus !== "network_error") {
+      throw new Error("payment manual error sync failed");
+    }
+    if (problemPayment.order?.status !== "awaiting_payment") throw new Error("payment manual error order state failed");
+
     const delivered = await request(port, "/api/orders/88001/deliver", {
       method: "POST",
       headers: authHeader(sellerLogin.token),

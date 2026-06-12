@@ -323,6 +323,26 @@ function payoutDraftFromButton(button, fallbackStatus = "completed") {
   };
 }
 
+function paymentReviewDraftFromButton(button, fallbackStatus = "paid") {
+  const form = button.closest("[data-payment-review-form]");
+  if (!form) {
+    return {
+      adminNote: "",
+      confirmations: 24,
+      status: fallbackStatus,
+      txHash: `TX-LIVE-${Date.now()}`,
+    };
+  }
+  const formData = form ? new FormData(form) : new FormData();
+  const confirmations = Number(String(formData.get("confirmations") || "0").replace(",", "."));
+  return {
+    adminNote: String(formData.get("adminNote") || "").trim(),
+    confirmations: Number.isFinite(confirmations) ? confirmations : 0,
+    status: String(formData.get("status") || fallbackStatus).trim() || fallbackStatus,
+    txHash: String(formData.get("txHash") || "").trim(),
+  };
+}
+
 function bindHeroCursorGlow() {
   const hero = document.querySelector("[data-cursor-glow]");
   if (!hero) return;
@@ -471,10 +491,20 @@ async function runLiveAction(button) {
     } else if (action === "sync-payment") {
       await ensureLiveRole("admin");
       const id = button.dataset.paymentId || currentPath().split("/").pop();
-      const result = await api.live.syncPayment(id, { txHash: `TX-LIVE-${Date.now()}`, confirmations: 24 });
+      const draft = paymentReviewDraftFromButton(button, "paid");
+      if (draft.status !== "waiting" && !draft.txHash) throw new Error("укажите tx hash платежа");
+      const result = await api.live.syncPayment(id, draft);
       upsertLiveItem("payments", result.payment);
       upsertLiveItem("orders", result.order);
       notify(`Платеж ${result.payment.id}: ${result.payment.status}`);
+    } else if (action === "mark-payment-error") {
+      await ensureLiveRole("admin");
+      const id = button.dataset.paymentId || currentPath().split("/").pop();
+      const draft = paymentReviewDraftFromButton(button, "network_error");
+      const result = await api.live.syncPayment(id, { ...draft, status: "network_error" });
+      upsertLiveItem("payments", result.payment);
+      upsertLiveItem("orders", result.order);
+      notify(`Платеж ${result.payment.id}: ошибка сети`);
     } else if (action === "issue-delivery") {
       await ensureLiveRole("seller");
       const id = button.dataset.orderId || currentPath().split("/").pop();

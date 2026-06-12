@@ -47,6 +47,14 @@ function adminPaymentDetail(id = "pay-12345") {
   const paymentItem = paymentById(id);
   const orderItem = orderById(paymentItem.order);
   const paymentAddress = window.SECMARKET_DATA.paymentWallets[paymentItem.network] || window.SECMARKET_DATA.paymentWallets.TRC20;
+  const statusOptions = [
+    ["waiting", "Ожидает оплату"],
+    ["found", "Транзакция найдена"],
+    ["confirming", "Подтверждается"],
+    ["paid", "Оплата подтверждена"],
+    ["underpaid", "Недостаточная сумма"],
+    ["network_error", "Ошибка сети"],
+  ];
   return page(`Платеж ${paymentItem.id}`, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
     <section class="panel"><div class="section-head"><div><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status ${statusTone(paymentItem.status)}">${statusLabel(paymentItem.status)}</span></div><div class="grid metrics">${[
       [paymentItem.network, "сеть"],
@@ -54,7 +62,13 @@ function adminPaymentDetail(id = "pay-12345") {
       [paymentItem.tx, "tx hash"],
       [orderItem.order, "статус заказа"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
-    <section class="panel section"><h2>Ручная проверка</h2><div class="form-grid">${field("Адрес оплаты", "input", paymentAddress)}${field("tx hash", "input", paymentItem.tx)}${field("Подтверждения", "input", paymentItem.confirmations)}${field("Статус", "select", ["Ожидает оплату", "Транзакция найдена", "Оплата подтверждена", "Недостаточная сумма", "Ошибка сети"])}${field("Комментарий админа", "textarea", "Проверить сумму и сеть перед сменой статуса")}</div><div class="form-actions section"><button class="btn primary" data-live-action="sync-payment" data-payment-id="${paymentItem.id}">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger">Пометить ошибку</button></div></section>
+    <section class="panel section"><h2>Ручная проверка</h2><form data-payment-review-form><div class="form-grid">
+      <label class="field"><span>Адрес оплаты</span><input name="address" value="${escapeHtml(paymentAddress)}" readonly /></label>
+      <label class="field"><span>tx hash</span><input name="txHash" placeholder="TX..." value="${escapeHtml(paymentItem.tx)}" /></label>
+      <label class="field"><span>Подтверждения</span><input name="confirmations" inputmode="numeric" value="${escapeHtml(paymentItem.confirmations)}" /></label>
+      <label class="field"><span>Статус</span><select name="status">${statusOptions.map(([value, label]) => `<option value="${value}" ${paymentItem.status === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+      <label class="field"><span>Комментарий админа</span><textarea name="adminNote" placeholder="Проверить сумму и сеть перед сменой статуса"></textarea></label>
+    </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="sync-payment" data-payment-id="${paymentItem.id}">Сохранить статус</button><a class="btn" href="/orders/${paymentItem.order}" data-link>Связанный заказ</a><button class="btn danger" type="button" data-live-action="mark-payment-error" data-payment-id="${paymentItem.id}">Пометить ошибку</button></div></form></section>
     <section class="panel section"><h2>История статусов</h2><div class="list">${["Создан адрес оплаты", "Транзакция найдена мониторингом", `Подтверждения: ${paymentItem.confirmations}`, `Текущий статус: ${statusLabel(paymentItem.status)}`].map(row).join("")}</div></section>
   </section></div>`, "Admin");
 }

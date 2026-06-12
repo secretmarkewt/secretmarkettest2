@@ -118,6 +118,12 @@ context.location.pathname = "/admin/payments";
 context.render();
 if (!app.innerHTML.includes("TX-LIVE-UI")) throw new Error("live admin payment did not render");
 
+context.location.pathname = "/admin/payments/pay-live";
+context.render();
+if (!app.innerHTML.includes('data-payment-review-form') || !app.innerHTML.includes('data-live-action="mark-payment-error"')) {
+  throw new Error("live admin payment review form did not render");
+}
+
 context.location.pathname = "/admin/payouts/WD-LIVE";
 context.render();
 if (!app.innerHTML.includes('data-payout-form') || !app.innerHTML.includes("К получению")) {
