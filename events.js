@@ -435,6 +435,43 @@ async function runLiveAction(button) {
       const product = await api.live.updateStatus("products", button.dataset.productId || 33412, "published");
       upsertLiveItem("products", product);
       notify(`Товар #${product.id} опубликован`);
+    } else if (action === "reject-product") {
+      await ensureLiveRole("admin");
+      const product = await api.live.updateStatus("products", button.dataset.productId, "rejected");
+      upsertLiveItem("products", product);
+      notify(`Товар #${product.id} снят с публикации`);
+    } else if (action === "close-ticket") {
+      await ensureLiveRole("admin");
+      const ticket = await api.live.updateStatus("tickets", button.dataset.ticketId, "closed");
+      upsertLiveItem("tickets", ticket);
+      notify(`Тикет #${ticket.id} закрыт`);
+    } else if (action === "mark-order-paid") {
+      await ensureLiveRole("admin");
+      const order = await api.live.update("orders", button.dataset.orderId, {
+        paymentStatus: "paid",
+        orderStatus: "paid",
+        status: "paid",
+      });
+      upsertLiveItem("orders", order);
+      notify(`Заказ #${order.id}: оплачен`);
+    } else if (action === "complete-order") {
+      await ensureLiveRole("admin");
+      const order = await api.live.update("orders", button.dataset.orderId, {
+        orderStatus: "completed",
+        escrowStatus: "released",
+        status: "completed",
+      });
+      upsertLiveItem("orders", order);
+      notify(`Заказ #${order.id}: завершен`);
+    } else if (action === "refund-order") {
+      await ensureLiveRole("admin");
+      const order = await api.live.update("orders", button.dataset.orderId, {
+        orderStatus: "refunded",
+        escrowStatus: "refunded",
+        status: "refunded",
+      });
+      upsertLiveItem("orders", order);
+      notify(`Заказ #${order.id}: возврат`);
     }
   } catch (error) {
     notify(`API действие не выполнено: ${error.message}`);

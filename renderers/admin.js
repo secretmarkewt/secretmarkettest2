@@ -4,7 +4,7 @@
   if (path.includes("/users")) return adminUsers();
   if (path.includes("/sellers")) return adminSellers();
   if (path.includes("/products")) return adminProducts();
-  if (path.includes("/orders")) return adminTable("Админка заказов", ["#12345 · Robux 10 000", "Покупатель Artem", "Продавец PixelTrade", "Статус: ожидает подтверждения", "Ручная смена статуса доступна"]);
+  if (path.includes("/orders")) return adminOrders();
   if (path.includes("/crypto")) return adminCrypto();
   if (path.includes("/payments")) return adminPayments();
   if (path.includes("/payouts")) return adminPayouts();
@@ -89,6 +89,19 @@ function adminTable(title, rows) {
   return page(title, `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Операции</h2><button class="btn primary">Сохранить изменения</button></div><div class="list">${rows.map(row).join("")}</div><div class="form-actions section"><button class="btn">Сменить статус</button><button class="btn warn">Открыть чат</button><button class="btn danger">Заблокировать средства</button></div></section></div>`, "Admin");
 }
 
+function adminOrders() {
+  const liveOrderIds = new Set(liveItems("orders").map((orderItem) => String(orderItem.id)));
+  const liveRows = liveItems("orders").map((orderItem) => {
+    const normalized = normalizeLiveOrder(orderItem);
+    return `<div class="list-row"><span>#${normalized.id} · ${normalized.product}<br><span class="muted">${normalized.buyer || "buyer"} · ${normalized.seller || "seller"} · ${money(normalized.amount)}</span></span><span class="admin-row-actions"><span class="status ${statusTone(orderItem.status)}">${statusLabel(orderItem.status)}</span><button class="btn tiny" data-live-action="mark-order-paid" data-order-id="${orderItem.id}">Оплачен</button><button class="btn tiny" data-live-action="complete-order" data-order-id="${orderItem.id}">Завершить</button><button class="btn tiny danger" data-live-action="refund-order" data-order-id="${orderItem.id}">Возврат</button></span></div>`;
+  });
+  const demoRows = demoOrders
+    .filter((orderItem) => !liveOrderIds.has(String(orderItem.id)))
+    .map((orderItem) => orderListRow(orderItem));
+  const rows = mixDemoRows("orders", demoRows, liveRows);
+  return page("Админка заказов", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Заказы</h2><button class="btn" data-live-sync>Обновить</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Заказов пока нет")}</div></section></div>`, "Admin");
+}
+
 function adminUsers() {
   const liveRows = liveItems("profiles").map((profile) => `<div class="list-row"><span>${profile.name || profile.email}<br><span class="muted">${profile.email}${profile.telegram ? ` · ${profile.telegram}` : ""}</span></span><span class="status ${profile.role === "admin" ? "warn" : profile.role === "seller" ? "wait" : "ok"}">${roleName(profile.role)}</span></div>`);
   const demoRows = [
@@ -111,13 +124,13 @@ function adminSellers() {
 
 function adminProducts() {
   const liveProductIds = new Set(liveItems("products").map((product) => String(product.id)));
-  const liveRows = liveItems("products").map((product) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.sellerId || "seller"} · ${product.category || "catalog"}</span></span><span class="status ${statusTone(product.status)}">${statusLabel(product.status)}</span></div>`);
+  const liveRows = liveItems("products").map((product) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.sellerId || "seller"} · ${product.category || "catalog"}</span></span><span class="admin-row-actions"><span class="status ${statusTone(product.status)}">${statusLabel(product.status)}</span><button class="btn tiny" data-live-action="approve-product" data-product-id="${product.id}">Одобрить</button><button class="btn tiny danger" data-live-action="reject-product" data-product-id="${product.id}">Снять</button></span></div>`);
   const demoRows = products
     .filter((product) => !liveProductIds.has(String(product.id)))
     .slice(0, 6)
     .map((product, index) => `<div class="list-row"><span>${product.title}<br><span class="muted">${product.seller} · ${product.cat}</span></span><span class="status ${index % 3 === 0 ? "wait" : "ok"}">${index % 3 === 0 ? "на проверке" : "активен"}</span></div>`);
   const rows = mixDemoRows("products", demoRows, liveRows);
-  return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Модерация товаров</h2><div class="list">${rows.length ? rows.join("") : emptyAdminState("Товаров на модерации пока нет")}</div><div class="form-actions section"><button class="btn primary" data-live-action="approve-product" data-product-id="33412">Одобрить</button><button class="btn danger">Снять с публикации</button></div></section></div>`, "Admin");
+  return page("Товары", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Модерация товаров</h2><button class="btn" data-live-sync>Обновить</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Товаров на модерации пока нет")}</div></section></div>`, "Admin");
 }
 
 function adminModeration() {
@@ -154,14 +167,9 @@ function adminAudit() {
 }
 
 function adminTickets() {
-  const liveRows = liveItems("tickets").map((ticket) => ticketListRow({
-    id: ticket.id,
-    title: ticket.topic || "Обращение",
-    order: ticket.orderId || "general",
-    status: statusLabel(ticket.status),
-  }));
+  const liveRows = liveItems("tickets").map((ticket) => `<div class="list-row"><span>#${ticket.id} · ${ticket.topic || "Обращение"}<br><span class="muted">заказ ${ticket.orderId || "general"} · ${ticket.contact || ""}</span></span><span class="admin-row-actions"><span class="status ${statusTone(ticket.status)}">${statusLabel(ticket.status)}</span><button class="btn tiny" data-live-action="close-ticket" data-ticket-id="${ticket.id}">Закрыть</button></span></div>`);
   const rows = mixDemoRows("tickets", demoTickets.map(ticketListRow), liveRows);
-  return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Очередь обращений</h2><div class="list">${rows.length ? rows.join("") : emptyAdminState("Тикетов пока нет")}</div><div class="form-actions section"><button class="btn warn">Запросить данные</button><button class="btn primary">Ответить</button></div></section></div>`, "Admin");
+  return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Очередь обращений</h2><button class="btn" data-live-sync>Обновить</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Тикетов пока нет")}</div></section></div>`, "Admin");
 }
 
 function roleName(role) {

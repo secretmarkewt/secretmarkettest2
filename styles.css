@@ -1838,6 +1838,20 @@ a.status {
   padding: 12px;
 }
 
+.admin-row-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn.tiny {
+  min-height: 32px;
+  padding: 6px 9px;
+  font-size: 13px;
+  line-height: 1;
+}
+
 a.list-row {
   color: var(--text);
   text-decoration: none;
@@ -2461,6 +2475,10 @@ a.admin-tile {
   .timeline .list-row {
     align-items: stretch;
     grid-template-columns: 1fr;
+  }
+
+  .admin-row-actions {
+    justify-content: flex-start;
   }
 
   .chat-message {
