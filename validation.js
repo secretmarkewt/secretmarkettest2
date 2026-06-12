@@ -27,6 +27,25 @@ function isRequired(value) {
   return String(value ?? "").trim().length > 0;
 }
 
+function normalizePromoCode(value) {
+  return String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function promoCodeByCode(value) {
+  const code = normalizePromoCode(value);
+  if (!code) return null;
+  return window.SECMARKET_DATA?.promoCodes?.find((promo) => promo.code === code && promo.status === "active") || null;
+}
+
+function validatePromoCode(value, role = "") {
+  const code = normalizePromoCode(value);
+  if (!code) return { ok: true, code: "", promo: null };
+  const promo = promoCodeByCode(code);
+  if (!promo) return { ok: false, code, error: "promo_not_found" };
+  if (promo.role !== "any" && role && promo.role !== role) return { ok: false, code, promo, error: "promo_role_mismatch" };
+  return { ok: true, code, promo };
+}
+
 function validateStatus(modelName, status) {
   const model = window.SECMARKET_MODELS?.[modelName];
   if (!model?.statuses) return true;
@@ -52,6 +71,9 @@ window.SECMARKET_VALIDATORS = {
   isValidEmail,
   isValidNetwork,
   isValidTxHash,
+  normalizePromoCode,
+  promoCodeByCode,
+  validatePromoCode,
   validatePaymentDraft,
   validateStatus,
 };

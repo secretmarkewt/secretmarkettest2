@@ -18,6 +18,8 @@ function registrationTelegramMessage(user) {
     `Email: ${user.email || ""}`,
     "Пароль: password_set=true (открытый пароль не отправляется)",
     `Telegram username: ${user.telegram || ""}`,
+    `Промокод: ${user.promoCode || "не указан"}`,
+    `Бонус: ${user.promoTitle || "нет"}`,
     `Роль: ${roleLabel(user.role)}`,
   ].join("\n");
 }

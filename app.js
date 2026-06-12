@@ -148,6 +148,7 @@ function registerPanel() {
         <label class="field"><span>Email</span><input name="email" type="email" value="new@example.com" /></label>
         <label class="field"><span>Пароль</span><input name="password" type="password" value="password123" /></label>
         <label class="field"><span>Telegram</span><input name="telegram" value="@username" /></label>
+        <label class="field"><span>Промокод</span><input name="promoCode" placeholder="WELCOME10" /></label>
         <label class="field"><span>Роль</span><select name="role"><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></label>
       </div>
       <p class="muted section">Пароль отправляется только в API по HTTPS, сразу хешируется и не передается в Telegram.</p>

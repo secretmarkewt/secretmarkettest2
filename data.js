@@ -77,6 +77,11 @@ const SECMARKET_DATA = {
     { id: "usr-seller", role: "seller", name: "PixelTrade", email: "seller@example.com", telegram: "@pixeltrade", status: "active" },
     { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", status: "active" },
   ],
+  promoCodes: [
+    { code: "WELCOME10", title: "Стартовый бонус", description: "10% на первый заказ", role: "buyer", status: "active" },
+    { code: "SELLERSTART", title: "Бонус продавца", description: "Приоритетная модерация первого товара", role: "seller", status: "active" },
+    { code: "VIP2026", title: "VIP-доступ", description: "Метка раннего участника", role: "buyer", status: "active" },
+  ],
   demoOrders: [
     { id: 12345, product: "Robux 10 000", seller: "PixelTrade", buyer: "Artem", amount: 88.3, payment: "Оплачено", order: "Ожидает подтверждения", delivery: "Автовыдача" },
     { id: 22341, product: "Steam Gift Card", seller: "KeyDock", buyer: "Artem", amount: 50, payment: "Оплачено", order: "Завершен", delivery: "Автовыдача" },

@@ -129,10 +129,14 @@ function authHeader(token) {
         password: "safe-password-123",
         telegram: "@launch_buyer",
         role: "buyer",
+        promoCode: "WELCOME10",
       }),
     }).then((res) => res.json());
     if (!registered.token || registered.user?.email !== "launch.buyer@example.com" || registered.user?.passwordHash) {
       throw new Error("auth register failed");
+    }
+    if (registered.user?.promoCode !== "WELCOME10" || registered.user?.promoTitle !== "Стартовый бонус") {
+      throw new Error("auth register promo failed");
     }
     if (registered.registrationNotice?.enabled !== false || registered.registrationNotice?.sent !== false) {
       throw new Error("disabled telegram registration notice failed");
@@ -147,6 +151,11 @@ function authHeader(token) {
       body: JSON.stringify({ name: "X", email: "bad", password: "short", telegram: "@bad", role: "admin" }),
     });
     if (invalidRegister.status !== 422) throw new Error("invalid register guard failed");
+    const invalidPromoRegister = await request(port, "/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name: "PromoBuyer", email: "promo.buyer@example.com", password: "safe-password-123", telegram: "@promo_buyer", role: "buyer", promoCode: "SELLERSTART" }),
+    });
+    if (invalidPromoRegister.status !== 422) throw new Error("invalid promo role guard failed");
     const registeredLogin = await request(port, "/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123" }),

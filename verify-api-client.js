@@ -57,10 +57,13 @@ const { createStore } = require("./backend/repository");
       password: "client-password-123",
       telegram: "@client_buyer",
       role: "buyer",
+      promoCode: "WELCOME10",
+      promoTitle: "Стартовый бонус",
     });
     if (!registered.token || registered.user?.email !== "client.buyer@example.com" || registered.user?.passwordHash) {
       throw new Error("live register failed");
     }
+    if (registered.user?.promoCode !== "WELCOME10") throw new Error("live register promo failed");
 
     const login = await api.live.login("seller@example.com", "seller");
     if (!login.token || api.getAuthToken() !== login.token) throw new Error("live login token failed");

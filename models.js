@@ -1,6 +1,6 @@
 const SECMARKET_MODELS = {
   User: {
-    fields: ["id", "role", "email", "telegram", "twoFactorEnabled", "status", "createdAt"],
+    fields: ["id", "role", "email", "telegram", "promoCode", "twoFactorEnabled", "status", "createdAt"],
     statuses: ["active", "limited", "blocked"],
     roles: ["guest", "buyer", "seller", "admin"],
   },

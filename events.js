@@ -71,12 +71,19 @@
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const promo = window.SECMARKET_VALIDATORS.validatePromoCode(formData.get("promoCode"), formData.get("role"));
+    if (!promo.ok) {
+      notify(promo.error === "promo_role_mismatch" ? "Промокод не подходит для выбранной роли" : "Промокод не найден или отключен");
+      return;
+    }
     const payload = {
       name: formData.get("name"),
       email: formData.get("email"),
       password: formData.get("password"),
       telegram: formData.get("telegram"),
       role: formData.get("role"),
+      promoCode: promo.code,
+      promoTitle: promo.promo?.title || "",
     };
     try {
       const session = await api.live.register(payload);

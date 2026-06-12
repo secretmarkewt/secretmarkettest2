@@ -4,11 +4,14 @@ const message = registrationTelegramMessage({
   name: "demo_buyer",
   email: "demo.buyer@example.com",
   telegram: "@demo_buyer",
+  promoCode: "WELCOME10",
+  promoTitle: "Starter bonus",
   role: "buyer",
 });
 
 if (!message.includes("Никнейм: demo_buyer")) throw new Error("telegram message nickname failed");
 if (!message.includes("Email: demo.buyer@example.com")) throw new Error("telegram message email failed");
+if (!message.includes("WELCOME10")) throw new Error("telegram message promo failed");
 if (!message.includes("Telegram username: @demo_buyer")) throw new Error("telegram message username failed");
 if (!message.includes("Роль: Покупатель")) throw new Error("telegram message role failed");
 if (message.includes("demo-password") || !message.includes("password_set=true")) {

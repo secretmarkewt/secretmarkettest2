@@ -9,6 +9,21 @@ const { hashPassword, verifyPassword } = require("./passwords");
 const { notifyRegistration, notifyTicket } = require("./telegramNotifier");
 const packageInfo = require("../package.json");
 
+const PROMO_CODES = [
+  { code: "WELCOME10", title: "Стартовый бонус", role: "buyer", status: "active" },
+  { code: "SELLERSTART", title: "Бонус продавца", role: "seller", status: "active" },
+  { code: "VIP2026", title: "VIP-доступ", role: "buyer", status: "active" },
+];
+
+function normalizePromoCode(value) {
+  return String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function promoCodeByCode(value) {
+  const code = normalizePromoCode(value);
+  return PROMO_CODES.find((promo) => promo.code === code && promo.status === "active") || null;
+}
+
 const rateBuckets = new Map();
 
 function allowedOrigins() {
@@ -281,12 +296,16 @@ async function handleAuth(req, res, store, id) {
     const password = String(payload.password || "");
     const telegram = String(payload.telegram || "").trim();
     const role = String(payload.role || "buyer").trim().toLowerCase();
+    const promoCode = normalizePromoCode(payload.promoCode);
+    const promo = promoCode ? promoCodeByCode(promoCode) : null;
 
     const errors = [];
     if (name.length < 2) errors.push("name_required");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("email_invalid");
     if (password.length < 8) errors.push("password_min_8");
     if (!["buyer", "seller"].includes(role)) errors.push("role_invalid");
+    if (promoCode && !promo) errors.push("promo_invalid");
+    if (promo && promo.role !== "any" && promo.role !== role) errors.push("promo_role_mismatch");
     if (errors.length) return json(req, res, 422, { errors });
 
     const existing = store.list("users").find((candidate) => (
@@ -301,6 +320,8 @@ async function handleAuth(req, res, store, id) {
       name,
       email,
       telegram,
+      promoCode,
+      promoTitle: promo?.title || "",
       passwordHash: hashPassword(password),
       status: "active",
       _actorId: "registration",

@@ -209,7 +209,8 @@ function adminFees() {
 }
 
 function adminPromocodes() {
-  return page("Промокоды", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Будущий модуль</h2><span class="status wait">после MVP</span></div><div class="form-grid">${field("Код", "input", "WELCOME10")}${field("Скидка", "input", "10%")}${field("Лимит", "input", "100 использований")}${field("Категория", "select", ["Любая", "Roblox", "Steam", "Telegram"])}${field("Срок действия", "input", "30 дней")}${field("Статус", "select", ["Отключен", "Активен"])}</div><section class="section"><h2>Правила</h2><div class="list">${["Не входит в первую MVP-версию", "Можно добавить после стабилизации оплат", "Админ задает лимиты и категории", "Скидка учитывается до комиссии платформы"].map(row).join("")}</div></section></section></div>`, "Admin");
+  const promoRows = window.SECMARKET_DATA.promoCodes.map((promo) => `<div class="list-row"><span>${promo.code}<br><span class="muted">${promo.title} · ${promo.description}</span></span><span class="status ${promo.status === "active" ? "ok" : "wait"}">${promo.role === "seller" ? "продавец" : "покупатель"}</span></div>`);
+  return page("Промокоды", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><div><h2>Регистрационные промокоды</h2><p class="muted">Код проверяется при регистрации и сохраняется в профиле пользователя.</p></div><span class="status ok">MVP</span></div><div class="list">${promoRows.join("")}</div><section class="section"><h2>Правила</h2><div class="list">${["Пустое поле промокода разрешено", "Неверный код блокирует регистрацию", "Код покупателя не подходит продавцу и наоборот", "Промокод уходит в Telegram-уведомление без пароля"].map(row).join("")}</div></section></section></div>`, "Admin");
 }
 
 function adminCrypto() {

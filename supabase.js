@@ -72,6 +72,8 @@ function cleanUser(authUser, fallbackRole = "buyer") {
     email: authUser?.email,
     name: metadata.name || authUser?.email?.split("@")[0] || "Пользователь",
     telegram: metadata.telegram || "",
+    promoCode: metadata.promoCode || "",
+    promoTitle: metadata.promoTitle || "",
     role,
     status: "active",
   };
@@ -114,6 +116,8 @@ async function register(payload) {
       data: {
         name: payload.name,
         telegram: payload.telegram,
+        promoCode: payload.promoCode || "",
+        promoTitle: payload.promoTitle || "",
         role,
       },
     }),
@@ -123,6 +127,8 @@ async function register(payload) {
     name: payload.name,
     email: payload.email,
     telegram: payload.telegram,
+    promoCode: payload.promoCode || "",
+    promoTitle: payload.promoTitle || "",
     role,
   }, session.token);
   return {
