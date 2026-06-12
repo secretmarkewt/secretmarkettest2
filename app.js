@@ -85,7 +85,7 @@ function footer() {
   return `
     <footer class="footer">
       <div class="footer-grid">
-        <div><a class="brand footer-brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a><p>Маркетплейс цифровых товаров с гарантиями сделки, рейтингами продавцов, чатами и арбитражем.</p></div>
+        <div><a class="brand footer-brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a><p>Маркетплейс цифровых товаров с гарантиями сделки, рейтингами продавцов, чатами и доверием.</p></div>
         ${[
           ["Покупателям", ["/buyer-rules", "/refund-policy", "/crypto-payment-guide"]],
           ["Продавцам", ["/seller-rules", "/fees", "/seller/withdraw"]],

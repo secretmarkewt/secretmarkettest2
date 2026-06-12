@@ -223,7 +223,7 @@ function product(id = 12345) {
         <div class="product-main-copy">
           <span class="badge">${p.cat} · ${p.type}</span>
           <h1>${p.title}</h1>
-          <p class="lead">Проверенный цифровой товар с историей продаж, рейтингом продавца и поддержкой арбитража внутри заказа.</p>
+          <p class="lead">Проверенный цифровой товар с историей продаж, рейтингом продавца и поддержкой доверия внутри заказа.</p>
           <div class="grid metrics product-metrics">
             <div class="metric"><strong>${p.stock}</strong><span>в наличии</span></div>
             <div class="metric"><strong>5 мин</strong><span>типовая выдача</span></div>
@@ -246,7 +246,7 @@ function product(id = 12345) {
           </div>
         </div>
         <div class="list">
-          ${["Гарантия сделки", "Арбитраж по заказу", "Чат с продавцом", "Безопасная выдача"].map(row).join("")}
+          ${["Гарантия сделки", "Доверие по заказу", "Чат с продавцом", "Безопасная выдача"].map(row).join("")}
         </div>
       </aside>
     </div>
@@ -300,7 +300,7 @@ function checkoutStepBody() {
   if (activeStep === 3) {
     return `<div class="payment-methods">${["USDT TRC20", "USDT TON", "USDT BEP20"].map((network, index) => `<button class="trust-item panel ${index === 0 ? "chip active" : ""}" data-network="${network}"><h3>${network}</h3><p class="muted">${index === 0 ? "Рекомендуемый способ" : "Доступно для заказа"}</p></button>`).join("")}</div>`;
   }
-  return `<div class="checkout-confirm"><h2>Подтверждение</h2><p class="lead">Проверьте товар, данные аккаунта и выбранный способ оплаты. После оплаты заказ перейдёт продавцу на выдачу.</p><div class="list">${["Заказ создаётся с отдельным платёжным реквизитом", "Средства удерживаются до подтверждения получения", "Товар выдаётся автоматически или через чат", "Арбитраж доступен со страницы заказа"].map(row).join("")}</div></div>`;
+  return `<div class="checkout-confirm"><h2>Подтверждение</h2><p class="lead">Проверьте товар, данные аккаунта и выбранный способ оплаты. После оплаты заказ перейдёт продавцу на выдачу.</p><div class="list">${["Заказ создаётся с отдельным платёжным реквизитом", "Средства удерживаются до подтверждения получения", "Товар выдаётся автоматически или через чат", "Проверка доступна со страницы заказа"].map(row).join("")}</div></div>`;
 }
 
 function payment(id = 12345) {

@@ -8,7 +8,7 @@
   const isDispute = state.disputeCreated || orderItem.order === "Спор";
   const statusRows = isConfirmed
     ? [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, "Гарантия: сделка завершена", "Заказ: завершен"]
-    : [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, isDispute ? "Гарантия: открыт арбитраж" : "Гарантия: активна", `Заказ: ${orderItem.order}`];
+    : [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, isDispute ? "Гарантия: открыта проверка" : "Гарантия: активна", `Заказ: ${orderItem.order}`];
   const timeline = isConfirmed
     ? ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель подтвердил получение", "Сделка завершена"]
     : ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель читает инструкцию"];
