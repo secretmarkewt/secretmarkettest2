@@ -70,7 +70,7 @@ for (const requiredPath of ["robots.txt", "site.webmanifest"]) {
   if (!fs.existsSync(path.join(dist, requiredPath))) throw new Error(`Pages build missed ${requiredPath}`);
 }
 
-if (!fs.readFileSync(path.join(dist, "404.html"), "utf8").includes("https://penisxxxl.github.io/secretmarket1/")) {
+if (!fs.readFileSync(path.join(dist, "404.html"), "utf8").includes("https://secretmarkewt.github.io/secretmarkettest/")) {
   throw new Error("Pages build 404 link is missing");
 }
 if (!fs.existsSync(path.join(dist, "assets", "404-secret-market.jpg"))) throw new Error("Pages build missed 404 image");
