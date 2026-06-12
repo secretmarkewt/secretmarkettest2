@@ -530,6 +530,14 @@ h3 {
   will-change: left, top, opacity;
 }
 
+:root[data-theme="light"] .market-intro::after {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.34), rgba(34, 197, 94, 0.2) 34%, rgba(34, 197, 94, 0.1) 58%, transparent 76%);
+  filter: blur(18px);
+  mix-blend-mode: multiply;
+  opacity: var(--hero-glow-opacity, 0.62);
+  box-shadow: 0 0 90px rgba(34, 197, 94, 0.18);
+}
+
 .market-intro > * {
   position: relative;
   z-index: 2;
