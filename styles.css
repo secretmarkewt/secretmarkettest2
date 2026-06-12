@@ -1678,6 +1678,29 @@ a.status {
   margin-top: 6px;
 }
 
+.product-metrics .metric {
+  display: grid;
+  min-height: 82px;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.product-metrics .metric strong {
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1;
+}
+
+.product-metrics .metric span {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
 .buy-box {
   position: sticky;
   top: 86px;
