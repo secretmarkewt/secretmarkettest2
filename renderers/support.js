@@ -23,7 +23,11 @@ function disputeDetail(id = 123) {
       ["Escrow", "заморожен до решения"],
       ["Предварительное решение", dispute.refund],
     ].map(([left, right]) => row(left, right)).join("")}</div><section class="section"><h2>Чат спора</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><section class="section"><h2>Доказательства</h2><div class="list">${["Скриншот ошибки активации", "tx hash платежа", "Переписка из чата заказа", "Данные выдачи продавца"].map(row).join("")}</div></section></section>
-    <aside class="panel"><h2>Действия поддержки</h2><div class="form-grid">${field("Решение", "select", ["Запросить данные", "Частичный возврат", "Полный возврат", "Закрыть в пользу продавца"])}${field("Сумма возврата", "input", "35 USDT")}${field("Комментарий", "textarea", "Опишите решение поддержки")}</div><div class="form-actions section"><button class="btn primary" data-live-action="resolve-dispute" data-dispute-id="${dispute.id}" data-order-id="${dispute.order}">Сохранить решение</button><a class="btn" href="/orders/${dispute.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${dispute.payment}" data-link>Платеж</a></div></aside>
+    <aside class="panel"><h2>Действия поддержки</h2><form data-dispute-resolution-form><div class="form-grid">
+      <label class="field"><span>Решение</span><select name="status"><option value="need_more_data">Запросить данные</option><option value="partial_refund">Частичный возврат</option><option value="resolved_buyer">Полный возврат</option><option value="resolved_seller">Закрыть в пользу продавца</option></select></label>
+      <label class="field"><span>Сумма возврата</span><input name="refundAmount" inputmode="decimal" placeholder="35.00" /></label>
+      <label class="field"><span>Комментарий</span><textarea name="decision" placeholder="Опишите решение поддержки"></textarea></label>
+    </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="resolve-dispute" data-dispute-id="${dispute.id}" data-order-id="${dispute.order}">Сохранить решение</button><a class="btn" href="/orders/${dispute.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${dispute.payment}" data-link>Платеж</a></div></form></aside>
   </div>`, "Support");
 }
 

@@ -343,6 +343,18 @@ function paymentReviewDraftFromButton(button, fallbackStatus = "paid") {
   };
 }
 
+function disputeResolutionDraftFromButton(button) {
+  const form = button.closest("[data-dispute-resolution-form]");
+  const formData = form ? new FormData(form) : new FormData();
+  const refundAmount = Number(String(formData.get("refundAmount") || "0").replace(",", "."));
+  const status = String(formData.get("status") || "resolved_buyer").trim();
+  return {
+    decision: String(formData.get("decision") || "").trim(),
+    refundAmount: Number.isFinite(refundAmount) ? Math.max(refundAmount, 0) : 0,
+    status,
+  };
+}
+
 function bindHeroCursorGlow() {
   const hero = document.querySelector("[data-cursor-glow]");
   if (!hero) return;
@@ -517,17 +529,22 @@ async function runLiveAction(button) {
       await ensureLiveRole("admin");
       const disputeId = button.dataset.disputeId || currentPath().split("/").pop();
       const orderId = button.dataset.orderId;
+      const draft = disputeResolutionDraftFromButton(button);
+      if (draft.status === "partial_refund" && !(draft.refundAmount > 0)) throw new Error("укажите сумму частичного возврата");
       const dispute = await api.live.update("disputes", disputeId, {
-        status: "resolved_buyer",
-        decision: "Support resolved in favor of buyer",
-        refundAmount: 35,
+        status: draft.status,
+        decision: draft.decision || statusLabel(draft.status),
+        refundAmount: draft.refundAmount,
       });
       upsertLiveItem("disputes", dispute);
       if (orderId) {
+        const orderPatch = ["resolved_buyer", "partial_refund"].includes(draft.status)
+          ? { orderStatus: "refunded", status: "refunded", escrowStatus: "refunded" }
+          : draft.status === "resolved_seller"
+            ? { orderStatus: "awaiting_buyer", status: "awaiting_buyer", escrowStatus: "hold" }
+            : { orderStatus: "dispute", status: "dispute", escrowStatus: "hold" };
         const order = await api.live.update("orders", orderId, {
-          orderStatus: "refunded",
-          status: "refunded",
-          escrowStatus: "refunded",
+          ...orderPatch,
         });
         upsertLiveItem("orders", order);
       }

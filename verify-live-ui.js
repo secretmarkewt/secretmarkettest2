@@ -167,6 +167,9 @@ context.location.pathname = "/disputes/DSP-LIVE";
 context.render();
 if (!app.innerHTML.includes("Live UI dispute")) throw new Error("live dispute detail did not render");
 if (!app.innerHTML.includes('data-live-action="resolve-dispute"')) throw new Error("live dispute resolution action did not render");
+if (!app.innerHTML.includes('data-dispute-resolution-form') || !app.innerHTML.includes('name="refundAmount"')) {
+  throw new Error("live dispute resolution form did not render");
+}
 
 setSession("buyer");
 context.location.pathname = "/account/settings";
