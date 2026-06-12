@@ -257,13 +257,13 @@ function bindHeroCursorGlow() {
       const y = ((event.clientY - rect.top) / rect.height) * 100;
       hero.style.setProperty("--hero-glow-x", `${Math.max(0, Math.min(100, x))}%`);
       hero.style.setProperty("--hero-glow-y", `${Math.max(0, Math.min(100, y))}%`);
-      hero.style.setProperty("--hero-glow-opacity", "0.86");
+      hero.style.setProperty("--hero-glow-opacity", "1");
     });
   };
 
   hero.addEventListener("pointermove", setGlow);
   hero.addEventListener("pointerleave", () => {
-    hero.style.setProperty("--hero-glow-opacity", "0.46");
+    hero.style.setProperty("--hero-glow-opacity", "0.72");
   });
 }
 
