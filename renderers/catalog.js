@@ -177,7 +177,7 @@ function catalog(category = "") {
         <section class="section"><h3>Игры и сервисы</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>${uiIcon("chevron")}</span></a>`).join("")}</section>
       </aside>
       <section class="catalog-content">
-        <div class="catalog-head">
+        <div class="catalog-head panel">
           <div>
             <p class="eyebrow">Каталог</p>
             <h1>${title}</h1>
@@ -196,8 +196,6 @@ function catalog(category = "") {
             <label class="field"><span>Выдача</span><select data-filter="delivery">${option("all", "Любая", state.delivery)}${option("автовыдача", "Автоматическая", state.delivery)}${option("ручная", "Ручная", state.delivery)}</select></label>
             <label class="field"><span>Рейтинг</span><select data-filter="rating">${option("4.8", "4.8+", state.rating)}${option("4.5", "4.5+", state.rating)}${option("any", "Любой", state.rating)}</select></label>
             <label class="field"><span>Валюта</span><select data-currency-select>${option("USDT", "USDT", currency)}${option("USD", "USD", currency)}</select></label>
-            ${field("Регион", "select", ["Любой", "EU", "US", "CIS"])}
-            <div class="field"><span>Результат</span><div class="result-counter">${list.length} из ${products.length} товаров</div></div>
           </div>
           <div class="tabs section">
             ${sortTab("popular", "Популярные")}${sortTab("cheap", "Дешевые")}${sortTab("expensive", "Дорогие")}${sortTab("new", "Новые")}${sortTab("rating", "По рейтингу")}
@@ -207,7 +205,7 @@ function catalog(category = "") {
         <section class="section panel catalog-info"><h2>FAQ по категории</h2><div class="list">${[
           ...(categoryInfo?.faq || []),
           "Проверяйте сеть оплаты, тип выдачи, регион и условия получения перед оформлением заказа.",
-          "Если товар не получен или не работает, открывайте спор со страницы заказа.",
+          "Если товар не получен или не работает, обращайтесь в поддержку со страницы заказа.",
         ].map(row).join("")}</div><p class="muted section">SEO: товары ${category ? pretty(category) : "цифрового каталога"} продаются с ценой в USDT, рейтингом продавца, количеством продаж и прозрачным статусом выдачи.</p></section>
         ${categoryInfo ? `<section class="section panel"><h2>SEO-описание</h2><p class="muted">${categoryInfo.seo}</p></section>` : ""}
       </section>
