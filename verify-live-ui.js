@@ -16,6 +16,22 @@ const liveState = {
   },
 };
 
+const storage = {
+  "secmarket-demo-state": JSON.stringify(liveState),
+  "secmarket-session": JSON.stringify({
+    role: "seller",
+    user: { id: "usr-seller", name: "Live Seller", email: "seller@example.com", role: "seller", status: "active" },
+  }),
+};
+
+function setSession(role) {
+  const userId = role === "admin" ? "usr-admin" : role === "seller" ? "usr-seller" : "usr-buyer";
+  storage["secmarket-session"] = JSON.stringify({
+    role,
+    user: { id: userId, name: `Live ${role}`, email: `${role}@example.com`, role, status: "active" },
+  });
+}
+
 const context = {
   window: {
     clearTimeout() {},
@@ -45,10 +61,14 @@ const context = {
   },
   localStorage: {
     getItem(key) {
-      return key === "secmarket-demo-state" ? JSON.stringify(liveState) : null;
+      return storage[key] || null;
     },
-    setItem() {},
-    removeItem() {},
+    setItem(key, value) {
+      storage[key] = String(value);
+    },
+    removeItem(key) {
+      delete storage[key];
+    },
   },
   navigator: {},
   scrollTo() {},
@@ -93,39 +113,47 @@ vm.createContext(context);
 
 if (!app.innerHTML.includes("Live UI Product")) throw new Error("live seller product did not render");
 
+setSession("admin");
 context.location.pathname = "/admin/payments";
 context.render();
 if (!app.innerHTML.includes("TX-LIVE-UI")) throw new Error("live admin payment did not render");
 
+setSession("seller");
 context.location.pathname = "/seller/withdraw";
 context.render();
 if (!app.innerHTML.includes("WD-LIVE")) throw new Error("live withdrawal did not render");
 
+setSession("buyer");
 context.location.pathname = "/account/orders";
 context.render();
 if (!app.innerHTML.includes("Product #12345") && !app.innerHTML.includes("Robux")) throw new Error("live account order did not render");
 
+setSession("seller");
 context.location.pathname = "/seller/orders";
 context.render();
 if (!app.innerHTML.includes("Product #12345") && !app.innerHTML.includes("Robux")) throw new Error("live seller order did not render");
 
+setSession("buyer");
 context.location.pathname = "/orders/12345";
 context.render();
 if (!app.innerHTML.includes("AUTO-LIVE-SECRET") || !app.innerHTML.includes("Товар выдан")) {
   throw new Error("live delivery did not render on order detail");
 }
 
+setSession("buyer");
 context.location.pathname = "/disputes";
 context.render();
 if (!app.innerHTML.includes("DSP-LIVE") || !app.innerHTML.includes("Live UI dispute")) {
   throw new Error("live dispute did not render in list");
 }
 
+setSession("admin");
 context.location.pathname = "/disputes/DSP-LIVE";
 context.render();
 if (!app.innerHTML.includes("Live UI dispute")) throw new Error("live dispute detail did not render");
 if (!app.innerHTML.includes('data-live-action="resolve-dispute"')) throw new Error("live dispute resolution action did not render");
 
+setSession("buyer");
 context.location.pathname = "/account/settings";
 context.render();
 if (!app.innerHTML.includes("Live API") || !app.innerHTML.includes('data-api-settings-form')) {

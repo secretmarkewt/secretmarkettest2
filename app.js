@@ -101,6 +101,23 @@ function page(title, body, eyebrow = "Secret Market") {
   return `${header()}<main class="main"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1>${body}${footer()}</main>${toast()}`;
 }
 
+function accessPage(kind = "login", requiredRole = "") {
+  const isLogin = kind === "login";
+  const title = isLogin ? "Нужен вход" : "Нет доступа";
+  const description = isLogin
+    ? "Войдите в аккаунт, чтобы открыть личные заказы, платежи, чаты и оформление покупки."
+    : `Этот раздел доступен только для роли ${sessionApi.roleLabel(requiredRole)}.`;
+  return page(title, `<section class="empty-state access-state">
+    <strong>${title}</strong>
+    <span>${description}</span>
+    <div class="form-actions">
+      <a class="btn primary" href="/login" data-link>Войти</a>
+      <a class="btn" href="/register" data-link>Регистрация</a>
+      <a class="btn ghost" href="/catalog" data-link>В каталог</a>
+    </div>
+  </section>`, "Security");
+}
+
 function toast() {
   return state.toast ? `<div class="toast">${state.toast}</div>` : "";
 }

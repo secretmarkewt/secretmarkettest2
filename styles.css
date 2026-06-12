@@ -1575,6 +1575,16 @@ a.status {
   font-size: 20px;
 }
 
+.access-state {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.access-state .form-actions {
+  justify-content: center;
+}
+
 .filter-grid,
 .form-grid {
   display: grid;
