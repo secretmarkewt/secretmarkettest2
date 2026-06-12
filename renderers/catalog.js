@@ -7,6 +7,16 @@
     </a>`).join("")}</div>`;
 }
 
+function productSketch(mark, label = "") {
+  const key = String(mark || label || "SM").slice(0, 2).toLowerCase();
+  const cleanLabel = escapeHtml(label || mark || "Товар");
+  return `<span class="product-sketch product-sketch-${key}" aria-label="${cleanLabel}">
+    <span class="sketch-base"></span>
+    <span class="sketch-accent"></span>
+    <span class="sketch-spark"></span>
+  </span>`;
+}
+
 function productCards(list = products) {
   if (!list.length) {
     return `<div class="empty-state"><strong>Товары не найдены</strong><span>Попробуйте снять фильтры или изменить поисковый запрос.</span><button class="btn" data-reset-filters>Сбросить фильтры</button></div>`;
@@ -16,7 +26,7 @@ function productCards(list = products) {
     <article class="product-card" style="--thumb-a:${p.colors[0]};--thumb-b:${p.colors[1]}">
       <button class="favorite-btn ${state.favorites.has(p.id) ? "active" : ""}" data-favorite="${p.id}" title="В избранное" aria-label="В избранное">${uiIcon("star")}</button>
       <a class="product-link" href="/product/${p.id}" data-link>
-        <div class="product-thumb"><span>${p.mark}</span></div>
+        <div class="product-thumb">${productSketch(p.mark, p.title)}</div>
         <div class="product-body">
           <span class="badge">${p.type}</span>
           <strong>${p.title}</strong>
@@ -96,7 +106,7 @@ function quickPicks() {
 function homeProductGrid(list) {
   return `<div class="home-product-grid">${list.map(([mark, title, seller, delivery, price, rating, sales, colors], index) => `
     <article class="home-product-card" style="--thumb-a:${colors[0]};--thumb-b:${colors[1]}">
-      <a class="home-product-thumb" href="/product/${products[index % products.length].id}" data-link><span>${mark}</span></a>
+      <a class="home-product-thumb" href="/product/${products[index % products.length].id}" data-link>${productSketch(mark, title)}</a>
       <div class="home-product-body">
         <h3>${title}</h3>
         <p class="home-seller-line"><span>${seller}</span><span>★ ${rating}</span></p>
@@ -217,7 +227,7 @@ function product(id = 12345) {
   return `${header()}<main class="main">
     <div class="product-detail">
       <section class="product-main panel">
-        <div class="detail-media" style="--thumb-a:${p.colors[0]};--thumb-b:${p.colors[1]}"><span>${p.mark}</span></div>
+        <div class="detail-media" style="--thumb-a:${p.colors[0]};--thumb-b:${p.colors[1]}">${productSketch(p.mark, p.title)}</div>
         <div class="product-main-copy">
           <span class="badge">${p.cat} · ${p.type}</span>
           <h1>${p.title}</h1>
@@ -274,7 +284,7 @@ function checkout() {
     </section>
     <aside class="panel order-summary">
       <h2>Ваш заказ</h2>
-      <div class="summary-product"><span>${p.mark}</span><div><strong>${p.title}</strong><small>${p.seller} · ${p.rating}</small></div></div>
+      <div class="summary-product">${productSketch(p.mark, p.title)}<div><strong>${p.title}</strong><small>${p.seller} · ${p.rating}</small></div></div>
       <div class="list">${[
         ["Товар", money(p.price)],
         ["Комиссия сервиса", money(fee)],

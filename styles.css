@@ -917,17 +917,215 @@ h3 {
   text-decoration: none;
 }
 
-.home-product-thumb span {
+.home-product-thumb > .product-sketch {
   display: grid;
-  width: 54px;
-  height: 54px;
+  width: 112px;
+  height: 86px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.product-sketch {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+}
+
+.product-sketch span {
+  position: absolute;
+  display: block;
+  box-sizing: border-box;
+}
+
+.product-sketch::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.28), transparent 24%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(5, 10, 20, 0.3));
+  filter: blur(0.2px);
+  opacity: 0.85;
+}
+
+.product-sketch .sketch-base {
+  inset: 18% 22%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 18px;
+  background: rgba(5, 12, 24, 0.58);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 16px 30px rgba(0, 0, 0, 0.22);
+}
+
+.product-sketch .sketch-accent {
+  inset: 32% 32% 28% 32%;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.88);
+  box-shadow: 0 0 18px rgba(34, 197, 94, 0.45);
+}
+
+.product-sketch .sketch-spark {
+  top: 20%;
+  right: 22%;
+  width: 14%;
+  height: 14%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.36);
+}
+
+.product-sketch-rb .sketch-base,
+.product-sketch-rb .sketch-accent,
+.product-sketch-rb .sketch-spark {
+  border-radius: 999px;
+}
+
+.product-sketch-rb .sketch-base {
+  inset: 18% 42% 22% 18%;
+  border-color: rgba(102, 255, 151, 0.42);
+  background: linear-gradient(145deg, #32e069, #119f45);
+}
+
+.product-sketch-rb .sketch-accent {
+  inset: 28% 24% 18% 38%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: linear-gradient(145deg, #79ff99, #20c05a);
+}
+
+.product-sketch-rb .sketch-spark {
+  inset: 36% 38% 36% 46%;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.product-sketch-st .sketch-base {
+  inset: 22% 14%;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #1b86e5, #19436e);
+}
+
+.product-sketch-st .sketch-accent {
+  inset: 46% 14% 38% 14%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.product-sketch-st .sketch-spark {
+  top: 26%;
+  right: 22%;
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.product-sketch-tg .sketch-base,
+.product-sketch-dn .sketch-base {
+  inset: 18% 24% 24%;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #56c2ff, #2677d9);
+}
+
+.product-sketch-tg .sketch-accent {
+  inset: 34% 32% 30% 28%;
+  clip-path: polygon(0 42%, 100% 0, 68% 100%, 42% 58%);
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.product-sketch-tg .sketch-spark {
+  top: 22%;
+  right: 24%;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.product-sketch-mc .sketch-base {
+  inset: 18% 28% 24%;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #5fd16f 0 46%, #8a6132 46% 100%);
+}
+
+.product-sketch-mc .sketch-accent {
+  inset: 24% 34% 54% 34%;
+  border-radius: 4px;
+  background: rgba(33, 107, 45, 0.72);
+}
+
+.product-sketch-mc .sketch-spark {
+  inset: 58% 40% 28% 30%;
+  border-radius: 4px;
+  background: rgba(64, 38, 20, 0.6);
+}
+
+.product-sketch-vp .sketch-base {
+  inset: 16% 32% 18%;
+  clip-path: polygon(50% 0, 88% 28%, 72% 100%, 28% 100%, 12% 28%);
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(145deg, #ff6070, #7c2433);
+}
+
+.product-sketch-vp .sketch-accent {
+  inset: 26% 44% 28% 44%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.product-sketch-vp .sketch-spark {
+  top: 18%;
+  right: 30%;
+  background: #ffd1d6;
+}
+
+.product-sketch-dn .sketch-base {
+  background: linear-gradient(145deg, #6d7cff, #3f44a4);
+}
+
+.product-sketch-dn .sketch-accent {
+  inset: 36% 26% 34% 26%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.product-sketch-dn .sketch-spark {
+  top: 28%;
+  right: 26%;
+  background: #9cffb3;
+}
+
+.product-sketch-uc .sketch-base,
+.product-sketch-ps .sketch-base {
+  inset: 24% 18%;
   border-radius: 14px;
-  background: rgba(15, 17, 21, 0.55);
-  color: #ffffff;
-  font-size: 22px;
-  font-weight: 850;
+  background: linear-gradient(145deg, #f5c257, #7c5620);
+}
+
+.product-sketch-uc .sketch-accent {
+  inset: 30% 48% 24% 48%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.product-sketch-uc .sketch-spark {
+  top: 24%;
+  left: 24%;
+  background: #fff0b5;
+}
+
+.product-sketch-ps .sketch-base {
+  border-radius: 999px 999px 22px 22px;
+  background: linear-gradient(145deg, #67aaf9, #1d4f91);
+}
+
+.product-sketch-ps .sketch-accent {
+  inset: 44% 58% 38% 24%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.product-sketch-ps .sketch-spark {
+  top: 40%;
+  right: 24%;
+  background: rgba(255, 255, 255, 0.84);
 }
 
 .home-product-body {
@@ -1311,16 +1509,11 @@ textarea:focus-visible {
   background: linear-gradient(135deg, var(--thumb-a), var(--thumb-b));
 }
 
-.product-thumb span {
+.product-thumb > .product-sketch {
   display: grid;
-  width: 50px;
-  height: 50px;
+  width: 104px;
+  height: 82px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(7, 10, 18, 0.55);
-  font-size: 20px;
-  font-weight: 850;
 }
 
 .product-body {
@@ -1680,15 +1873,11 @@ a.status {
   padding: 10px;
 }
 
-.summary-product > span {
+.summary-product > .product-sketch {
   display: grid;
-  width: 44px;
+  width: 54px;
   height: 44px;
   place-items: center;
-  border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 850;
 }
 
 .summary-product small {
@@ -1752,16 +1941,11 @@ a.status {
   background: linear-gradient(135deg, var(--thumb-a), var(--thumb-b));
 }
 
-.detail-media span {
+.detail-media > .product-sketch {
   display: grid;
-  width: 86px;
-  height: 86px;
+  width: min(220px, 78%);
+  height: 160px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  background: rgba(15, 17, 21, 0.55);
-  font-size: 34px;
-  font-weight: 850;
 }
 
 .product-main {
