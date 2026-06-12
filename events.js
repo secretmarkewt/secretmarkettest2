@@ -268,10 +268,11 @@
 
 function bindHeroCursorGlow() {
   const hero = document.querySelector("[data-cursor-glow]");
-  if (!hero || !matchMedia("(pointer: fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!hero) return;
 
   let frame = 0;
   const setGlow = (event) => {
+    if (typeof event.clientX !== "number" || typeof event.clientY !== "number") return;
     if (frame) cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       const rect = hero.getBoundingClientRect();
@@ -283,8 +284,13 @@ function bindHeroCursorGlow() {
     });
   };
 
+  hero.style.setProperty("--hero-glow-opacity", "0.82");
   hero.addEventListener("pointermove", setGlow);
+  hero.addEventListener("mousemove", setGlow);
   hero.addEventListener("pointerleave", () => {
+    hero.style.setProperty("--hero-glow-opacity", "0.72");
+  });
+  hero.addEventListener("mouseleave", () => {
     hero.style.setProperty("--hero-glow-opacity", "0.72");
   });
 }
