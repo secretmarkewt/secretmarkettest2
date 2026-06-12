@@ -4,6 +4,8 @@
   else if (path === "/catalog") app.innerHTML = catalog();
   else if (path.startsWith("/catalog/")) app.innerHTML = catalog(path.split("/").pop());
   else if (path.startsWith("/product/")) app.innerHTML = product(path.split("/").pop());
+  else if (path === "/login") app.innerHTML = auth("login");
+  else if (path === "/register") app.innerHTML = auth("register");
   else if (path === "/auth") app.innerHTML = auth();
   else if (path === "/checkout") app.innerHTML = checkout();
   else if (path.startsWith("/payment/")) app.innerHTML = payment(path.split("/").pop());
@@ -29,4 +31,3 @@ function startRouter() {
   });
   render();
 }
-

@@ -1587,6 +1587,47 @@ a.status {
   gap: 20px;
 }
 
+.auth-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-single {
+  max-width: 680px;
+}
+
+.auth-split {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.auth-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-panel h2 {
+  margin-bottom: 0;
+}
+
+.auth-panel .form-grid {
+  grid-template-columns: 1fr;
+}
+
+.auth-panel .section {
+  margin-top: 4px;
+}
+
+.auth-switch {
+  width: max-content;
+  color: var(--accent);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.auth-switch:hover {
+  text-decoration: underline;
+}
+
 .checkout-layout,
 .payment-layout,
 .order-layout {
@@ -2101,6 +2142,7 @@ a.admin-tile {
   .hero,
   .market-intro,
   .payment-block,
+  .auth-split,
   .two-col,
   .checkout-layout,
   .payment-layout,

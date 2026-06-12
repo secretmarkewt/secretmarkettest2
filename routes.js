@@ -8,6 +8,8 @@ const SECMARKET_ROUTES = [
   { path: "/catalog/minecraft", area: "catalog", title: "Minecraft" },
   { path: "/product/12345", area: "catalog", title: "Карточка товара" },
   { path: "/seller/pixeltrade", area: "seller-public", title: "Публичный продавец" },
+  { path: "/login", area: "auth", title: "Вход" },
+  { path: "/register", area: "auth", title: "Регистрация" },
   { path: "/auth", area: "auth", title: "Вход" },
   { path: "/checkout", area: "checkout", title: "Checkout" },
   { path: "/payment/order-id", area: "payment", title: "Оплата заказа" },

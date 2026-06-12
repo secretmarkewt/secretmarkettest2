@@ -62,8 +62,8 @@ function header() {
         ].map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
         <a href="/support" data-link>Поддержка</a>
         <a class="nav-balance" href="/account/payments" data-link>0.00 USDT</a>
-        <a class="login-link ${activeClass("/auth")}" href="/auth" data-link>${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
-        <a class="btn primary nav-register" href="/auth" data-link>Регистрация</a>
+        <a class="login-link ${["/login", "/auth"].includes(currentPath()) ? "active" : ""}" href="/login" data-link>${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
+        <a class="btn primary nav-register ${activeClass("/register")}" href="/register" data-link>Регистрация</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему" aria-pressed="${state.theme === "light"}">
           <span class="theme-track-icon theme-track-icon-sun">${themeIcon("sun")}</span>
           <span class="theme-knob">${state.theme === "light" ? themeIcon("sun") : themeIcon("moon")}</span>
@@ -104,28 +104,39 @@ function toast() {
   return state.toast ? `<div class="toast">${state.toast}</div>` : "";
 }
 
-function auth() {
-  return page("Регистрация и вход", `<div class="two-col">
-    <section class="panel">
-      <h2>Войти</h2>
-      <div class="form-grid">${field("Email", "input", "buyer@example.com")}${field("Пароль", "input", "password")}${field("2FA код", "input", "000000")}</div>
-      <div class="form-actions section"><button class="btn primary" data-login-role="buyer">Войти как покупатель</button><button class="btn" data-login-role="seller">Войти как продавец</button><button class="btn warn" data-login-role="admin">Войти как админ</button><button class="btn danger" data-logout>Выйти</button></div>
-    </section>
-    <aside class="panel">
-      <h2>Создать аккаунт</h2>
-      <form data-register-form>
-        <div class="form-grid">
-          <label class="field"><span>Никнейм</span><input name="name" value="Artem" /></label>
-          <label class="field"><span>Email</span><input name="email" type="email" value="new@example.com" /></label>
-          <label class="field"><span>Пароль</span><input name="password" type="password" value="password123" /></label>
-          <label class="field"><span>Telegram</span><input name="telegram" value="@username" /></label>
-          <label class="field"><span>Роль</span><select name="role"><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></label>
-        </div>
-        <p class="muted section">Пароль отправляется только в API по HTTPS, сразу хешируется и не передается в Telegram.</p>
-        <button class="btn primary section" type="submit">Зарегистрироваться</button>
-      </form>
-    </aside>
-  </div>`, "Auth");
+function loginPanel() {
+  return `<section class="panel auth-panel login-panel">
+    <h2>Войти</h2>
+    <p class="muted">Для покупателя, продавца или администратора.</p>
+    <div class="form-grid">${field("Email", "input", "buyer@example.com")}${field("Пароль", "input", "password")}${field("2FA код", "input", "000000")}</div>
+    <div class="form-actions section"><button class="btn primary" data-login-role="buyer">Войти как покупатель</button><button class="btn" data-login-role="seller">Войти как продавец</button><button class="btn warn" data-login-role="admin">Войти как админ</button><button class="btn danger" data-logout>Выйти</button></div>
+    <a class="auth-switch" href="/register" data-link>Нет аккаунта? Зарегистрироваться</a>
+  </section>`;
+}
+
+function registerPanel() {
+  return `<section class="panel auth-panel register-panel">
+    <h2>Создать аккаунт</h2>
+    <p class="muted">Регистрация покупателя или продавца.</p>
+    <form data-register-form>
+      <div class="form-grid">
+        <label class="field"><span>Никнейм</span><input name="name" value="Artem" /></label>
+        <label class="field"><span>Email</span><input name="email" type="email" value="new@example.com" /></label>
+        <label class="field"><span>Пароль</span><input name="password" type="password" value="password123" /></label>
+        <label class="field"><span>Telegram</span><input name="telegram" value="@username" /></label>
+        <label class="field"><span>Роль</span><select name="role"><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></label>
+      </div>
+      <p class="muted section">Пароль отправляется только в API по HTTPS, сразу хешируется и не передается в Telegram.</p>
+      <button class="btn primary section" type="submit">Зарегистрироваться</button>
+    </form>
+    <a class="auth-switch" href="/login" data-link>Уже есть аккаунт? Войти</a>
+  </section>`;
+}
+
+function auth(mode = "both") {
+  if (mode === "login") return page("Вход", `<div class="auth-shell auth-single">${loginPanel()}</div>`, "Account");
+  if (mode === "register") return page("Регистрация", `<div class="auth-shell auth-single">${registerPanel()}</div>`, "Account");
+  return page("Регистрация и вход", `<div class="auth-shell auth-split">${loginPanel()}${registerPanel()}</div>`, "Auth");
 }
 
 startRouter();
