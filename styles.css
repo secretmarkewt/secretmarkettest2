@@ -3478,8 +3478,8 @@ a.admin-tile {
     white-space: nowrap;
   }
 
-  .home-product-body .price {
-    font-size: 13px;
+  .home-product-body .home-price {
+    font-size: 11px;
     line-height: 1.15;
   }
 
