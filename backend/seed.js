@@ -5,11 +5,11 @@ const now = "2026-06-05T09:00:00.000Z";
 
 const seed = {
   users: [
-    { id: "usr-buyer", role: "buyer", name: "Artem", email: "buyer@example.com", telegram: "@buyer", passwordHash: hashPassword("password", "seed-buyer"), status: "active", createdAt: now },
-    { id: "usr-seller", role: "seller", name: "PixelTrade", email: "seller@example.com", telegram: "@pixeltrade", passwordHash: hashPassword("password", "seed-seller"), status: "active", createdAt: now },
-    { id: "usr-buyer-2", role: "buyer", name: "SecondBuyer", email: "buyer2@example.com", telegram: "@buyer2", passwordHash: hashPassword("password", "seed-buyer-2"), status: "active", createdAt: now },
-    { id: "usr-seller-2", role: "seller", name: "OtherSeller", email: "seller2@example.com", telegram: "@seller2", passwordHash: hashPassword("password", "seed-seller-2"), status: "active", createdAt: now },
-    { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", passwordHash: hashPassword("password", "seed-admin"), status: "active", createdAt: now },
+    { id: "usr-buyer", role: "buyer", name: "Artem", email: "buyer@example.com", telegram: "@buyer", balance: 120, frozenBalance: 0, passwordHash: hashPassword("password", "seed-buyer"), status: "active", createdAt: now },
+    { id: "usr-seller", role: "seller", name: "PixelTrade", email: "seller@example.com", telegram: "@pixeltrade", balance: 620, frozenBalance: 320.5, passwordHash: hashPassword("password", "seed-seller"), status: "active", createdAt: now },
+    { id: "usr-buyer-2", role: "buyer", name: "SecondBuyer", email: "buyer2@example.com", telegram: "@buyer2", balance: 0, frozenBalance: 0, passwordHash: hashPassword("password", "seed-buyer-2"), status: "active", createdAt: now },
+    { id: "usr-seller-2", role: "seller", name: "OtherSeller", email: "seller2@example.com", telegram: "@seller2", balance: 12, frozenBalance: 0, passwordHash: hashPassword("password", "seed-seller-2"), status: "active", createdAt: now },
+    { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", balance: 0, frozenBalance: 0, passwordHash: hashPassword("password", "seed-admin"), status: "active", createdAt: now },
   ],
   sessions: [],
   presence: [],
@@ -44,6 +44,10 @@ const seed = {
   ],
   withdrawals: [
     { id: "WD-120", sellerId: "usr-seller", amount: 320.5, coin: "USDT", network: "TRC20", address: "TX7p...D90", txHash: "", status: "review", riskNote: "Проверить адрес", createdAt: now },
+  ],
+  transactions: [
+    { id: "txn-seed-deposit", userId: "usr-buyer", type: "deposit", amount: 120, status: "completed", paymentMethod: "USDT TRC20", details: { txHash: "TX-SEED" }, idempotencyKey: "seed-deposit", createdAt: now, updatedAt: now },
+    { id: "txn-seed-withdraw", userId: "usr-seller", type: "withdrawal", amount: 320.5, status: "pending", paymentMethod: "USDT TRC20", details: { address: "TX7p...D90" }, idempotencyKey: "seed-withdraw", createdAt: now, updatedAt: now },
   ],
   moderation: [
     { id: "MOD-1", type: "product", targetId: 33412, title: "Telegram Premium 12 мес", status: "queued", createdAt: now },

@@ -9,9 +9,25 @@ create table if not exists public.profiles (
   name text not null default 'User',
   telegram text not null default '',
   role text not null default 'buyer' check (role in ('buyer', 'seller', 'admin')),
+  balance numeric(14, 2) not null default 0 check (balance >= 0),
+  frozen_balance numeric(14, 2) not null default 0 check (frozen_balance >= 0),
   status text not null default 'active',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists public.transactions (
+  id text primary key,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  type text not null check (type in ('deposit', 'withdrawal', 'adjustment')),
+  amount numeric(14, 2) not null check (amount > 0),
+  status text not null default 'pending' check (status in ('pending', 'completed', 'rejected', 'failed')),
+  payment_method text not null default 'USDT',
+  details jsonb not null default '{}'::jsonb,
+  idempotency_key text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, idempotency_key)
 );
 
 create table if not exists public.secmarket_items (
@@ -43,6 +59,11 @@ for each row execute function public.secmarket_touch_updated_at();
 drop trigger if exists secmarket_items_touch_updated_at on public.secmarket_items;
 create trigger secmarket_items_touch_updated_at
 before update on public.secmarket_items
+for each row execute function public.secmarket_touch_updated_at();
+
+drop trigger if exists transactions_touch_updated_at on public.transactions;
+create trigger transactions_touch_updated_at
+before update on public.transactions
 for each row execute function public.secmarket_touch_updated_at();
 
 create or replace function public.secmarket_handle_new_user()
@@ -96,6 +117,7 @@ $$;
 
 alter table public.profiles enable row level security;
 alter table public.secmarket_items enable row level security;
+alter table public.transactions enable row level security;
 
 drop policy if exists "profiles_select_own_or_admin" on public.profiles;
 create policy "profiles_select_own_or_admin"
@@ -107,6 +129,26 @@ create policy "profiles_update_own_or_admin"
 on public.profiles for update
 using (id = auth.uid() or public.secmarket_is_admin())
 with check (id = auth.uid() or public.secmarket_is_admin());
+
+drop policy if exists "transactions_select_own_or_admin" on public.transactions;
+create policy "transactions_select_own_or_admin"
+on public.transactions for select
+using (user_id = auth.uid() or public.secmarket_is_admin());
+
+drop policy if exists "transactions_insert_own_pending" on public.transactions;
+create policy "transactions_insert_own_pending"
+on public.transactions for insert
+with check (
+  user_id = auth.uid()
+  and status = 'pending'
+  and type in ('deposit', 'withdrawal')
+);
+
+drop policy if exists "transactions_update_admin" on public.transactions;
+create policy "transactions_update_admin"
+on public.transactions for update
+using (public.secmarket_is_admin())
+with check (public.secmarket_is_admin());
 
 drop policy if exists "items_select_public_own_or_related" on public.secmarket_items;
 create policy "items_select_public_own_or_related"
@@ -125,7 +167,7 @@ on public.secmarket_items for insert
 with check (
   auth.uid() is not null
   and owner_id = auth.uid()
-  and collection in ('products', 'orders', 'payments', 'tickets', 'disputes', 'withdrawals', 'deliveries', 'ledger')
+  and collection in ('products', 'orders', 'payments', 'tickets', 'disputes', 'withdrawals', 'deliveries', 'ledger', 'transactions')
 );
 
 drop policy if exists "items_update_own_related_or_admin" on public.secmarket_items;
@@ -149,3 +191,9 @@ on public.secmarket_items (collection, created_at desc);
 
 create index if not exists secmarket_items_status_idx
 on public.secmarket_items (collection, status);
+
+create index if not exists transactions_user_created_idx
+on public.transactions (user_id, created_at desc);
+
+create index if not exists transactions_status_idx
+on public.transactions (status, created_at desc);

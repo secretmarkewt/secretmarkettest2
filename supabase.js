@@ -282,6 +282,60 @@ async function confirmOrder(orderId) {
   return { order, ledgerEntry };
 }
 
+async function balance(token = getSupabaseToken()) {
+  const current = await session(token);
+  const userTransactions = (await list("transactions")).filter((item) => item.userId === current.user.id);
+  const completed = userTransactions
+    .filter((item) => item.status === "completed")
+    .reduce((sum, item) => sum + (item.type === "withdrawal" ? -Number(item.amount || 0) : Number(item.amount || 0)), 0);
+  const frozenBalance = userTransactions
+    .filter((item) => item.type === "withdrawal" && item.status === "pending")
+    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  return {
+    userId: current.user.id,
+    balance: Math.max(completed + frozenBalance, 0),
+    frozenBalance,
+    availableBalance: Math.max(completed, 0),
+    currency: "USDT",
+    minDepositAmount: 1,
+    minWithdrawalAmount: 5,
+  };
+}
+
+async function transactions(token = getSupabaseToken()) {
+  const current = await session(token);
+  const rows = await list("transactions");
+  return { items: current.user.role === "admin" ? rows : rows.filter((item) => item.userId === current.user.id) };
+}
+
+async function deposit(payload, token = getSupabaseToken()) {
+  const current = await session(token);
+  const transaction = await create("transactions", {
+    userId: current.user.id,
+    type: "deposit",
+    amount: Number(payload.amount || 0),
+    status: "pending",
+    paymentMethod: payload.paymentMethod || "USDT",
+    details: payload.details || {},
+    idempotencyKey: payload.idempotencyKey || `dep-${Date.now()}`,
+  });
+  return { transaction, balance: await balance(token) };
+}
+
+async function withdrawBalance(payload, token = getSupabaseToken()) {
+  const current = await session(token);
+  const transaction = await create("transactions", {
+    userId: current.user.id,
+    type: "withdrawal",
+    amount: Number(payload.amount || 0),
+    status: "pending",
+    paymentMethod: "USDT",
+    details: { address: payload.address || "", network: payload.network || "" },
+    idempotencyKey: payload.idempotencyKey || `wd-${Date.now()}`,
+  });
+  return { transaction, balance: await balance(token) };
+}
+
 async function withdrawalBalance() {
   return { available: 0, currency: "USDT", provider: "supabase" };
 }
@@ -321,7 +375,7 @@ async function settleWithdrawal(id, payload = {}) {
 }
 
 async function getSnapshot() {
-  const collections = ["products", "orders", "payments", "tickets", "disputes", "withdrawals", "deliveries", "ledger"];
+  const collections = ["products", "orders", "payments", "tickets", "disputes", "withdrawals", "deliveries", "ledger", "transactions"];
   const entries = await Promise.all(collections.map(async (name) => [name, (await list(name)).length]));
   return Object.fromEntries(entries);
 }
@@ -329,6 +383,8 @@ async function getSnapshot() {
 window.SECMARKET_SUPABASE = {
   confirmOrder,
   create,
+  balance,
+  deposit,
   enabled: supabaseEnabled,
   findById,
   getSnapshot,
@@ -345,7 +401,9 @@ window.SECMARKET_SUPABASE = {
   setToken: setSupabaseToken,
   settleWithdrawal,
   syncPayment,
+  transactions,
   update,
   updateStatus,
+  withdrawBalance,
   withdrawalBalance,
 };

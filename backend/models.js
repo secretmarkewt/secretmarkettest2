@@ -9,6 +9,7 @@ const models = {
   Dispute: { collection: "disputes", statuses: ["open", "waiting_support", "need_more_data", "resolved_buyer", "resolved_seller", "partial_refund", "closed"] },
   Ticket: { collection: "tickets", statuses: ["open", "waiting_user", "waiting_support", "resolved", "closed"] },
   Withdrawal: { collection: "withdrawals", statuses: ["created", "review", "processing", "sent", "completed", "rejected"] },
+  Transaction: { collection: "transactions", statuses: ["pending", "completed", "rejected", "failed"] },
   Moderation: { collection: "moderation", statuses: ["queued", "approved", "rejected", "blocked"] },
   AuditLog: { collection: "audit", statuses: [] },
 };
@@ -24,6 +25,7 @@ const resourceModels = {
   disputes: "Dispute",
   tickets: "Ticket",
   withdrawals: "Withdrawal",
+  transactions: "Transaction",
   moderation: "Moderation",
   audit: "AuditLog",
 };

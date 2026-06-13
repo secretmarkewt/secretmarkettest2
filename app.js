@@ -49,6 +49,7 @@ function themeIcon(name) {
 
 function header() {
   const session = sessionApi.currentSession();
+  const navBalance = Math.max(Number(session.user?.balance || 0) - Number(session.user?.frozenBalance || 0), 0);
   return `
     <header class="topbar">
       <a class="brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a>
@@ -62,7 +63,7 @@ function header() {
         ].map(([href, label]) => `<a href="${href}" data-link class="${activeClass(href)}">${label}</a>`).join("")}
         <a href="/support" data-link>Поддержка</a>
         ${session.role === "admin" ? `<a href="/admin" data-link class="${currentPath().startsWith("/admin") ? "active" : ""}">Админ</a>` : ""}
-        <a class="nav-balance" href="/account/payments" data-link>0.00 USDT</a>
+        <a class="nav-balance" href="/account/balance" data-link>${navBalance.toFixed(2)} USDT</a>
         <a class="login-link ${["/login", "/auth"].includes(currentPath()) ? "active" : ""}" href="/login" data-link>${session.role === "guest" ? "Войти" : session.user?.name || sessionApi.roleLabel(session.role)}</a>
         <a class="btn primary nav-register ${activeClass("/register")}" href="/register" data-link>Регистрация</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему" aria-pressed="${state.theme === "light"}">

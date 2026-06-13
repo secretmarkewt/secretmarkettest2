@@ -5,6 +5,15 @@ const { resourceModels } = require("./models");
 const { syncPayment } = require("./paymentWatcher");
 const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
+const {
+  approveTransaction,
+  balanceForUser,
+  createAdjustment,
+  createDeposit,
+  createWithdrawal,
+  ownedTransactions,
+  rejectTransaction,
+} = require("./balanceService");
 const { hashPassword, verifyPassword } = require("./passwords");
 const { notifyRegistration, notifyTicket } = require("./telegramNotifier");
 const { calculateCommission } = require("../fees");
@@ -256,6 +265,7 @@ function resolveSession(req, store) {
 function allowedRoles(resource, method) {
   if (resource === "products" && method === "GET") return ["guest", "buyer", "seller", "admin"];
   if (["audit", "sessions", "users", "moderation"].includes(resource)) return ["admin"];
+  if (resource === "transactions") return ["buyer", "seller", "admin"];
   if (resource === "products") return ["seller", "admin"];
   if (resource === "withdrawals") return ["seller", "admin"];
   if (["orders", "payments", "deliveries", "ledger", "disputes", "tickets"].includes(resource)) return ["buyer", "seller", "admin"];
@@ -274,6 +284,7 @@ function isOwnedBy(resource, item, auth, store) {
   if (resource === "deliveries") return item.buyerId === auth.user.id || item.sellerId === auth.user.id;
   if (resource === "ledger") return item.buyerId === auth.user.id || item.sellerId === auth.user.id;
   if (resource === "withdrawals") return item.sellerId === auth.user.id;
+  if (resource === "transactions") return item.userId === auth.user.id;
   if (resource === "tickets") {
     const order = relatedOrderFor(resource, item, store);
     return item.userId === auth.user.id || order?.buyerId === auth.user.id || order?.sellerId === auth.user.id;
@@ -465,7 +476,8 @@ async function handleAuth(req, res, store, id) {
 
 async function handleApi(req, res, store) {
   const url = new URL(req.url, "http://127.0.0.1");
-  const [apiPrefix, resource, id, action] = url.pathname.split("/").filter(Boolean);
+  const parts = url.pathname.split("/").filter(Boolean);
+  const [apiPrefix, resource, id, action] = parts;
 
   if (apiPrefix !== "api") return false;
   if (!originAllowed(req)) return json(req, res, 403, { error: "origin_not_allowed" });
@@ -478,6 +490,51 @@ async function handleApi(req, res, store) {
     return json(req, res, readiness.ok ? 200 : 503, readiness);
   }
   if (resource === "snapshot") return json(req, res, 200, store.snapshot());
+  if (resource === "admin" && parts[2] === "transactions" && parts[4] && req.method === "POST") {
+    const auth = authorize(req, res, store, "users");
+    if (!auth) return true;
+    const body = await readBody(req);
+    const result = parts[4] === "approve"
+      ? approveTransaction(store, parts[3], auth.user.id)
+      : parts[4] === "reject"
+        ? rejectTransaction(store, parts[3], auth.user.id, body.reason || body.comment || "")
+        : { error: "admin_transaction_action_not_found" };
+    if (result.error === "transaction_not_found") return notFound(req, res);
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 200, result);
+  }
+  if (resource === "admin" && parts[2] === "users" && parts[4] === "balance-adjustment" && req.method === "POST") {
+    const auth = authorize(req, res, store, "users");
+    if (!auth) return true;
+    const result = createAdjustment(store, parts[3], await readBody(req), auth.user.id);
+    if (result.error === "user_not_found") return notFound(req, res);
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 201, result);
+  }
+  if (resource === "balance" && req.method === "GET") {
+    const auth = authorize(req, res, store, "transactions");
+    if (!auth) return true;
+    return json(req, res, 200, balanceForUser(store, auth.user.id));
+  }
+  if (resource === "transactions" && req.method === "GET") {
+    const auth = authorize(req, res, store, "transactions");
+    if (!auth) return true;
+    return json(req, res, 200, { items: ownedTransactions(store, auth) });
+  }
+  if (resource === "deposit" && req.method === "POST") {
+    const auth = authorize(req, res, store, "transactions");
+    if (!auth) return true;
+    const result = createDeposit(store, auth.user.id, await readBody(req));
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 201, result);
+  }
+  if (resource === "withdraw" && req.method === "POST") {
+    const auth = authorize(req, res, store, "transactions");
+    if (!auth) return true;
+    const result = createWithdrawal(store, auth.user.id, await readBody(req));
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 201, result);
+  }
   if (resource === "presence" && id === "heartbeat" && req.method === "POST") {
     const result = upsertPresence(store, await readBody(req));
     if (result.error) return json(req, res, 422, { error: result.error });

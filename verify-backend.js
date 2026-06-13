@@ -209,6 +209,52 @@ function authHeader(token) {
     }).then((res) => res.json());
     if (!adminLogin.token || adminLogin.user?.role !== "admin") throw new Error("admin auth login failed");
 
+    const initialBalance = await request(port, "/api/balance", {
+      headers: authHeader(login.token),
+    }).then((res) => res.json());
+    if (initialBalance.availableBalance !== 120) throw new Error("balance overview failed");
+
+    const deposit = await request(port, "/api/deposit", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({ amount: 10, paymentMethod: "USDT TRC20", idempotencyKey: "verify-deposit-1" }),
+    }).then((res) => res.json());
+    if (deposit.transaction?.status !== "pending") throw new Error("deposit request failed");
+    const duplicateDeposit = await request(port, "/api/deposit", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({ amount: 10, paymentMethod: "USDT TRC20", idempotencyKey: "verify-deposit-1" }),
+    }).then((res) => res.json());
+    if (!duplicateDeposit.idempotent || duplicateDeposit.transaction?.id !== deposit.transaction.id) throw new Error("deposit idempotency failed");
+    const approvedDeposit = await request(port, `/api/admin/transactions/${deposit.transaction.id}/approve`, {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+    }).then((res) => res.json());
+    if (approvedDeposit.balance?.availableBalance !== 130) throw new Error("deposit approve balance failed");
+    const approvedDepositAgain = await request(port, `/api/admin/transactions/${deposit.transaction.id}/approve`, {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+    }).then((res) => res.json());
+    if (!approvedDepositAgain.alreadyProcessed || approvedDepositAgain.balance?.availableBalance !== 130) throw new Error("deposit double approve guard failed");
+
+    const withdrawalTx = await request(port, "/api/withdraw", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({ amount: 25, network: "TRC20", address: "TYJmyeYEVHpF2CEZTXheWp1kM6zVUoeWsB", idempotencyKey: "verify-withdraw-1" }),
+    }).then((res) => res.json());
+    if (withdrawalTx.balance?.frozenBalance !== 25 || withdrawalTx.balance?.availableBalance !== 105) throw new Error("withdraw freeze failed");
+    const rejectedWithdrawalTx = await request(port, `/api/admin/transactions/${withdrawalTx.transaction.id}/reject`, {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({ reason: "verify reject" }),
+    }).then((res) => res.json());
+    if (rejectedWithdrawalTx.balance?.frozenBalance !== 0 || rejectedWithdrawalTx.balance?.availableBalance !== 130) throw new Error("withdraw reject refund failed");
+
+    const buyerTransactions = await request(port, "/api/transactions", {
+      headers: authHeader(login.token),
+    }).then((res) => res.json());
+    if (!buyerTransactions.items.every((item) => item.userId === "usr-buyer")) throw new Error("transaction ownership failed");
+
     const deniedAudit = await request(port, "/api/audit", {
       headers: authHeader(login.token),
     });

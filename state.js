@@ -24,6 +24,7 @@ const state = {
     profiles: [],
     products: [],
     tickets: [],
+    transactions: [],
     withdrawals: [],
   },
   liveHealth: null,
@@ -123,9 +124,9 @@ function upsertLiveItem(collectionName, item) {
 }
 
 function liveCollectionsForRole(role) {
-  if (role === "admin") return ["deliveries", "disputes", "ledger", "orders", "payments", "profiles", "products", "tickets", "withdrawals"];
-  if (role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets", "withdrawals"];
-  if (role === "buyer") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets"];
+  if (role === "admin") return ["deliveries", "disputes", "ledger", "orders", "payments", "profiles", "products", "tickets", "transactions", "withdrawals"];
+  if (role === "seller") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets", "transactions", "withdrawals"];
+  if (role === "buyer") return ["deliveries", "disputes", "ledger", "orders", "payments", "products", "tickets", "transactions"];
   return ["products"];
 }
 
@@ -241,7 +242,7 @@ function resetDemoState() {
   state.disputeCreated = false;
   state.copiedAddress = false;
   state.chatMessages = [];
-  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], profiles: [], products: [], tickets: [], withdrawals: [] };
+  state.live = { deliveries: [], disputes: [], ledger: [], orders: [], payments: [], profiles: [], products: [], tickets: [], transactions: [], withdrawals: [] };
   state.liveHealth = null;
   state.liveStatus = "idle";
   state.liveSyncedAt = "";

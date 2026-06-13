@@ -214,4 +214,9 @@ const SECMARKET_DATA = {
   ],
 };
 
+SECMARKET_DATA.demoTransactions = [
+  { id: "txn-demo-deposit", userId: "usr-buyer", type: "deposit", amount: 120, status: "completed", paymentMethod: "USDT TRC20", details: { txHash: "TX-SEED" }, createdAt: "2026-06-05T09:00:00.000Z" },
+  { id: "txn-demo-withdraw", userId: "usr-seller", type: "withdrawal", amount: 320.5, status: "pending", paymentMethod: "USDT TRC20", details: { address: "TX7p...D90" }, createdAt: "2026-06-05T09:00:00.000Z" },
+];
+
 window.SECMARKET_DATA = SECMARKET_DATA;

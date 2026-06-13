@@ -13,6 +13,7 @@
   if (path.includes("/categories")) return adminCategories();
   if (path.includes("/promocodes")) return adminPromocodes();
   if (path.includes("/fees")) return adminFees();
+  if (path.includes("/transactions")) return adminTransactions();
   if (path.includes("/audit")) return adminAudit();
   if (path.includes("/moderation")) return adminModeration();
   if (path !== "/admin") return adminTable(adminLinks.find((item) => item[1] === path)?.[0] || "Раздел админки", ["Список записей", "Фильтры", "Ручные действия", "История изменений"]);
@@ -110,6 +111,19 @@ function adminPayoutDetail(id = "WD-120") {
       <label class="field"><span>Комментарий</span><textarea name="riskNote" placeholder="Проверить адрес, холды и открытые споры перед отправкой">${escapeHtml(withdrawalItem.risk || "")}</textarea></label>
     </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="settle-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Подтвердить выплату</button><button class="btn warn" type="button" data-live-action="review-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Запросить проверку</button><button class="btn danger" type="button" data-live-action="reject-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Отклонить</button></div></form></section>
     <section class="panel section"><h2>История изменения статусов</h2><div class="list">${["Запрос создан продавцом", "Адрес прошел форматную проверку", `Риск: ${withdrawalItem.risk}`, `Текущий статус: ${statusLabel(withdrawalItem.status)}`].map(row).join("")}</div></section>
+  </section></div>`, "Admin");
+}
+
+function adminTransactions() {
+  const rows = liveItems("transactions").length ? liveItems("transactions") : (window.SECMARKET_DATA.demoTransactions || []);
+  const listRows = rows.map((transaction) => `<div class="list-row"><span>${transaction.id} · ${transaction.userId}<br><span class="muted">${transaction.type} · ${Number(transaction.amount || 0).toFixed(2)} USDT · ${transaction.paymentMethod || "USDT"}</span></span><span class="status ${statusTone(transaction.status)}">${statusLabel(transaction.status)}</span>${transaction.status === "pending" ? `<button class="btn primary" data-live-action="approve-transaction" data-transaction-id="${transaction.id}">Approve</button><button class="btn danger" data-live-action="reject-transaction" data-transaction-id="${transaction.id}">Reject</button>` : ""}</div>`);
+  return page("Админка балансов", `<div class="layout"><aside class="sidebar">${sideLinks([...adminLinks, ["Балансы", "/admin/transactions"]])}</aside><section>
+    <section class="panel"><div class="section-head"><div><h2>Транзакции баланса</h2><p class="muted">Пополнения, выводы и ручные корректировки. Повторный approve не начисляет деньги второй раз.</p></div><span class="status ok">server only</span></div><div class="list">${listRows.join("") || emptyAdminState("Транзакций пока нет")}</div></section>
+    <section class="panel section"><h2>Ручная корректировка</h2><form data-admin-adjust-form><div class="form-grid">
+      <label class="field"><span>User ID</span><input name="userId" placeholder="usr-buyer" /></label>
+      <label class="field"><span>Сумма</span><input name="amount" inputmode="decimal" placeholder="10.00" /></label>
+      <label class="field"><span>Комментарий</span><input name="comment" placeholder="Причина обязательна" /></label>
+    </div><div class="form-actions section"><button class="btn warn" type="button" data-live-action="adjust-balance">Сохранить корректировку</button></div></form></section>
   </section></div>`, "Admin");
 }
 

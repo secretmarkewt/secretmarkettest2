@@ -35,6 +35,14 @@ function createStore(options = {}) {
   const filePath = options.filePath === false ? "" : options.filePath || process.env.SECMARKET_DB_FILE || DEFAULT_DB_FILE;
   const configuredFilePath = options.filePath !== undefined || Boolean(process.env.SECMARKET_DB_FILE);
   let state = readState(filePath) || clone(seed);
+  for (const [collection, value] of Object.entries(seed)) {
+    if (!Array.isArray(state[collection])) state[collection] = clone(value);
+  }
+  state.users = (state.users || []).map((user) => ({
+    balance: 0,
+    frozenBalance: 0,
+    ...user,
+  }));
 
   function persist() {
     if (!filePath) return;
@@ -103,7 +111,7 @@ function createStore(options = {}) {
   }
 
   function ready() {
-    const requiredCollections = ["users", "products", "orders", "payments", "audit"];
+    const requiredCollections = ["users", "products", "orders", "payments", "transactions", "audit"];
     const missingCollections = requiredCollections.filter((collection) => !Array.isArray(state[collection]));
     return {
       ok: missingCollections.length === 0,

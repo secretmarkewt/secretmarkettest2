@@ -134,6 +134,10 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 
 `GET /api/withdrawals/balance` returns the seller's available balance after posted ledger entries and active withdrawal reservations. `POST /api/withdrawals` lets a seller request a payout only within that available balance; new requests start in `review` for admin approval.
 
+## Internal Balance
+
+`GET /api/balance` returns the current, available and frozen user balance. `POST /api/deposit` creates a pending deposit with an idempotency key, and admin approval credits it once. `POST /api/withdraw` creates a pending withdrawal and freezes the amount immediately; admin rejection releases the frozen amount, while approval completes the withdrawal. Admin routes are `POST /api/admin/transactions/:id/approve`, `POST /api/admin/transactions/:id/reject` and `POST /api/admin/users/:id/balance-adjustment`.
+
 ## Payout Settlement
 
 `POST /api/withdrawals/:id/settle` is admin-only. It writes the payout tx hash, moves the withdrawal through `processing`, `sent`, `completed` or `rejected`, and posts a negative `payout` ledger entry when the withdrawal is completed. Repeated completed settlements are idempotent and do not double-post the payout.

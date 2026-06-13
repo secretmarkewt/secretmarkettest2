@@ -453,6 +453,32 @@ async function runLiveAction(button) {
       upsertLiveItem("payments", payment);
       go(`/payment/${order.id}`);
       notify(`Заказ #${order.id} создан, счет готов к оплате`);
+    } else if (action === "deposit-balance") {
+      await ensureLiveRole(sessionApi.currentSession().role === "guest" ? "buyer" : sessionApi.currentSession().role);
+      const form = button.closest("[data-balance-deposit-form]");
+      const formData = form ? new FormData(form) : null;
+      const amount = Number(formData?.get("amount") || 0);
+      const result = await api.live.deposit({
+        amount,
+        paymentMethod: String(formData?.get("paymentMethod") || "USDT TRC20"),
+        details: { comment: String(formData?.get("comment") || "") },
+        idempotencyKey: `dep-${sessionApi.currentSession().user?.id || "user"}-${Date.now()}`,
+      });
+      upsertLiveItem("transactions", result.transaction);
+      notify(`Заявка на пополнение ${result.transaction.id}: ${statusLabel(result.transaction.status)}`);
+    } else if (action === "withdraw-balance") {
+      await ensureLiveRole(sessionApi.currentSession().role === "guest" ? "buyer" : sessionApi.currentSession().role);
+      const form = button.closest("[data-balance-withdraw-form]");
+      const formData = form ? new FormData(form) : null;
+      const amount = Number(formData?.get("amount") || 0);
+      const result = await api.live.withdrawBalance({
+        amount,
+        network: String(formData?.get("network") || "TRC20"),
+        address: String(formData?.get("address") || ""),
+        idempotencyKey: `wd-bal-${sessionApi.currentSession().user?.id || "user"}-${Date.now()}`,
+      });
+      upsertLiveItem("transactions", result.transaction);
+      notify(`Заявка на вывод ${result.transaction.id}: заморожено ${Number(result.transaction.amount || 0).toFixed(2)} USDT`);
     } else if (action === "create-product") {
       await ensureLiveRole("seller");
       const sellerId = sessionApi.currentSession().user?.id || "usr-seller";
@@ -577,6 +603,26 @@ async function runLiveAction(button) {
       const result = await api.live.settleWithdrawal(id, { ...draft, status: "rejected" });
       upsertLiveItem("withdrawals", result.withdrawal);
       notify(`Выплата ${result.withdrawal.id}: отклонена`);
+    } else if (action === "approve-transaction") {
+      const id = button.dataset.transactionId;
+      const result = await api.live.approveTransaction(id);
+      upsertLiveItem("transactions", result.transaction);
+      notify(`Транзакция ${id}: ${statusLabel(result.transaction.status)}`);
+    } else if (action === "reject-transaction") {
+      const id = button.dataset.transactionId;
+      const result = await api.live.rejectTransaction(id, { reason: "Отклонено администратором" });
+      upsertLiveItem("transactions", result.transaction);
+      notify(`Транзакция ${id}: ${statusLabel(result.transaction.status)}`);
+    } else if (action === "adjust-balance") {
+      const form = button.closest("[data-admin-adjust-form]");
+      const formData = form ? new FormData(form) : null;
+      const userId = String(formData?.get("userId") || "").trim();
+      const result = await api.live.adjustBalance(userId, {
+        amount: Number(formData?.get("amount") || 0),
+        comment: String(formData?.get("comment") || ""),
+      });
+      upsertLiveItem("transactions", result.transaction);
+      notify(`Баланс ${userId} скорректирован: ${Number(result.transaction.amount || 0).toFixed(2)} USDT`);
     } else if (action === "approve-product") {
       await ensureLiveRole("admin");
       const product = await api.live.updateStatus("products", button.dataset.productId || 33412, "published");

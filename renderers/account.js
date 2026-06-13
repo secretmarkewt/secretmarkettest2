@@ -83,11 +83,51 @@ function chats() {
 function account(path = "") {
   if (path.includes("/orders")) return accountOrders();
   if (path.includes("/favorites")) return accountFavorites();
+  if (path.includes("/balance")) return accountBalance();
   if (path.includes("/payments")) return accountPayments();
   if (path.includes("/reviews")) return accountReviews();
   if (path.includes("/security")) return accountSecurity();
   if (path.includes("/settings")) return accountSettings();
   return accountOverview();
+}
+
+function transactionRow(transaction) {
+  const details = transaction.details || {};
+  const hint = details.txHash || details.address || details.comment || transaction.paymentMethod || "USDT";
+  return `<div class="list-row"><span>${transaction.type} · ${Number(transaction.amount || 0).toFixed(2)} USDT<br><span class="muted">${hint}</span></span><span class="status ${statusTone(transaction.status)}">${statusLabel(transaction.status)}</span></div>`;
+}
+
+function accountBalance() {
+  const session = sessionApi.currentSession();
+  const user = session.user || {};
+  const ownTransactions = liveItems("transactions").filter((item) => item.userId === user.id);
+  const demoRows = (window.SECMARKET_DATA.demoTransactions || []).filter((item) => item.userId === (user.id || "usr-buyer"));
+  const rows = ownTransactions.length ? ownTransactions : demoRows;
+  const balance = Number(user.balance ?? (session.role === "seller" ? 620 : 120) ?? 0);
+  const frozenBalance = Number(user.frozenBalance ?? (session.role === "seller" ? 320.5 : 0) ?? 0);
+  const availableBalance = Math.max(balance - frozenBalance, 0);
+  return page("Баланс", `<div class="layout"><aside class="sidebar">${sideLinks([...accountLinks, ["Баланс", "/account/balance"]])}</aside><section>
+    <section class="panel account-hero"><div class="section-head"><div><p class="eyebrow">Внутренний баланс</p><h1>${money(availableBalance)}</h1><p class="lead">Пополнения и выводы проходят через серверные заявки. Баланс нельзя изменить напрямую с фронтенда.</p></div><span class="status ok">USDT</span></div>
+      <div class="grid metrics">${[
+        [money(balance), "текущий баланс"],
+        [money(availableBalance), "доступно"],
+        [money(frozenBalance), "заморожено"],
+        [rows.length, "операций"],
+      ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
+    <div class="two-col section">
+      <section class="panel"><h2>Пополнить</h2><form data-balance-deposit-form><div class="form-grid">
+        <label class="field"><span>Сумма USDT</span><input name="amount" inputmode="decimal" placeholder="25.00" /></label>
+        <label class="field"><span>Способ оплаты</span><select name="paymentMethod"><option>USDT TRC20</option><option>USDT TON</option><option>USDT BEP20</option></select></label>
+        <label class="field"><span>Комментарий</span><input name="comment" placeholder="tx hash или заметка" /></label>
+      </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="deposit-balance">Создать заявку</button><span class="status wait">pending</span></div></form></section>
+      <section class="panel"><h2>Вывести</h2><form data-balance-withdraw-form><div class="form-grid">
+        <label class="field"><span>Сумма USDT</span><input name="amount" inputmode="decimal" placeholder="25.00" /></label>
+        <label class="field"><span>Сеть</span><select name="network"><option>TRC20</option><option>TON</option><option>BEP20</option></select></label>
+        <label class="field"><span>Реквизиты</span><input name="address" placeholder="Кошелек для вывода" /></label>
+      </div><div class="form-actions section"><button class="btn warn" type="button" data-live-action="withdraw-balance">Запросить вывод</button><span class="status wait">freeze</span></div></form></section>
+    </div>
+    <section class="panel section"><div class="section-head"><h2>История транзакций</h2><span class="status ${ownTransactions.length ? "ok" : "wait"}">${ownTransactions.length ? "live" : "demo"}</span></div><div class="list">${rows.length ? rows.map(transactionRow).join("") : emptyAccountState("Операций пока нет")}</div></section>
+  </section></div>`, "Account");
 }
 
 function accountOverview() {

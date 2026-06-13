@@ -16,6 +16,7 @@ function initialApiState() {
     tickets: clone(data.demoTickets),
     disputes: clone(data.demoDisputes),
     withdrawals: clone(data.demoWithdrawals),
+    transactions: clone(data.demoTransactions || []),
     moderation: clone(data.moderationQueue),
     deliveries: [],
     ledger: [],
@@ -249,6 +250,50 @@ const live = {
     if (isSupabaseEnabled()) return supabaseProvider().withdrawalBalance(token);
     return requestLive("/api/withdrawals/balance", {
       token,
+    });
+  },
+  async balance(token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().balance(token);
+    return requestLive("/api/balance", { token });
+  },
+  async transactions(token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().transactions(token);
+    return requestLive("/api/transactions", { token });
+  },
+  async deposit(payload, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().deposit(payload, token);
+    return requestLive("/api/deposit", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  async withdrawBalance(payload, token = getAuthToken()) {
+    if (isSupabaseEnabled()) return supabaseProvider().withdrawBalance(payload, token);
+    return requestLive("/api/withdraw", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  async approveTransaction(id, token = getAuthToken()) {
+    return requestLive(`/api/admin/transactions/${id}/approve`, {
+      method: "POST",
+      token,
+    });
+  },
+  async rejectTransaction(id, payload = {}, token = getAuthToken()) {
+    return requestLive(`/api/admin/transactions/${id}/reject`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
+  async adjustBalance(userId, payload, token = getAuthToken()) {
+    return requestLive(`/api/admin/users/${userId}/balance-adjustment`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
     });
   },
   async requestWithdrawal(payload, token = getAuthToken()) {
