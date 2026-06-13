@@ -245,6 +245,19 @@ if (!app.innerHTML.includes("SUP-LIVE") || !app.innerHTML.includes("Live support
   throw new Error("live support ticket did not render");
 }
 
+context.location.pathname = "/support/tickets/SUP-LIVE";
+context.render();
+if (!app.innerHTML.includes("Live UI ticket") || !app.innerHTML.includes("@buyer")) {
+  throw new Error("live support ticket detail did not render");
+}
+
+setSession("admin");
+context.location.pathname = "/admin/tickets";
+context.render();
+if (!app.innerHTML.includes("требуют ответа") || !app.innerHTML.includes("/support/tickets/SUP-LIVE")) {
+  throw new Error("admin ticket queue did not render live support workflow");
+}
+
 context.location.pathname = "/launch-readiness";
 context.render();
 if (!app.innerHTML.includes("MVP запуск") || !app.innerHTML.includes("Production блокеры")) {

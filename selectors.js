@@ -93,7 +93,23 @@ function normalizeLiveDispute(dispute) {
 
 function ticketById(id) {
   const { demoTickets } = window.SECMARKET_DATA;
+  const liveTicket = liveItems("tickets").find((ticket) => String(ticket.id).toLowerCase() === String(id).toLowerCase());
+  if (liveTicket) return normalizeLiveTicket(liveTicket);
   return demoTickets.find((ticket) => String(ticket.id).toLowerCase() === String(id).toLowerCase()) || demoTickets[0];
+}
+
+function normalizeLiveTicket(ticket) {
+  return {
+    id: ticket.id,
+    topic: ticket.topic || "Обращение в поддержку",
+    order: ticket.orderId || ticket.order || "general",
+    status: statusLabel(ticket.status),
+    rawStatus: ticket.status || "open",
+    contact: ticket.contact || "",
+    description: ticket.description || ticket.message || "",
+    userId: ticket.userId || ticket.buyerId || "guest",
+    createdAt: ticket.createdAt || ticket.created_at || "",
+  };
 }
 
 function withdrawalById(id) {

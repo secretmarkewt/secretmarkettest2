@@ -58,37 +58,39 @@ function supportTicket() {
     <label class="field"><span>Связанный заказ</span><input name="orderId" placeholder="#12345" /></label>
     <label class="field"><span>Описание</span><textarea name="description" placeholder="Опишите проблему подробно"></textarea></label>
     <label class="field"><span>Контакт</span><input name="contact" placeholder="@telegram" /></label>
-  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside class="panel"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}</aside></div>`, "Support");
+  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside class="panel"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}<section class="section"><h2>После отправки</h2><div class="list">${[
+    ["Статус", "открыт"],
+    ["Уведомление", "уходит в Telegram поддержки"],
+    ["Связь", "ответ появится в обращениях"],
+  ].map(([left, right]) => row(left, right)).join("")}</div></section></aside></div>`, "Support");
 }
 
 function supportRequests() {
-  const liveRows = liveItems("tickets").map((ticket) => ticketListRow({
-    id: ticket.id,
-    topic: ticket.topic,
-    order: ticket.orderId || "—",
-    status: statusLabel(ticket.status),
-  }));
+  const liveRows = liveItems("tickets").map((ticket) => ticketListRow(normalizeLiveTicket(ticket)));
   const rows = mixDemoRows("tickets", window.SECMARKET_DATA.demoTickets.map(ticketListRow), liveRows);
-  return page("Мои обращения", `<section class="panel"><div class="list">${rows.length ? rows.join("") : `<div class="list-row"><span class="muted">Обращений пока нет</span><span class="status wait">live</span></div>`}</div></section>`, "Support");
+  return page("Мои обращения", `<section class="panel"><div class="section-head"><div><h2>Тикеты поддержки</h2><p class="muted">Все обращения привязаны к заказу, платежу или аккаунту.</p></div><a class="btn primary" href="/support/ticket" data-link>Создать тикет</a></div><div class="list">${rows.length ? rows.join("") : `<div class="list-row"><span class="muted">Обращений пока нет</span><span class="status wait">live</span></div>`}</div></section>`, "Support");
 }
 
 function supportTicketDetail(id = "SUP-104") {
   const ticket = ticketById(id);
   const paymentItem = paymentByOrderId(ticket.order);
+  const relatedOrder = ticket.order === "general" ? null : orderById(ticket.order);
+  const messages = [
+    ticket.description ? `Пользователь: ${escapeHtml(ticket.description)}` : "Покупатель: приложил tx hash и скрин оплаты.",
+    "Поддержка: проверяем сеть, сумму и историю заказа.",
+    `Система: контакт ${ticket.contact || "не указан"}, пользователь ${ticket.userId || "guest"}.`,
+    "Поддержка: если подтверждений достаточно, заказ будет обновлен вручную.",
+  ];
   return page(`Тикет #${ticket.id}`, `<div class="two-col">
-    <section class="panel"><div class="section-head"><div><h2>${ticket.topic}</h2><p class="muted">Связан с заказом #${ticket.order}</p></div><span class="status ${statusTone(ticket.status)}">${ticket.status}</span></div><section class="section"><h2>Переписка</h2><div class="list">${[
-      "Покупатель: приложил tx hash и скрин оплаты.",
-      "Поддержка: проверяем сеть и сумму.",
-      "Система: найден связанный платеж и заказ.",
-      "Поддержка: если подтверждений достаточно, заказ будет обновлен вручную.",
-    ].map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><form class="form-actions section">${field("Ответ", "input", "Написать в поддержку")}<button class="btn primary">Отправить</button></form></section>
+    <section class="panel"><div class="section-head"><div><h2>${ticket.topic}</h2><p class="muted">${relatedOrder ? `Связан с заказом #${ticket.order} · ${relatedOrder.product}` : "Общее обращение без заказа"}</p></div><span class="status ${statusTone(ticket.rawStatus || ticket.status)}">${ticket.status}</span></div><section class="section"><h2>Переписка</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><form class="form-actions section">${field("Ответ", "input", "Написать в поддержку")}<button class="btn primary">Отправить</button></form></section>
     <aside class="panel"><h2>Связанные сущности</h2><div class="list">${[
       ["Заказ", `#${ticket.order}`],
       ["Платеж", paymentItem.id],
       ["Сеть", paymentItem.network],
       ["tx hash", paymentItem.tx],
       ["Подтверждения", paymentItem.confirmations],
-    ].map(([left, right]) => row(left, right)).join("")}</div><div class="form-actions section"><a class="btn" href="/orders/${ticket.order}" data-link>Открыть заказ</a><a class="btn" href="/admin/payments/${paymentItem.id}" data-link>Админ-платеж</a></div></aside>
+      ["Контакт", ticket.contact || "не указан"],
+    ].map(([left, right]) => row(left, right)).join("")}</div><div class="form-actions section">${relatedOrder ? `<a class="btn" href="/orders/${ticket.order}" data-link>Открыть заказ</a>` : ""}<a class="btn" href="/admin/payments/${paymentItem.id}" data-link>Админ-платеж</a></div></aside>
   </div>`, "Support");
 }
 

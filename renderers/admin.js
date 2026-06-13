@@ -195,9 +195,26 @@ function adminAudit() {
 }
 
 function adminTickets() {
-  const liveRows = liveItems("tickets").map((ticket) => `<div class="list-row"><span>#${ticket.id} · ${ticket.topic || "Обращение"}<br><span class="muted">заказ ${ticket.orderId || "general"} · ${ticket.contact || ""}</span></span><span class="admin-row-actions"><span class="status ${statusTone(ticket.status)}">${statusLabel(ticket.status)}</span><button class="btn tiny" data-live-action="close-ticket" data-ticket-id="${ticket.id}">Закрыть</button></span></div>`);
+  const priorityLabel = (ticket) => {
+    if (["open", "waiting_support"].includes(ticket.rawStatus)) return "срочно";
+    if (ticket.rawStatus === "waiting_user") return "ждём клиента";
+    return "обычно";
+  };
+  const liveRows = liveItems("tickets").map((ticketItem) => {
+    const ticket = normalizeLiveTicket(ticketItem);
+    return `<div class="list-row"><span>#${ticket.id} · ${ticket.topic}<br><span class="muted">заказ ${ticket.order} · ${ticket.contact || "контакт не указан"}${ticket.description ? ` · ${ticket.description}` : ""}</span></span><span class="admin-row-actions"><span class="status ${priorityLabel(ticket) === "срочно" ? "bad" : "wait"}">${priorityLabel(ticket)}</span><span class="status ${statusTone(ticket.rawStatus)}">${ticket.status}</span><a class="btn tiny" href="/support/tickets/${ticket.id}" data-link>Открыть</a><button class="btn tiny" data-live-action="close-ticket" data-ticket-id="${ticket.id}">Закрыть</button></span></div>`;
+  });
   const rows = mixDemoRows("tickets", demoTickets.map(ticketListRow), liveRows);
-  return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><div class="section-head"><h2>Очередь обращений</h2><button class="btn" data-live-sync>Обновить</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Тикетов пока нет")}</div></section></div>`, "Admin");
+  const openCount = liveItems("tickets").filter((ticket) => ["open", "waiting_support"].includes(ticket.status)).length || demoTickets.filter((ticket) => ticket.status !== "Закрыт").length;
+  return page("Тикеты поддержки", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <div class="grid metrics">${[
+      [openCount, "требуют ответа"],
+      [liveItems("tickets").length || demoTickets.length, "всего тикетов"],
+      ["Telegram", "уведомления"],
+      ["24/7", "очередь поддержки"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
+    <section class="panel section"><div class="section-head"><div><h2>Очередь обращений</h2><p class="muted">Сначала закрывайте оплату и споры, затем общие вопросы.</p></div><button class="btn" data-live-sync>Обновить</button></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Тикетов пока нет")}</div></section>
+  </section></div>`, "Admin");
 }
 
 function roleName(role) {
