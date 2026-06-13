@@ -38,7 +38,7 @@ function sellerOverview() {
 function sellerProfile() {
   return page("Профиль продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
     <section class="panel"><h2>Публичный профиль</h2><div class="form-grid">${field("Название магазина", "input", "PixelTrade")}${field("Telegram", "input", "@pixeltrade")}${field("Описание", "textarea", "Roblox, игровая валюта и быстрые пополнения")}${field("Статус", "select", ["Проверенный", "На проверке", "Ограничен"])}${field("Среднее время ответа", "input", "до 5 минут")}${field("Регион работы", "select", ["Любой", "EU", "US", "CIS"])}</div></section>
-    <section class="panel section"><h2>Кошелек выплат</h2><div class="form-grid">${field("Валюта", "select", ["USDT"])}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Адрес", "input", "TQ9...seller")}${field("Минимальный вывод", "input", "50 USDT")}${field("Подтверждение", "select", ["Telegram + пароль", "2FA", "Админ-проверка"])}</div><p class="muted section">В MVP выплаты подтверждаются вручную администратором, tx hash добавляется после отправки.</p></section>
+    <section class="panel section"><h2>Кошелек выплат</h2><div class="form-grid">${field("Валюта", "select", ["USDT"])}${field("Сеть", "select", ["TRC20", "TON", "BEP20"])}${field("Адрес", "input", "TQ9...seller")}${field("Минимальный вывод", "input", "50 USDT")}${field("Подтверждение", "select", ["Telegram + пароль", "2FA", "Админ-проверка"])}</div><p class="muted section">В MVP выплаты подтверждаются вручную администратором, ID транзакции добавляется после отправки.</p></section>
   </section></div>`, "Seller");
 }
 

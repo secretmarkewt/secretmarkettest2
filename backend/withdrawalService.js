@@ -64,7 +64,7 @@ function settleWithdrawal(store, withdrawalId, payload = {}, options = {}) {
   const nextStatus = payload.status || "completed";
   if (!SETTLEMENT_STATUSES.includes(nextStatus)) return { error: "invalid_status" };
   if ((nextStatus === "sent" || nextStatus === "completed") && !payload.txHash && !withdrawal.txHash) {
-    return { error: "tx_hash_required" };
+    return { error: "transaction_id_required" };
   }
 
   const actorId = options.actorId || payload.actorId || "system";

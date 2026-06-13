@@ -121,7 +121,7 @@ function accountBalance() {
       <section class="panel"><h2>Пополнить</h2><form data-balance-deposit-form><div class="form-grid">
         <label class="field"><span>Сумма USDT</span><input name="amount" inputmode="decimal" placeholder="25.00" /></label>
         <label class="field"><span>Способ оплаты</span><select name="paymentMethod"><option>USDT TRC20</option><option>USDT TON</option><option>USDT BEP20</option></select></label>
-        <label class="field"><span>Комментарий</span><input name="comment" placeholder="tx hash или заметка" /></label>
+        <label class="field"><span>Комментарий</span><input name="comment" placeholder="ID транзакции или заметка" /></label>
       </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="deposit-balance">Создать заявку</button><span class="status wait">pending</span></div></form></section>
       <section class="panel"><h2>Вывести</h2><form data-balance-withdraw-form><div class="form-grid">
         <label class="field"><span>Сумма USDT</span><input name="amount" inputmode="decimal" placeholder="25.00" /></label>

@@ -22,7 +22,7 @@ function disputeDetail(id = 123) {
       ["Сумма заказа", money(orderItem.amount)],
       ["Escrow", "заморожен до решения"],
       ["Предварительное решение", dispute.refund],
-    ].map(([left, right]) => row(left, right)).join("")}</div><section class="section"><h2>Чат спора</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><section class="section"><h2>Доказательства</h2><div class="list">${["Скриншот ошибки активации", "tx hash платежа", "Переписка из чата заказа", "Данные выдачи продавца"].map(row).join("")}</div></section></section>
+    ].map(([left, right]) => row(left, right)).join("")}</div><section class="section"><h2>Чат спора</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><section class="section"><h2>Доказательства</h2><div class="list">${["Скриншот ошибки активации", "ID транзакции платежа", "Переписка из чата заказа", "Данные выдачи продавца"].map(row).join("")}</div></section></section>
     <aside class="panel"><h2>Действия поддержки</h2><form data-dispute-resolution-form><div class="form-grid">
       <label class="field"><span>Решение</span><select name="status"><option value="need_more_data">Запросить данные</option><option value="partial_refund">Частичный возврат</option><option value="resolved_buyer">Полный возврат</option><option value="resolved_seller">Закрыть в пользу продавца</option></select></label>
       <label class="field"><span>Сумма возврата</span><input name="refundAmount" inputmode="decimal" placeholder="35.00" /></label>
@@ -33,8 +33,8 @@ function disputeDetail(id = 123) {
 
 function supportManagerBlock(compact = false) {
   const body = compact
-    ? `<div class="list">${[["@secretmarketsupport", "Telegram менеджер"], ["Что отправить", "номер заказа, tx hash, скриншоты"]].map(([left, right]) => row(left, right)).join("")}</div><a class="btn primary section" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Написать в Telegram</a>`
-    : `<div class="section-head"><div><p class="eyebrow">Telegram менеджер</p><h2>@secretmarketsupport</h2><p class="muted">Для срочных вопросов по оплате, заказу или спору. В сообщении укажите номер заказа и tx hash.</p></div><a class="btn primary" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Написать в Telegram</a></div>`;
+    ? `<div class="list">${[["@secretmarketsupport", "Telegram менеджер"], ["Что отправить", "номер заказа, ID транзакции, скриншоты"]].map(([left, right]) => row(left, right)).join("")}</div><a class="btn primary section" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Написать в Telegram</a>`
+    : `<div class="section-head"><div><p class="eyebrow">Telegram менеджер</p><h2>@secretmarketsupport</h2><p class="muted">Для срочных вопросов по оплате, заказу или спору. В сообщении укажите номер заказа и ID транзакции.</p></div><a class="btn primary" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Написать в Telegram</a></div>`;
   return `<section class="panel support-manager">${body}</section>`;
 }
 
@@ -42,7 +42,7 @@ function support(path = "") {
   if (path.includes("/tickets/")) return supportTicketDetail(path.split("/").pop());
   if (path.includes("/ticket")) return supportTicket();
   if (path.includes("/requests")) return supportRequests();
-  if (path.includes("/payment")) return supportTopic("Проблемы с оплатой", ["Проверьте сеть и точную сумму", "Сохраните tx hash", "Если сумма недостаточная, доплатите только после ответа поддержки", "Не отправляйте другой токен на адрес USDT"]);
+  if (path.includes("/payment")) return supportTopic("Проблемы с оплатой", ["Проверьте сеть и точную сумму", "Сохраните ID транзакции", "Если сумма недостаточная, доплатите только после ответа поддержки", "Не отправляйте другой токен на адрес USDT"]);
   if (path.includes("/order")) return supportTopic("Проблемы с заказом", ["Откройте страницу заказа", "Проверьте данные выдачи", "Напишите продавцу в чат", "Если ответа нет, откройте спор"]);
   if (path.includes("/seller")) return supportTopic("Проблемы с продавцом", ["Не выводите общение из чата заказа", "Приложите скриншоты или файлы", "Поддержка увидит платеж и историю", "Средства можно заблокировать до решения"]);
   if (path.includes("/faq")) return supportTopic("FAQ", ["Как оплатить заказ", "Как работает гарантия сделки", "Когда продавец получает деньги", "Как открыть спор", "Как вывести средства продавцу"]);
@@ -65,7 +65,7 @@ function supportTicket() {
     <label class="field"><span>Связанный заказ</span><input name="orderId" placeholder="#12345" /></label>
     <label class="field"><span>Описание</span><textarea name="description" placeholder="Опишите проблему подробно"></textarea></label>
     <label class="field"><span>Контакт</span><input name="contact" placeholder="@telegram" /></label>
-  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside>${supportManagerBlock(true)}<section class="panel section"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}<div class="section"><h2>После отправки</h2><div class="list">${[
+  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside>${supportManagerBlock(true)}<section class="panel section"><h2>Что приложить</h2>${["ID транзакции", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}<div class="section"><h2>После отправки</h2><div class="list">${[
     ["Статус", "открыт"],
     ["Уведомление", "уходит в Telegram поддержки"],
     ["Связь", "ответ появится в обращениях"],
@@ -83,7 +83,7 @@ function supportTicketDetail(id = "SUP-104") {
   const paymentItem = paymentByOrderId(ticket.order);
   const relatedOrder = ticket.order === "general" ? null : orderById(ticket.order);
   const messages = [
-    ticket.description ? `Пользователь: ${escapeHtml(ticket.description)}` : "Покупатель: приложил tx hash и скрин оплаты.",
+    ticket.description ? `Пользователь: ${escapeHtml(ticket.description)}` : "Покупатель: приложил ID транзакции и скрин оплаты.",
     "Поддержка: проверяем сеть, сумму и историю заказа.",
     `Система: контакт ${ticket.contact || "не указан"}, пользователь ${ticket.userId || "guest"}.`,
     "Поддержка: если подтверждений достаточно, заказ будет обновлен вручную.",
@@ -94,7 +94,7 @@ function supportTicketDetail(id = "SUP-104") {
       ["Заказ", `#${ticket.order}`],
       ["Платеж", paymentItem.id],
       ["Сеть", paymentItem.network],
-      ["tx hash", paymentItem.tx],
+      ["ID транзакции", paymentItem.tx],
       ["Подтверждения", paymentItem.confirmations],
       ["Контакт", ticket.contact || "не указан"],
     ].map(([left, right]) => row(left, right)).join("")}</div><div class="form-actions section">${relatedOrder ? `<a class="btn" href="/orders/${ticket.order}" data-link>Открыть заказ</a>` : ""}<a class="btn" href="/admin/payments/${paymentItem.id}" data-link>Админ-платеж</a></div></aside>

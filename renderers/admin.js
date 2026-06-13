@@ -35,7 +35,7 @@ function adminPayments() {
   const livePaymentIds = new Set(liveItems("payments").map((paymentItem) => String(paymentItem.id)));
   const liveRows = liveItems("payments").map((paymentItem) => {
     const normalized = normalizeLivePayment(paymentItem);
-    return `<a class="list-row" href="/admin/payments/${normalized.id}" data-link><span>${normalized.amount.toFixed(2)} ${normalized.coin} · ${normalized.network}<br><span class="muted">#${normalized.order} · ${normalized.tx || "tx pending"} · ${normalized.confirmations}</span></span><span class="status ${statusTone(normalized.status)}">${statusLabel(normalized.status)}</span></a>`;
+    return `<a class="list-row" href="/admin/payments/${normalized.id}" data-link><span>${normalized.amount.toFixed(2)} ${normalized.coin} · ${normalized.network}<br><span class="muted">#${normalized.order} · ${normalized.tx || "транзакция ожидается"} · ${normalized.confirmations}</span></span><span class="status ${statusTone(normalized.status)}">${statusLabel(normalized.status)}</span></a>`;
   });
   const demoRows = demoPayments
     .filter((paymentItem) => !livePaymentIds.has(String(paymentItem.id)))
@@ -60,12 +60,12 @@ function adminPaymentDetail(id = "pay-12345") {
     <section class="panel"><div class="section-head"><div><h2>${paymentItem.amount.toFixed(2)} ${paymentItem.coin}</h2><p class="muted">${paymentItem.network} · заказ #${paymentItem.order}</p></div><span class="status ${statusTone(paymentItem.status)}">${statusLabel(paymentItem.status)}</span></div><div class="grid metrics">${[
       [paymentItem.network, "сеть"],
       [paymentItem.confirmations, "подтверждения"],
-      [paymentItem.tx, "tx hash"],
+      [paymentItem.tx, "ID транзакции"],
       [orderItem.order, "статус заказа"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
     <section class="panel section"><h2>Ручная проверка</h2><form data-payment-review-form><div class="form-grid">
       <label class="field"><span>Адрес оплаты</span><input name="address" value="${escapeHtml(paymentAddress)}" readonly /></label>
-      <label class="field"><span>tx hash</span><input name="txHash" placeholder="TX..." value="${escapeHtml(paymentItem.tx)}" /></label>
+      <label class="field"><span>ID транзакции</span><input name="txHash" placeholder="ID..." value="${escapeHtml(paymentItem.tx)}" /></label>
       <label class="field"><span>Подтверждения</span><input name="confirmations" inputmode="numeric" value="${escapeHtml(paymentItem.confirmations)}" /></label>
       <label class="field"><span>Статус</span><select name="status">${statusOptions.map(([value, label]) => `<option value="${value}" ${paymentItem.status === value ? "selected" : ""}>${label}</option>`).join("")}</select></label>
       <label class="field"><span>Комментарий админа</span><textarea name="adminNote" placeholder="Проверить сумму и сеть перед сменой статуса"></textarea></label>
@@ -81,7 +81,7 @@ function adminPayouts() {
     .filter((withdrawalItem) => !liveWithdrawalIds.has(String(withdrawalItem.id).toLowerCase()))
     .map((withdrawalItem) => `<a class="list-row" href="/admin/payouts/${withdrawalItem.id}" data-link><span>#${withdrawalItem.id} · ${withdrawalItem.seller}<br><span class="muted">${withdrawalItem.amount.toFixed(2)} USDT · ${withdrawalItem.network} · ${withdrawalItem.address}</span></span><span class="status ${statusTone(withdrawalItem.status)}">${withdrawalItem.status}</span></a>`);
   return page("Админка выплат", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и tx hash после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${mixDemoRows("withdrawals", demoRows, liveRows).join("") || emptyAdminState("Заявок на вывод пока нет")}</div></section>
+    <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и ID транзакции после отправки.</p></div><button class="btn primary">Обновить статусы</button></div><div class="list">${mixDemoRows("withdrawals", demoRows, liveRows).join("") || emptyAdminState("Заявок на вывод пока нет")}</div></section>
     <section class="panel section"><h2>Проверки перед выплатой</h2><div class="grid trust">${["Адрес совпадает с профилем", "Баланс доступен без холда", "Нет открытого спора", "2FA продавца подтверждена"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Админ подтверждает вручную в MVP.</p></div>`).join("")}</div></section>
   </section></div>`, "Admin");
 }
@@ -106,7 +106,7 @@ function adminPayoutDetail(id = "WD-120") {
       <label class="field"><span>Сумма списания</span><input name="grossAmount" value="${grossAmount.toFixed(2)} ${coin}" readonly /></label>
       <label class="field"><span>Комиссия сети</span><input name="networkFee" value="${networkFee.toFixed(2)} ${coin}" readonly /></label>
       <label class="field"><span>К получению</span><input name="netAmount" value="${netAmount.toFixed(2)} ${coin}" readonly /></label>
-      <label class="field"><span>tx hash выплаты</span><input name="txHash" placeholder="TX-OUT-..." value="${escapeHtml(txHash)}" /></label>
+      <label class="field"><span>ID транзакции выплаты</span><input name="txHash" placeholder="ID-OUT-..." value="${escapeHtml(txHash)}" /></label>
       <label class="field"><span>Статус</span><select name="status"><option value="processing">В обработке</option><option value="sent">Отправлен</option><option value="completed" selected>Выполнен</option><option value="rejected">Отклонен</option></select></label>
       <label class="field"><span>Комментарий</span><textarea name="riskNote" placeholder="Проверить адрес, холды и открытые споры перед отправкой">${escapeHtml(withdrawalItem.risk || "")}</textarea></label>
     </div><div class="form-actions section"><button class="btn primary" type="button" data-live-action="settle-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Подтвердить выплату</button><button class="btn warn" type="button" data-live-action="review-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Запросить проверку</button><button class="btn danger" type="button" data-live-action="reject-withdrawal" data-withdrawal-id="${withdrawalItem.id}">Отклонить</button></div></form></section>
@@ -285,7 +285,7 @@ function adminCrypto() {
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
     <section class="panel section"><h2>Сети MVP</h2><div class="form-grid">${field("USDT TRC20 адрес", "input", window.SECMARKET_DATA.paymentWallets.TRC20)}${field("USDT TON адрес", "input", window.SECMARKET_DATA.paymentWallets.TON)}${field("USDT BEP20 адрес", "input", window.SECMARKET_DATA.paymentWallets.BEP20)}${field("Генерация", "select", ["Отдельный адрес", "Уникальная сумма"])}${field("Таймер оплаты", "input", "30 минут")}${field("Недостаточная сумма", "select", ["Открыть тикет", "Ждать доплату", "Ручная проверка"])}</div></section>
     <section class="panel section"><h2>Мониторинг</h2><div class="list">${[
-      ["Последний найденный tx", "2 мин назад"],
+      ["Последняя транзакция", "2 мин назад"],
       ["Ошибки сети", "0"],
       ["Просроченные платежи", "4"],
       ["Недостаточная сумма", "1"],

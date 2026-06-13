@@ -563,7 +563,7 @@ async function runLiveAction(button) {
       await ensureLiveRole("admin");
       const id = button.dataset.paymentId || currentPath().split("/").pop();
       const draft = paymentReviewDraftFromButton(button, "paid");
-      if (draft.status !== "waiting" && !draft.txHash) throw new Error("укажите tx hash платежа");
+      if (draft.status !== "waiting" && !draft.txHash) throw new Error("укажите ID транзакции платежа");
       const result = await api.live.syncPayment(id, draft);
       upsertLiveItem("payments", result.payment);
       upsertLiveItem("orders", result.order);
@@ -612,7 +612,7 @@ async function runLiveAction(button) {
       await ensureLiveRole("admin");
       const id = button.dataset.withdrawalId || currentPath().split("/").pop();
       const draft = payoutDraftFromButton(button, "completed");
-      if ((draft.status === "sent" || draft.status === "completed") && !draft.txHash) throw new Error("укажите tx hash выплаты");
+      if ((draft.status === "sent" || draft.status === "completed") && !draft.txHash) throw new Error("укажите ID транзакции выплаты");
       const result = await api.live.settleWithdrawal(id, draft);
       upsertLiveItem("withdrawals", result.withdrawal);
       if (result.ledgerEntry) upsertLiveItem("ledger", result.ledgerEntry);

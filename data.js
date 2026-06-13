@@ -89,9 +89,9 @@ const SECMARKET_DATA = {
     { id: 77102, product: "PUBG UC", seller: "DropZone", buyer: "Artem", amount: 18.6, payment: "Оплачено", order: "Спор", delivery: "Ручная" },
   ],
   demoPayments: [
-    { id: "pay-12345", order: 12345, amount: 88.3, coin: "USDT", network: "TRC20", status: "Оплачено", confirmations: "3/3", tx: "tx_trc20_9a2" },
-    { id: "pay-22341", order: 22341, amount: 50, coin: "USDT", network: "TON", status: "Оплачено", confirmations: "1/1", tx: "tx_ton_17b" },
-    { id: "pay-33412", order: 33412, amount: 31.5, coin: "USDT", network: "BEP20", status: "Ожидает подтверждений", confirmations: "8/12", tx: "tx_bep20_42c" },
+    { id: "pay-12345", order: 12345, amount: 88.3, coin: "USDT", network: "TRC20", status: "Оплачено", confirmations: "3/3", tx: "ID-TRC20-9A2" },
+    { id: "pay-22341", order: 22341, amount: 50, coin: "USDT", network: "TON", status: "Оплачено", confirmations: "1/1", tx: "ID-TON-17B" },
+    { id: "pay-33412", order: 33412, amount: 31.5, coin: "USDT", network: "BEP20", status: "Ожидает подтверждений", confirmations: "8/12", tx: "ID-BEP20-42C" },
   ],
   demoTickets: [
     { id: "SUP-104", topic: "Проблема с оплатой", order: 12345, status: "Открыт" },
@@ -105,7 +105,7 @@ const SECMARKET_DATA = {
   ],
   demoWithdrawals: [
     { id: "WD-120", seller: "PixelTrade", amount: 500, network: "TRC20", address: "TQ9...Lm2", status: "На проверке", tx: "ожидается", risk: "адрес новый" },
-    { id: "WD-108", seller: "KeyDock", amount: 300, network: "TON", address: "UQ7...Ton", status: "Выполнен", tx: "tx_ton_out_108", risk: "низкий" },
+    { id: "WD-108", seller: "KeyDock", amount: 300, network: "TON", address: "UQ7...Ton", status: "Выполнен", tx: "ID-TON-OUT-108", risk: "низкий" },
     { id: "WD-099", seller: "SubLine", amount: 150, network: "BEP20", address: "0x91...b20", status: "Отклонен", tx: "не отправлен", risk: "адрес не совпал" },
   ],
   moderationQueue: [
@@ -118,10 +118,10 @@ const SECMARKET_DATA = {
     ["User", "роль, email, Telegram, 2FA, статусы безопасности"],
     ["Product", "категория, продавец, цена, остатки, тип выдачи, модерация"],
     ["Order", "покупатель, продавец, товар, escrow, статусы выполнения"],
-    ["Payment", "монета, сеть, адрес, tx hash, подтверждения, связанный заказ"],
+    ["Payment", "монета, сеть, адрес, ID транзакции, подтверждения, связанный заказ"],
     ["Chat", "сообщения, файлы, системные события, контекст заказа"],
     ["Dispute", "причина, доказательства, решение, возврат, заморозка средств"],
-    ["Withdrawal", "продавец, адрес, сеть, сумма, tx hash, история статусов"],
+    ["Withdrawal", "продавец, адрес, сеть, сумма, ID транзакции, история статусов"],
   ],
   apiEndpoints: [
     ["POST /api/auth/login", "demo-вход по email и роли, выдача session token"],
@@ -143,8 +143,8 @@ const SECMARKET_DATA = {
     ["POST /api/tickets", "создание тикета поддержки и Telegram-уведомление"],
     ["GET /api/withdrawals/balance", "доступный баланс продавца после ledger и активных заявок"],
     ["POST /api/withdrawals", "заявка продавца на вывод в пределах доступного баланса"],
-    ["POST /api/withdrawals/:id/settle", "admin завершает выплату, пишет tx hash и payout ledger"],
-    ["PATCH /api/withdrawals/:id", "подтверждение выплаты и tx hash"],
+    ["POST /api/withdrawals/:id/settle", "admin завершает выплату, пишет ID транзакции и payout ledger"],
+    ["PATCH /api/withdrawals/:id", "подтверждение выплаты и ID транзакции"],
     ["GET /api/admin/moderation", "очередь товаров, жалоб, отзывов и продавцов"],
     ["GET /api/audit", "журнал действий API: создание, смена статусов, сброс seed"],
     ["Role guards", "публичный каталог, seller/admin для товаров, admin для audit/moderation/users"],

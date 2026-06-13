@@ -140,7 +140,7 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 
 ## Payout Settlement
 
-`POST /api/withdrawals/:id/settle` is admin-only. It writes the payout tx hash, moves the withdrawal through `processing`, `sent`, `completed` or `rejected`, and posts a negative `payout` ledger entry when the withdrawal is completed. Repeated completed settlements are idempotent and do not double-post the payout.
+`POST /api/withdrawals/:id/settle` is admin-only. It writes the payout transaction id, moves the withdrawal through `processing`, `sent`, `completed` or `rejected`, and posts a negative `payout` ledger entry when the withdrawal is completed. Repeated completed settlements are idempotent and do not double-post the payout.
 
 ## Next Backend Work
 
