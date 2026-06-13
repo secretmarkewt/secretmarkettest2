@@ -98,6 +98,18 @@ function rateLimitHeaders(rateLimit) {
 
 function healthPayload(store) {
   const rateLimit = rateLimitSettings();
+  const snapshot = store.snapshot ? store.snapshot() : {};
+  const now = Date.now();
+  const activeSessions = store.list("sessions").filter((session) => (
+    session.status === "active" &&
+    (!session.expiresAt || new Date(session.expiresAt).getTime() > now)
+  )).length;
+  const publishedProducts = store.list("products").filter((product) => (
+    product.status === "published" || product.status === "active"
+  )).length;
+  const completedOrders = store.list("orders").filter((order) => (
+    order.status === "completed" || order.orderStatus === "completed"
+  )).length;
   return {
     ok: true,
     service: "secret-market-api",
@@ -111,6 +123,14 @@ function healthPayload(store) {
     rateLimit: {
       max: rateLimit.max,
       windowMs: rateLimit.windowMs,
+    },
+    metrics: {
+      activeSessions,
+      onlineUsers: activeSessions,
+      publishedProducts,
+      completedOrders,
+      totalProducts: snapshot.products || 0,
+      totalOrders: snapshot.orders || 0,
     },
   };
 }

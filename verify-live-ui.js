@@ -111,6 +111,14 @@ vm.createContext(context);
   "app.js",
 ].forEach((file) => vm.runInContext(fs.readFileSync(file, "utf8"), context, { filename: file }));
 
+context.location.pathname = "/";
+context.render();
+if (!app.innerHTML.includes("Онлайн 24") || !app.innerHTML.includes("Новые товары 12") || app.innerHTML.includes("Онлайн 1 284")) {
+  throw new Error("home release metrics did not render honest fallback values");
+}
+
+context.location.pathname = "/seller/products";
+context.render();
 if (!app.innerHTML.includes("Live UI Product")) throw new Error("live seller product did not render");
 
 setSession("admin");

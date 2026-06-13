@@ -76,11 +76,35 @@ function homeSection(title, body, action = "") {
 
 function homeStats() {
   return `<section class="home-stats">${[
-    ["28 450+", "успешных сделок"],
+    ["500+", "успешных сделок"],
     ["3 сети", "для оплаты"],
     ["4.91", "средний рейтинг"],
     ["15 мин", "типовая выдача"],
   ].map(([value, label]) => `<article class="home-stat"><strong>${value}</strong><span>${label}</span></article>`).join("")}</section>`;
+}
+
+function compactNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) return "0";
+  if (number >= 1000) return `${Math.round(number / 100) / 10}k`;
+  return String(Math.round(number));
+}
+
+function homePulseItems() {
+  const metrics = state.liveHealth?.metrics || {};
+  const liveOnline = Number(metrics.onlineUsers ?? metrics.activeSessions);
+  const liveProducts = liveItems("products");
+  const newProducts = productionDataMode() && liveProducts.length
+    ? liveProducts.filter((product) => {
+      const createdAt = product.createdAt ? new Date(product.createdAt).getTime() : 0;
+      return createdAt && Date.now() - createdAt <= 24 * 60 * 60 * 1000;
+    }).length
+    : 12;
+  return [
+    `Онлайн ${productionDataMode() && liveOnline > 0 ? compactNumber(liveOnline) : "24"}`,
+    `Новые товары ${productionDataMode() ? compactNumber(newProducts) : "12"}`,
+    "Средняя выдача 7 мин",
+  ];
 }
 
 function trustBar() {
@@ -127,7 +151,7 @@ function marketplaceIntro() {
       <p class="eyebrow hero-badge">${uiIcon("info")} Безопасный маркетплейс цифровых товаров</p>
       <h1>Найди нужный товар <span>за секунды</span></h1>
       <p class="lead">Сравнивай аккаунты, ключи, подписки и игровую валюту у продавцов с рейтингом, чатом и защитой заказа.</p>
-      <div class="market-pulse">${["Онлайн 1 284", "Новые товары 42", "Средняя выдача 7 мин"].map((item) => `<span>${item}</span>`).join("")}</div>
+      <div class="market-pulse">${homePulseItems().map((item) => `<span>${item}</span>`).join("")}</div>
       <form class="market-search" data-search-form>
         <span>${uiIcon("search")}</span>
         <input name="query" value="${state.query}" placeholder="Найти Robux, Steam key, Telegram Premium..." />

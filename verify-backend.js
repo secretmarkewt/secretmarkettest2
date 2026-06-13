@@ -28,6 +28,9 @@ function authHeader(token) {
       throw new Error("health metadata failed");
     }
     if (!health.resetEnabled || health.rateLimit?.max < 1) throw new Error("health settings failed");
+    if (!health.metrics || health.metrics.totalProducts < 1 || health.metrics.totalOrders < 1 || health.metrics.activeSessions < 0) {
+      throw new Error("health metrics failed");
+    }
     const healthHeaders = await request(port, "/api/health");
     if (healthHeaders.headers.get("cache-control") !== "no-store" || healthHeaders.headers.get("x-content-type-options") !== "nosniff") {
       throw new Error("api security headers failed");
