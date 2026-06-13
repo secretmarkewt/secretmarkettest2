@@ -97,6 +97,7 @@ In production, `GET /api/ready` also reports `deploymentIssues` and blocks readi
 - `GET /api/withdrawals`
 - `GET /api/moderation`
 - `GET /api/audit`
+- `POST /api/admin/backups`
 - `GET /api/snapshot`
 - `POST /api/reset`
 
@@ -164,11 +165,15 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 
 `POST /api/evidence` accepts authenticated evidence uploads for `ticket`, `dispute` and `order` targets. The API validates ownership, stores the file under `SECMARKET_EVIDENCE_DIR` or `data/evidence`, and writes only metadata to the JSON store: file name, MIME type, size, SHA-256, storage key and target link. Buyers and sellers see only evidence linked to their own tickets, disputes or orders; admins can review all evidence.
 
+## Operations
+
+`POST /api/admin/backups` is admin-only and writes a full JSON-store backup to `SECMARKET_BACKUP_DIR` or `data/backups`. `/api/reset` automatically creates a `before-reset` backup before replacing state with seed data. `GET /api/health` exposes backup metadata so hosting checks can verify that backups are on persistent storage.
+
 ## Next Backend Work
 
 - Move the JSON store to SQLite/PostgreSQL when auth and payment workers are ready.
 - Add email or Telegram delivery provider for password reset tokens.
 - Move evidence storage from local disk to Supabase Storage or S3 before scaling beyond one backend instance.
 - Implement and deploy the external TRC20, TON and BEP20 watcher worker services.
-- Add backup automation, monitoring alerts and refund tooling for operations.
+- Move backups to off-host storage and add scheduled backup automation plus monitoring alerts.
 - Add payout batching, risk review notes and withdrawal export for admins.

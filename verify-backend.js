@@ -19,16 +19,17 @@ function authHeader(token) {
 (async () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "secmarket-api-"));
   const dbFile = path.join(tempDir, "db.json");
+  const backupDir = path.join(tempDir, "backups");
   const previousEvidenceDir = process.env.SECMARKET_EVIDENCE_DIR;
   process.env.SECMARKET_EVIDENCE_DIR = path.join(tempDir, "evidence");
-  const server = createApiServer({ store: require("./backend/repository").createStore({ filePath: dbFile }) });
+  const server = createApiServer({ store: require("./backend/repository").createStore({ filePath: dbFile, backupDir }) });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const port = server.address().port;
 
   try {
     const health = await request(port, "/api/health").then((res) => res.json());
     if (!health.ok) throw new Error("health check failed");
-    if (health.service !== "secret-market-api" || !health.version || health.storage?.persistent !== true) {
+    if (health.service !== "secret-market-api" || !health.version || health.storage?.persistent !== true || health.operations?.backups?.persistent !== true) {
       throw new Error("health metadata failed");
     }
     if (!health.resetEnabled || health.rateLimit?.max < 1) throw new Error("health settings failed");
@@ -114,6 +115,9 @@ function authHeader(token) {
 
     const resetSnapshot = await request(port, "/api/reset", { method: "POST" }).then((res) => res.json());
     if (!resetSnapshot.products || !resetSnapshot.audit) throw new Error("reset route failed");
+    if (!fs.readdirSync(backupDir).some((fileName) => fileName.includes("before-reset"))) {
+      throw new Error("reset backup failed");
+    }
 
     const previousReset = process.env.SECMARKET_ALLOW_RESET;
     process.env.SECMARKET_ALLOW_RESET = "false";
@@ -292,6 +296,18 @@ function authHeader(token) {
       body: JSON.stringify({ email: "support@example.com", role: "admin", password: "password" }),
     }).then((res) => res.json());
     if (!adminLogin.token || adminLogin.user?.role !== "admin") throw new Error("admin auth login failed");
+    const manualBackup = await request(port, "/api/admin/backups", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({ reason: "verify-manual" }),
+    }).then((res) => res.json());
+    if (!manualBackup.ok || !fs.existsSync(manualBackup.backupPath)) throw new Error("manual backup failed");
+    const buyerBackup = await request(port, "/api/admin/backups", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({ reason: "buyer-denied" }),
+    });
+    if (buyerBackup.status !== 403) throw new Error("manual backup role guard failed");
 
     const initialBalance = await request(port, "/api/balance", {
       headers: authHeader(login.token),

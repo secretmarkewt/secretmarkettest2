@@ -151,6 +151,12 @@ function healthPayload(store) {
       windowMs: rateLimit.windowMs,
     },
     paymentWatchers: watcherReadiness(),
+    operations: {
+      backups: {
+        configured: Boolean(store.meta?.().backupConfigured),
+        persistent: Boolean(store.meta?.().backupPersistent),
+      },
+    },
     metrics: {
       activeSessions,
       activePresence,
@@ -206,6 +212,7 @@ function deploymentReadinessIssues(storage = {}) {
   if (origins.includes("*")) issues.push("cors_wildcard_origin");
   if (resetAllowed()) issues.push("reset_enabled");
   if (!storage.persistent || !storage.configured) issues.push("storage_not_configured");
+  if (!storage.backupPersistent || !storage.backupConfigured) issues.push("backup_storage_not_configured");
   if (!rateLimit.max || rateLimit.max < 1 || !rateLimit.windowMs || rateLimit.windowMs < 1) issues.push("rate_limit_disabled");
   if (!vaultConfigured()) issues.push("delivery_secret_key_missing");
   const missingWatchers = missingWatcherNetworks();
@@ -552,6 +559,12 @@ async function handleApi(req, res, store) {
     return json(req, res, readiness.ok ? 200 : 503, readiness);
   }
   if (resource === "snapshot") return json(req, res, 200, store.snapshot());
+  if (resource === "admin" && parts[2] === "backups" && req.method === "POST") {
+    const auth = authorize(req, res, store, "users");
+    if (!auth) return true;
+    const body = await readBody(req);
+    return json(req, res, 201, store.backup?.(body.reason || "admin-manual", auth.user.id) || { ok: false, error: "backup_unavailable" });
+  }
   if (resource === "admin" && parts[2] === "transactions" && parts[4] && req.method === "POST") {
     const auth = authorize(req, res, store, "users");
     if (!auth) return true;
