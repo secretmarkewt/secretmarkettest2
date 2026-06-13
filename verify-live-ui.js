@@ -208,5 +208,14 @@ context.render();
 if (!app.innerHTML.includes("MVP запуск") || !app.innerHTML.includes("Production блокеры")) {
   throw new Error("launch readiness did not render");
 }
+if (app.innerHTML.includes("РЎ") || app.innerHTML.includes("Рџ")) {
+  throw new Error("launch readiness rendered mojibake text");
+}
+
+context.location.pathname = "/status-map";
+context.render();
+if (!app.innerHTML.includes("Статусы оплаты") || !app.innerHTML.includes("Статусы заказа")) {
+  throw new Error("status map did not render readable Russian text");
+}
 
 console.log("live UI OK");
