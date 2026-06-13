@@ -105,13 +105,16 @@ function accountBalance() {
   const rows = ownTransactions.length ? ownTransactions : demoRows;
   const balance = Number(user.balance ?? (session.role === "seller" ? 620 : 120) ?? 0);
   const frozenBalance = Number(user.frozenBalance ?? (session.role === "seller" ? 320.5 : 0) ?? 0);
-  const availableBalance = Math.max(balance - frozenBalance, 0);
+  const liveBalance = state.liveBalance?.userId === user.id ? state.liveBalance : null;
+  const currentBalance = Number(liveBalance?.balance ?? balance);
+  const currentFrozenBalance = Number(liveBalance?.frozenBalance ?? frozenBalance);
+  const availableBalance = Number(liveBalance?.availableBalance ?? Math.max(currentBalance - currentFrozenBalance, 0));
   return page("Баланс", `<div class="layout"><aside class="sidebar">${sideLinks([...accountLinks, ["Баланс", "/account/balance"]])}</aside><section>
     <section class="panel account-hero"><div class="section-head"><div><p class="eyebrow">Внутренний баланс</p><h1>${money(availableBalance)}</h1><p class="lead">Пополнения и выводы проходят через серверные заявки. Баланс нельзя изменить напрямую с фронтенда.</p></div><span class="status ok">USDT</span></div>
       <div class="grid metrics">${[
-        [money(balance), "текущий баланс"],
+        [money(currentBalance), "текущий баланс"],
         [money(availableBalance), "доступно"],
-        [money(frozenBalance), "заморожено"],
+        [money(currentFrozenBalance), "заморожено"],
         [rows.length, "операций"],
       ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div></section>
     <div class="two-col section">

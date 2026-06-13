@@ -49,7 +49,11 @@ function themeIcon(name) {
 
 function header() {
   const session = sessionApi.currentSession();
-  const navBalance = Math.max(Number(session.user?.balance || 0) - Number(session.user?.frozenBalance || 0), 0);
+  const liveBalance = state.liveBalance?.userId === session.user?.id ? state.liveBalance : null;
+  const demoUser = window.SECMARKET_DATA.demoUsers.find((user) => user.id === session.user?.id) || null;
+  const navBalance = liveBalance
+    ? liveBalance.availableBalance
+    : Math.max(Number(session.user?.balance ?? demoUser?.balance ?? 0) - Number(session.user?.frozenBalance ?? demoUser?.frozenBalance ?? 0), 0);
   return `
     <header class="topbar">
       <a class="brand" href="/" data-link><img class="brand-logo" src="${assetPath("assets/secret-market-logo.png")}" alt="Secret Market" /><span>Secret Market</span></a>

@@ -23,15 +23,17 @@ const storage = {
   "secmarket-demo-state": JSON.stringify(liveState),
   "secmarket-session": JSON.stringify({
     role: "seller",
-    user: { id: "usr-seller", name: "Live Seller", email: "seller@example.com", role: "seller", status: "active" },
+    user: { id: "usr-seller", name: "Live Seller", email: "seller@example.com", role: "seller", status: "active", balance: 620, frozenBalance: 25 },
   }),
 };
 
 function setSession(role) {
   const userId = role === "admin" ? "usr-admin" : role === "seller" ? "usr-seller" : "usr-buyer";
+  const balance = role === "seller" ? 620 : role === "buyer" ? 120 : 0;
+  const frozenBalance = role === "seller" ? 25 : 0;
   storage["secmarket-session"] = JSON.stringify({
     role,
-    user: { id: userId, name: `Live ${role}`, email: `${role}@example.com`, role, status: "active" },
+    user: { id: userId, name: `Live ${role}`, email: `${role}@example.com`, role, status: "active", balance, frozenBalance },
   });
 }
 
@@ -192,6 +194,12 @@ context.location.pathname = "/account";
 context.render();
 if (!app.innerHTML.includes("Последние заказы") || !app.innerHTML.includes("Создать тикет") || !app.innerHTML.includes("Профиль")) {
   throw new Error("account overview did not render release dashboard");
+}
+
+context.location.pathname = "/account/balance";
+context.render();
+if (!app.innerHTML.includes("120.00 USDT") || !app.innerHTML.includes('class="nav-balance" href="/account/balance" data-link>120.00 USDT')) {
+  throw new Error("account balance did not render in page and header");
 }
 
 setSession("seller");

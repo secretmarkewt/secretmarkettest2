@@ -28,6 +28,7 @@ const state = {
     withdrawals: [],
   },
   liveHealth: null,
+  liveBalance: null,
   liveStatus: "idle",
   liveSyncedAt: "",
   toast: "",
@@ -64,6 +65,7 @@ function saveState() {
     copiedAddress: state.copiedAddress,
     chatMessages: state.chatMessages,
     live: state.live,
+    liveBalance: state.liveBalance,
     liveHealth: state.liveHealth,
     liveStatus: state.liveStatus,
     liveSyncedAt: state.liveSyncedAt,
@@ -88,6 +90,7 @@ function loadState() {
       ...(payload.live && typeof payload.live === "object" ? payload.live : {}),
     };
     state.liveHealth = payload.liveHealth || null;
+    state.liveBalance = payload.liveBalance || null;
     state.liveStatus = payload.liveStatus || "idle";
     state.liveSyncedAt = payload.liveSyncedAt || "";
   } catch {

@@ -35,6 +35,7 @@
       const session = await api.live.login(email, role, password);
       if (sessionApi.loginUser) sessionApi.loginUser(session.user, role);
       else sessionApi.loginAs(session.user?.role || role);
+      await refreshLiveBalance();
       notify(session.provider === "supabase" ? "Вход выполнен через Supabase" : `Вход выполнен: ${sessionApi.roleLabel(role)} · live API подключен`);
       if (session.user?.role === "seller") go("/seller");
       else if (session.user?.role === "admin") go("/admin");
@@ -91,6 +92,7 @@
       const session = await api.live.register(payload);
       if (sessionApi.loginUser) sessionApi.loginUser(session.user, payload.role);
       else sessionApi.loginAs(session.user.role);
+      await refreshLiveBalance();
       notify(session.registrationNotice?.sent ? "Регистрация создана и отправлена в Telegram" : session.provider === "supabase" ? "Регистрация создана через Supabase, Telegram secret нужно проверить" : "Регистрация создана, Telegram уведомление не настроено");
       go(session.user.role === "seller" ? "/seller" : "/account");
     } catch (error) {
@@ -395,7 +397,10 @@ const liveDemoUsers = {
 async function loginLiveRole(role) {
   const email = liveDemoUsers[role];
   if (!email) throw new Error("роль не поддерживается live API");
-  return api.live.login(email, role);
+  const session = await api.live.login(email, role);
+  sessionApi.loginUser?.(session.user, role);
+  await refreshLiveBalance();
+  return session;
 }
 
 async function ensureLiveRole(role) {
@@ -408,6 +413,19 @@ async function ensureLiveRole(role) {
   if (api.getAuthToken() && sessionApi.currentSession().role === role) return api.getAuthToken();
   await loginLiveRole(role);
   return api.getAuthToken();
+}
+
+async function refreshLiveBalance() {
+  if (!api.getAuthToken()) return null;
+  try {
+    const balance = await api.live.balance();
+    state.liveBalance = balance;
+    sessionApi.updateBalance?.(balance);
+    saveState();
+    return balance;
+  } catch {
+    return null;
+  }
 }
 
 async function runLiveAction(button) {
@@ -465,6 +483,11 @@ async function runLiveAction(button) {
         idempotencyKey: `dep-${sessionApi.currentSession().user?.id || "user"}-${Date.now()}`,
       });
       upsertLiveItem("transactions", result.transaction);
+      if (result.balance) {
+        state.liveBalance = result.balance;
+        sessionApi.updateBalance?.(result.balance);
+        saveState();
+      }
       notify(`Заявка на пополнение ${result.transaction.id}: ${statusLabel(result.transaction.status)}`);
     } else if (action === "withdraw-balance") {
       await ensureLiveRole(sessionApi.currentSession().role === "guest" ? "buyer" : sessionApi.currentSession().role);
@@ -478,6 +501,11 @@ async function runLiveAction(button) {
         idempotencyKey: `wd-bal-${sessionApi.currentSession().user?.id || "user"}-${Date.now()}`,
       });
       upsertLiveItem("transactions", result.transaction);
+      if (result.balance) {
+        state.liveBalance = result.balance;
+        sessionApi.updateBalance?.(result.balance);
+        saveState();
+      }
       notify(`Заявка на вывод ${result.transaction.id}: заморожено ${Number(result.transaction.amount || 0).toFixed(2)} USDT`);
     } else if (action === "create-product") {
       await ensureLiveRole("seller");

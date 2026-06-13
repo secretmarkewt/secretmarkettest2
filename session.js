@@ -46,8 +46,23 @@ function loginUser(user, fallbackRole = "buyer") {
       telegram: user?.telegram || "",
       role,
       status: user?.status || "active",
+      balance: Number(user?.balance || 0),
+      frozenBalance: Number(user?.frozenBalance || 0),
     },
     loggedAt: new Date().toISOString(),
+  });
+}
+
+function updateBalance(balance = {}) {
+  const session = readSession();
+  if (!session.user) return session;
+  return writeSession({
+    ...session,
+    user: {
+      ...session.user,
+      balance: Number(balance.balance || 0),
+      frozenBalance: Number(balance.frozenBalance || 0),
+    },
   });
 }
 
@@ -82,4 +97,5 @@ window.SECMARKET_SESSION = {
   loginUser,
   logout,
   roleLabel,
+  updateBalance,
 };
