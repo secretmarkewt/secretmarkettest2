@@ -46,6 +46,7 @@ function releaseReadinessData() {
     ["Frontend Pages build", true, "dist собирается через scripts/build-pages.js и публикует статические файлы"],
     ["CI verification", true, "npm run verify проверяет маршруты, сборку, backend-контракт, Pages assets и 404"],
     ["Live API contract", true, "товары, заказы, платежи, выдача, споры, выплаты и audit покрыты проверками"],
+    ["Internal balance", true, "пополнения, выводы, frozen balance, idempotency key и админское подтверждение покрыты API и UI"],
     ["Live provider", hasLive, `${liveProvider}: ${publicEndpoint || "не настроен"}`],
     ["API health", liveConnected, `текущий статус: ${state.liveStatus}`],
     ["Data fallback", true, productionDataMode() ? "используются live-данные" : "до подключения API показываются локальные демо-данные"],

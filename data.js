@@ -219,4 +219,12 @@ SECMARKET_DATA.demoTransactions = [
   { id: "txn-demo-withdraw", userId: "usr-seller", type: "withdrawal", amount: 320.5, status: "pending", paymentMethod: "USDT TRC20", details: { address: "TX7p...D90" }, createdAt: "2026-06-05T09:00:00.000Z" },
 ];
 
+if (!SECMARKET_DATA.accountLinks.some(([, href]) => href === "/account/balance")) {
+  SECMARKET_DATA.accountLinks.splice(2, 0, ["Баланс", "/account/balance"]);
+}
+
+if (!SECMARKET_DATA.adminLinks.some(([, href]) => href === "/admin/transactions")) {
+  SECMARKET_DATA.adminLinks.splice(7, 0, ["Балансы", "/admin/transactions"]);
+}
+
 window.SECMARKET_DATA = SECMARKET_DATA;
