@@ -27,7 +27,7 @@
     [payments.filter((paymentItem) => ["Оплачено", "paid", "completed"].includes(paymentItem.status)).length, "оплачено"],
     [tickets.filter((ticket) => !["Закрыт", "closed", "resolved"].includes(ticket.status)).length, "активных тикета"],
     [catalogProducts.length, "товаров"],
-  ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div><div class="grid admin section">${adminLinks.slice(1).map(([label, href]) => `<a class="admin-tile panel" href="${href}" data-link><h3>${label}</h3><p class="muted">Смена статусов, история действий, ручная проверка и модерация.</p></a>`).join("")}</div><section class="section panel"><h2>Последние платежи</h2>${paymentRows.length ? paymentRows.join("") : emptyAdminState("Платежей пока нет")}</section></section></div>`, "Admin");
+  ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>${releaseReadinessPanel(true)}<div class="grid admin section">${adminLinks.slice(1).map(([label, href]) => `<a class="admin-tile panel" href="${href}" data-link><h3>${label}</h3><p class="muted">Смена статусов, история действий, ручная проверка и модерация.</p></a>`).join("")}</div><section class="section panel"><h2>Последние платежи</h2>${paymentRows.length ? paymentRows.join("") : emptyAdminState("Платежей пока нет")}</section></section></div>`, "Admin");
 }
 
 function adminPayments() {

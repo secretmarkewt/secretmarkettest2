@@ -200,6 +200,16 @@ context.render();
 if (!app.innerHTML.includes("Live API") || !app.innerHTML.includes('data-api-settings-form')) {
   throw new Error("live API settings did not render");
 }
+if (!app.innerHTML.includes("Релизный статус") || !app.innerHTML.includes("Открыть чеклист")) {
+  throw new Error("release readiness panel did not render in account settings");
+}
+
+setSession("admin");
+context.location.pathname = "/admin";
+context.render();
+if (!app.innerHTML.includes("Релизный статус") || !app.innerHTML.includes("товаров live")) {
+  throw new Error("release readiness panel did not render in admin dashboard");
+}
 
 context.location.pathname = "/support/ticket";
 context.render();

@@ -36,7 +36,7 @@ function readinessItem(label, ready, detail) {
   return `<div class="list-row"><span>${label}<br><span class="muted">${detail}</span></span><span class="status ${ready ? "ok" : "wait"}">${ready ? "готово" : "нужно"}</span></div>`;
 }
 
-function launchReadiness() {
+function releaseReadinessData() {
   const apiBaseUrl = api.getApiBaseUrl();
   const liveConnected = state.liveStatus === "connected";
   const liveProvider = liveProviderName();
@@ -59,9 +59,39 @@ function launchReadiness() {
     ["Evidence storage", false, "нужны файлы для споров, тикетов и risk review"],
     ["Operations", false, "нужны backup, monitoring, payout batching и refund tooling"],
   ];
+  const metrics = state.liveHealth?.metrics || {};
+  const metricItems = [
+    [metrics.onlineUsers ?? "demo", "онлайн"],
+    [metrics.publishedProducts ?? "demo", "товаров live"],
+    [metrics.completedOrders ?? "demo", "завершено"],
+    [state.liveStatus, "статус API"],
+  ];
+  return { apiBaseUrl, hasLive, liveConnected, liveProvider, mvpItems, productionItems, metricItems, publicEndpoint };
+}
+
+function releaseMetricCards() {
+  const { metricItems } = releaseReadinessData();
+  return `<div class="grid metrics">${metricItems.map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>`;
+}
+
+function releaseReadinessPanel(compact = false) {
+  const { hasLive, liveConnected, liveProvider, mvpItems, productionItems, publicEndpoint } = releaseReadinessData();
+  const blockers = productionItems.filter(([, ready]) => !ready);
+  const shownMvpItems = compact ? mvpItems.slice(3) : mvpItems;
+  return `<section class="panel release-panel">
+    <div class="section-head"><div><h2>Релизный статус</h2><p class="muted">${liveProvider}: ${publicEndpoint || "не настроен"}</p></div><span class="status ${hasLive && liveConnected ? "ok" : "wait"}">${hasLive && liveConnected ? "live" : "setup"}</span></div>
+    ${releaseMetricCards()}
+    <div class="list section">${shownMvpItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div>
+    ${compact ? `<p class="muted section">До production осталось закрыть ${blockers.length} блокеров. Подробный список в разделе готовности к запуску.</p><a class="btn" href="/launch-readiness" data-link>Открыть чеклист</a>` : ""}
+  </section>`;
+}
+
+function launchReadiness() {
+  const { hasLive, liveConnected, mvpItems, productionItems } = releaseReadinessData();
   return page("Готовность к запуску", `<div class="two-col">
     <section class="panel"><div class="section-head"><div><h2>MVP запуск</h2><p class="muted">Что нужно, чтобы показать рабочее демо на GitHub Pages с live backend.</p></div><span class="status ${hasLive && liveConnected ? "ok" : "wait"}">${hasLive && liveConnected ? "ready" : "connect API"}</span></div><div class="list section">${mvpItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></section>
     <aside class="panel"><h2>Production блокеры</h2><div class="list section">${productionItems.map(([label, ready, detail]) => readinessItem(label, ready, detail)).join("")}</div></aside>
+    ${releaseReadinessPanel(true)}
     <section class="panel section"><h2>Следующие действия</h2><div class="list">${[
       ["1", "Дождаться GitHub Actions verify и Pages deploy после каждого пуша"],
       ["2", "Проверить live provider: Supabase или backend API"],
