@@ -175,6 +175,12 @@ context.location.pathname = "/account/orders";
 context.render();
 if (!app.innerHTML.includes("Product #12345") && !app.innerHTML.includes("Robux")) throw new Error("live account order did not render");
 
+context.location.pathname = "/account";
+context.render();
+if (!app.innerHTML.includes("Последние заказы") || !app.innerHTML.includes("Создать тикет") || !app.innerHTML.includes("Профиль")) {
+  throw new Error("account overview did not render release dashboard");
+}
+
 setSession("seller");
 context.location.pathname = "/seller/orders";
 context.render();

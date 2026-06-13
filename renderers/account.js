@@ -85,17 +85,74 @@ function account(path = "") {
   if (path.includes("/favorites")) return accountFavorites();
   if (path.includes("/payments")) return accountPayments();
   if (path.includes("/reviews")) return accountReviews();
-  if (path.includes("/security")) return dashboard("Безопасность", accountLinks, ["Пароль: обновлен 12 дней назад", "2FA: включить", "Активные сессии: 2", "Последний вход: сегодня"], "Account");
+  if (path.includes("/security")) return accountSecurity();
   if (path.includes("/settings")) return accountSettings();
+  return accountOverview();
+}
+
+function accountOverview() {
   const session = sessionApi.currentSession();
-  return dashboard("Кабинет покупателя", accountLinks, [
-    `Роль: ${sessionApi.roleLabel(session.role)}`,
-    `Никнейм: ${session.user?.name || "Artem"}`,
-    `Email: ${session.user?.email || "buyer@example.com"}`,
-    `Telegram: ${session.user?.telegram || "@buyer"}`,
-    "2FA: включить",
-    "Последний вход: сегодня",
-  ]);
+  const liveOrderIds = new Set(liveItems("orders").map((orderItem) => String(orderItem.id)));
+  const orders = mixDemoRows(
+    "orders",
+    demoOrders.filter((orderItem) => !liveOrderIds.has(String(orderItem.id))).slice(0, 3).map(orderListRow),
+    liveItems("orders").slice(0, 3).map((orderItem) => orderListRow(normalizeLiveOrder(orderItem))),
+  );
+  const openTickets = mixDemoRows(
+    "tickets",
+    window.SECMARKET_DATA.demoTickets.filter((ticket) => ticket.status !== "Закрыт").map(ticketListRow),
+    liveItems("tickets").filter((ticket) => !["closed", "resolved"].includes(ticket.status)).map((ticket) => ticketListRow(normalizeLiveTicket(ticket))),
+  );
+  const activePayments = mixDemoRows(
+    "payments",
+    demoPayments.slice(0, 2).map(paymentListRow),
+    liveItems("payments").slice(0, 2).map((paymentItem) => paymentListRow(normalizeLivePayment(paymentItem))),
+  );
+  const profileRows = [
+    ["Роль", sessionApi.roleLabel(session.role)],
+    ["Никнейм", session.user?.name || "Artem"],
+    ["Email", session.user?.email || "buyer@example.com"],
+    ["Telegram", session.user?.telegram || "@buyer"],
+    ["Промокод", session.user?.promoCode || "нет"],
+  ];
+  return page("Кабинет", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section>
+    <section class="panel account-hero"><div class="section-head"><div><p class="eyebrow">Профиль</p><h1>${session.user?.name || "Artem"}</h1><p class="lead">Заказы, платежи, обращения и безопасность аккаунта в одном месте.</p></div><span class="status ${session.role === "guest" ? "wait" : "ok"}">${sessionApi.roleLabel(session.role)}</span></div>
+      <div class="grid metrics">${[
+        [orders.length, "последних заказа"],
+        [openTickets.length, "открытых обращения"],
+        [activePayments.length, "платежа в истории"],
+        [state.favorites.size, "в избранном"],
+      ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
+      <div class="form-actions section"><a class="btn primary" href="/catalog" data-link>Открыть каталог</a><a class="btn" href="/support/ticket" data-link>Создать тикет</a><a class="btn" href="/account/security" data-link>Безопасность</a></div>
+    </section>
+    <div class="two-col section">
+      <section class="panel"><div class="section-head"><h2>Последние заказы</h2><a class="btn" href="/account/orders" data-link>Все</a></div><div class="list">${orders.length ? orders.join("") : emptyAccountState("Заказов пока нет")}</div></section>
+      <aside class="panel"><h2>Профиль</h2><div class="list">${profileRows.map(([left, right]) => row(left, right)).join("")}</div></aside>
+    </div>
+    <div class="two-col section">
+      <section class="panel"><div class="section-head"><h2>Обращения</h2><a class="btn" href="/support/requests" data-link>Открыть</a></div><div class="list">${openTickets.length ? openTickets.slice(0, 3).join("") : emptyAccountState("Обращений пока нет")}</div></section>
+      <aside class="panel"><div class="section-head"><h2>Платежи</h2><a class="btn" href="/account/payments" data-link>История</a></div><div class="list">${activePayments.length ? activePayments.join("") : emptyAccountState("Платежей пока нет")}</div></aside>
+    </div>
+  </section></div>`, "Account");
+}
+
+function accountSecurity() {
+  const session = sessionApi.currentSession();
+  return page("Безопасность", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section>
+    <section class="panel"><div class="section-head"><div><h2>Защита аккаунта</h2><p class="muted">Перед релизом важно держать вход, Telegram и сессии под контролем.</p></div><span class="status wait">MVP</span></div><div class="list">${[
+      ["Email", session.user?.email || "buyer@example.com"],
+      ["Telegram", session.user?.telegram || "@buyer"],
+      ["Пароль", "обновлен 12 дней назад"],
+      ["2FA", "следующий production-шаг"],
+      ["Активная сессия", api.getAuthToken() ? "live token сохранен" : "локальная сессия"],
+    ].map(([left, right]) => row(left, right)).join("")}</div></section>
+    <section class="panel section"><h2>Рекомендации</h2><div class="list">${[
+      "Не выводить общение с продавцом из чата заказа",
+      "Проверять адрес оплаты и сеть перед отправкой USDT",
+      "Хранить Telegram актуальным для уведомлений поддержки",
+      "Перед реальными деньгами включить 2FA и восстановление пароля",
+    ].map(row).join("")}</div></section>
+  </section></div>`, "Account");
 }
 
 function accountOrders() {
