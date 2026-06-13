@@ -1,6 +1,7 @@
 const models = {
   User: { collection: "users", statuses: ["active", "limited", "blocked"] },
   Session: { collection: "sessions", statuses: ["active", "revoked", "expired"] },
+  PasswordReset: { collection: "passwordResets", statuses: ["pending", "used", "expired"] },
   Product: { collection: "products", statuses: ["draft", "moderation", "published", "paused", "blocked"] },
   Order: { collection: "orders", statuses: ["created", "awaiting_payment", "paid", "in_progress", "awaiting_buyer", "completed", "dispute", "refunded", "cancelled"] },
   Payment: { collection: "payments", statuses: ["waiting", "found", "confirming", "paid", "underpaid", "expired", "network_error"] },
@@ -18,6 +19,7 @@ const models = {
 const resourceModels = {
   users: "User",
   sessions: "Session",
+  passwordResets: "PasswordReset",
   products: "Product",
   orders: "Order",
   payments: "Payment",

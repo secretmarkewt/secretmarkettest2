@@ -1,5 +1,13 @@
 const crypto = require("crypto");
-const { vaultConfigured } = require("./cryptoVault");
+const {
+  confirmPasswordReset,
+  disableTwoFactor,
+  enableTwoFactor,
+  requestPasswordReset,
+  startTwoFactorSetup,
+  verifyTotp,
+} = require("./authSecurity");
+const { decryptSecret, vaultConfigured } = require("./cryptoVault");
 const { issueDelivery, revealDelivery } = require("./deliveryService");
 const { createEvidence, ownsTarget } = require("./evidenceStorage");
 const { confirmOrder } = require("./escrowService");
@@ -251,7 +259,14 @@ function readBearerToken(req) {
 
 function publicUser(user) {
   if (!user) return null;
-  const { email, passwordHash, telegram, ...safeUser } = user;
+  const {
+    email,
+    passwordHash,
+    telegram,
+    twoFactorPendingSecretEncrypted,
+    twoFactorSecretEncrypted,
+    ...safeUser
+  } = user;
   return { ...safeUser, email, telegram };
 }
 
@@ -374,7 +389,7 @@ async function readBody(req) {
   }
 }
 
-async function handleAuth(req, res, store, id) {
+async function handleAuth(req, res, store, id, action) {
   if (id === "register" && req.method === "POST") {
     const payload = await readBody(req);
     const name = String(payload.name || payload.nickname || "").trim();
@@ -452,6 +467,13 @@ async function handleAuth(req, res, store, id) {
     if (user.passwordHash && !verifyPassword(password, user.passwordHash)) {
       return json(req, res, 401, { error: "invalid_credentials" });
     }
+    if (user.twoFactorEnabled) {
+      if (!payload.otpCode) return json(req, res, 202, { twoFactorRequired: true, challenge: "totp" });
+      const secret = decryptSecret(user.twoFactorSecretEncrypted || "");
+      if (!secret || !verifyTotp(secret, payload.otpCode)) {
+        return json(req, res, 401, { error: "two_factor_code_invalid" });
+      }
+    }
 
     const session = store.create("sessions", {
       userId: user.id,
@@ -463,6 +485,34 @@ async function handleAuth(req, res, store, id) {
     });
 
     return json(req, res, 201, { token: session.token, user: publicUser(user), expiresAt: session.expiresAt });
+  }
+
+  if (id === "password-reset" && action === "request" && req.method === "POST") {
+    return json(req, res, 200, requestPasswordReset(store, await readBody(req)));
+  }
+
+  if (id === "password-reset" && action === "confirm" && req.method === "POST") {
+    const result = confirmPasswordReset(store, await readBody(req));
+    if (result.error === "user_not_found") return notFound(req, res);
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 200, result);
+  }
+
+  if (id === "2fa" && req.method === "POST") {
+    const auth = resolveSession(req, store);
+    if (!auth) return json(req, res, 401, { error: "auth_required" });
+    if (action === "setup") return json(req, res, 201, startTwoFactorSetup(store, auth));
+    if (action === "enable") {
+      const result = enableTwoFactor(store, auth, await readBody(req));
+      if (result.error) return json(req, res, 422, result);
+      return json(req, res, 200, { ok: true, user: publicUser(result.user) });
+    }
+    if (action === "disable") {
+      const result = disableTwoFactor(store, auth, await readBody(req));
+      if (result.error === "invalid_credentials") return json(req, res, 401, result);
+      if (result.error) return json(req, res, 422, result);
+      return json(req, res, 200, { ok: true, user: publicUser(result.user) });
+    }
   }
 
   if (id === "session" && req.method === "GET") {
@@ -552,7 +602,7 @@ async function handleApi(req, res, store) {
     if (!resetAllowed()) return json(req, res, 403, { error: "reset_disabled" });
     return json(req, res, 200, store.reset());
   }
-  if (resource === "auth") return handleAuth(req, res, store, id);
+  if (resource === "auth") return handleAuth(req, res, store, id, action);
   if (!resourceModels[resource]) return notFound(req, res);
   const auth = authorize(req, res, store, resource);
   if (!auth) return true;

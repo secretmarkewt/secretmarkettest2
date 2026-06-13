@@ -69,6 +69,11 @@ In production, `GET /api/ready` also reports `deploymentIssues` and blocks readi
 
 - `POST /api/auth/login`
 - `POST /api/auth/register`
+- `POST /api/auth/password-reset/request`
+- `POST /api/auth/password-reset/confirm`
+- `POST /api/auth/2fa/setup`
+- `POST /api/auth/2fa/enable`
+- `POST /api/auth/2fa/disable`
 - `GET /api/health`
 - `GET /api/ready`
 - `GET /api/auth/session`
@@ -99,9 +104,13 @@ The API allows CORS for local frontend development. By default it accepts all or
 
 ## Auth Notes
 
-Auth is demo-level but now password-gated: `POST /api/auth/login` accepts an active demo user email, role and password, verifies the stored PBKDF2 hash, then returns a bearer token stored in the JSON database. Demo users use `password` as the password. Existing local JSON databases without `passwordHash` remain accepted so old demo data is not locked out.
+Auth is password-gated: `POST /api/auth/login` accepts an active user email, role and password, verifies the stored PBKDF2 hash, then returns a bearer token stored in the JSON database. If TOTP 2FA is enabled, login returns `202` with `twoFactorRequired` until a valid `otpCode` is submitted. Demo users use `password` as the password. Existing local JSON databases without `passwordHash` remain accepted so old demo data is not locked out.
 
 `POST /api/auth/register` accepts nickname, email, password, Telegram username and role (`buyer` or `seller`). The backend hashes the password immediately and never sends the plaintext password to Telegram. Telegram registration notifications use `SECMARKET_TELEGRAM_BOT_TOKEN` and `SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID`; the default chat id is `7391093210`.
+
+`POST /api/auth/password-reset/request` creates a short-lived reset record with only a SHA-256 token hash in storage. In non-production verification it returns the raw token; in production the token must be delivered by a configured email or Telegram provider. `POST /api/auth/password-reset/confirm` changes the password, marks the reset token as used and revokes existing sessions.
+
+`POST /api/auth/2fa/setup` creates an encrypted pending TOTP secret and returns the secret plus `otpauthUrl` for QR generation. `POST /api/auth/2fa/enable` verifies the first TOTP code and stores the encrypted secret. `POST /api/auth/2fa/disable` requires the current password and a valid TOTP code.
 
 `POST /api/tickets` creates a support ticket for an authenticated buyer/seller/admin and sends a Telegram notification to the same configured chat. The notification includes ticket id, topic, linked order, contact, user id, status and description.
 
@@ -149,7 +158,7 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 ## Next Backend Work
 
 - Move the JSON store to SQLite/PostgreSQL when auth and payment workers are ready.
-- Add registration, password reset and 2FA.
+- Add email or Telegram delivery provider for password reset tokens.
 - Move evidence storage from local disk to Supabase Storage or S3 before scaling beyond one backend instance.
 - Replace the mock payment watcher with real TRC20, TON and BEP20 workers.
 - Add backup automation, monitoring alerts and refund tooling for operations.

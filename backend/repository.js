@@ -111,7 +111,7 @@ function createStore(options = {}) {
   }
 
   function ready() {
-    const requiredCollections = ["users", "products", "orders", "payments", "transactions", "evidence", "audit"];
+    const requiredCollections = ["users", "sessions", "passwordResets", "products", "orders", "payments", "transactions", "evidence", "audit"];
     const missingCollections = requiredCollections.filter((collection) => !Array.isArray(state[collection]));
     return {
       ok: missingCollections.length === 0,

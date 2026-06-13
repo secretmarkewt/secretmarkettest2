@@ -3,6 +3,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { calculateCommission } = require("./fees");
+const { totpCode } = require("./backend/authSecurity");
 
 function request(port, path, options = {}) {
   return fetch(`http://127.0.0.1:${port}${path}`, {
@@ -183,6 +184,59 @@ function authHeader(token) {
       body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123" }),
     }).then((res) => res.json());
     if (!registeredLogin.token || registeredLogin.user?.id !== registered.user.id) throw new Error("registered user login failed");
+    const twoFactorSetup = await request(port, "/api/auth/2fa/setup", {
+      method: "POST",
+      headers: authHeader(registeredLogin.token),
+    }).then((res) => res.json());
+    if (!twoFactorSetup.secret || !twoFactorSetup.otpauthUrl) throw new Error("2fa setup failed");
+    const twoFactorEnabled = await request(port, "/api/auth/2fa/enable", {
+      method: "POST",
+      headers: authHeader(registeredLogin.token),
+      body: JSON.stringify({ code: totpCode(twoFactorSetup.secret) }),
+    }).then((res) => res.json());
+    if (!twoFactorEnabled.ok || !twoFactorEnabled.user?.twoFactorEnabled || twoFactorEnabled.user?.twoFactorSecretEncrypted) {
+      throw new Error("2fa enable failed");
+    }
+    const twoFactorChallenge = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123" }),
+    }).then((res) => ({ status: res.status, body: res.json() }));
+    const twoFactorChallengeBody = await twoFactorChallenge.body;
+    if (twoFactorChallenge.status !== 202 || !twoFactorChallengeBody.twoFactorRequired) throw new Error("2fa challenge failed");
+    const twoFactorRejected = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123", otpCode: "000000" }),
+    });
+    if (twoFactorRejected.status !== 401) throw new Error("2fa reject failed");
+    const twoFactorLogin = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123", otpCode: totpCode(twoFactorSetup.secret) }),
+    }).then((res) => res.json());
+    if (!twoFactorLogin.token || twoFactorLogin.user?.twoFactorSecretEncrypted) throw new Error("2fa login failed");
+    const resetRequest = await request(port, "/api/auth/password-reset/request", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer" }),
+    }).then((res) => res.json());
+    if (!resetRequest.ok || !resetRequest.resetToken) throw new Error("password reset request failed");
+    const resetConfirm = await request(port, "/api/auth/password-reset/confirm", {
+      method: "POST",
+      body: JSON.stringify({ token: resetRequest.resetToken, password: "new-safe-password-123" }),
+    }).then((res) => res.json());
+    if (!resetConfirm.ok) throw new Error("password reset confirm failed");
+    const resetRevokedSession = await request(port, "/api/auth/session", {
+      headers: authHeader(twoFactorLogin.token),
+    });
+    if (resetRevokedSession.status !== 401) throw new Error("password reset session revoke failed");
+    const oldPasswordLogin = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "safe-password-123", otpCode: totpCode(twoFactorSetup.secret) }),
+    });
+    if (oldPasswordLogin.status !== 401) throw new Error("password reset old password guard failed");
+    const newPasswordLogin = await request(port, "/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "new-safe-password-123", otpCode: totpCode(twoFactorSetup.secret) }),
+    }).then((res) => res.json());
+    if (!newPasswordLogin.token) throw new Error("password reset new password login failed");
     if (previousTelegramToken === undefined) delete process.env.SECMARKET_TELEGRAM_BOT_TOKEN;
     else process.env.SECMARKET_TELEGRAM_BOT_TOKEN = previousTelegramToken;
 
