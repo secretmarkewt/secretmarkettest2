@@ -140,7 +140,7 @@ function marketplaceIntro() {
         <div class="mascot-glow"></div>
         <img src="${assetPath("assets/hero-mascot.png")}" alt="Secret Market" />
         <div class="mascot-card mascot-card-top"><strong>4.91</strong><span>средний рейтинг</span></div>
-        <div class="mascot-card mascot-card-bottom"><strong>28k+</strong><span>сделок закрыто</span></div>
+        <div class="mascot-card mascot-card-bottom"><strong>500+</strong><span>сделок закрыто</span></div>
       </aside>
     </div>
   </section>`;
