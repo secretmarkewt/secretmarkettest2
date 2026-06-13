@@ -154,15 +154,74 @@ function productSelect(name, label, options, selected) {
   }).join("")}</select></label>`;
 }
 
+function sellerFinanceSummary() {
+  const session = sessionApi.currentSession();
+  const sellerId = session.user?.id || "usr-seller";
+  const liveLedger = liveItems("ledger").filter((entry) => entry.sellerId === sellerId && entry.status !== "void");
+  const liveWithdrawals = liveItems("withdrawals").filter((item) => item.sellerId === sellerId);
+  const liveOrders = liveItems("orders").filter((item) => item.sellerId === sellerId).map(normalizeLiveOrder);
+  const demoSeller = "PixelTrade";
+  const demoCompleted = demoOrders.filter((item) => item.seller === demoSeller && item.order === "Завершен");
+  const demoHold = demoOrders.filter((item) => item.seller === demoSeller && item.order !== "Завершен");
+  const hasLiveFinance = liveLedger.length || liveWithdrawals.length || liveOrders.length;
+  const ledgerCredits = liveLedger
+    .filter((entry) => Number(entry.amount || 0) > 0)
+    .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+  const ledgerPayouts = Math.abs(liveLedger
+    .filter((entry) => Number(entry.amount || 0) < 0)
+    .reduce((sum, entry) => sum + Number(entry.amount || 0), 0));
+  const reserved = liveWithdrawals
+    .filter((item) => ["review", "processing", "sent", "На проверке", "В обработке", "Отправлен"].includes(item.status))
+    .reduce((sum, item) => sum + Number(item.grossAmount || item.amount || 0), 0);
+  const liveHold = liveOrders
+    .filter((item) => item.order !== "Завершен" && item.order !== "completed")
+    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const available = Math.max(ledgerCredits - ledgerPayouts - reserved, 0);
+  const gross = hasLiveFinance
+    ? liveOrders.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+    : demoCompleted.reduce((sum, item) => sum + Number(item.amount || 0), 0) + demoHold.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const sellerFee = Math.max(gross * 0.04, 0);
+  return {
+    available: hasLiveFinance ? available : 1240,
+    gross,
+    hold: hasLiveFinance ? liveHold : demoHold.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    paidOut: hasLiveFinance ? ledgerPayouts : 950,
+    reserved: hasLiveFinance ? reserved : 500,
+    sellerFee,
+    source: hasLiveFinance ? "live" : "demo",
+    rows: hasLiveFinance
+      ? [
+        ...liveLedger.map((entry) => [`${entry.id} · ${entry.type || "ledger"} · ${entry.orderId || entry.withdrawalId || "баланс"}`, money(Number(entry.amount || 0))]),
+        ...liveWithdrawals.map((item) => [`Вывод #${item.id}`, `${money(Number(item.grossAmount || item.amount || 0))} · ${statusLabel(item.status)}`]),
+      ]
+      : [
+        ["#12345 · Robux 10 000", "84.90 USDT · в холде"],
+        ["#22341 · Steam Gift Card", "50.00 USDT · доступно"],
+        ["#WD-120 · вывод TRC20", "500.00 USDT · на проверке"],
+      ],
+  };
+}
+
 function finance() {
+  const summary = sellerFinanceSummary();
   return page("Финансы продавца", `<div class="layout"><aside class="sidebar">${sideLinks(sellerLinks)}</aside><section>
-    <div class="grid metrics">${["Общий заработок: 12 840 USDT", "Доступно: 1 240 USDT", "В холде: 480 USDT", "Комиссия: 6%"].map((x) => `<div class="metric panel"><strong>${x.split(": ")[1]}</strong><span>${x.split(": ")[0]}</span></div>`).join("")}</div>
-    <section class="section panel"><h2>История продаж</h2><div class="list">${[
-      ["#12345 · Robux 10 000", "84.90 USDT · в холде"],
-      ["#22341 · Steam Gift Card", "47.00 USDT · доступно"],
-      ["#33412 · Telegram Premium", "29.61 USDT · доступно"],
+    <div class="section-head"><div><p class="eyebrow">Баланс</p><h1>Финансы продавца</h1><p class="lead">Сводка по продажам, холду, комиссиям и заявкам на вывод.</p></div><span class="status ${summary.source === "live" ? "ok" : "wait"}">${summary.source}</span></div>
+    <div class="grid metrics">${[
+      [money(summary.available), "доступно к выводу"],
+      [money(summary.hold), "в гарантийном холде"],
+      [money(summary.reserved), "запрошено на вывод"],
+      [money(summary.paidOut), "уже выплачено"],
+      [money(summary.gross), "валовые продажи"],
+      [money(summary.sellerFee), "комиссия продавца 4%"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
+    <section class="section panel"><div class="section-head"><h2>Движение средств</h2><a class="btn" href="/seller/withdraw" data-link>Вывести</a></div><div class="list">${summary.rows.length ? summary.rows.map(([left, right]) => row(left, right)).join("") : emptySellerState("Движений пока нет")}</div></section>
+    <section class="section panel"><h2>Как считается баланс</h2><div class="list">${[
+      ["Валовые продажи", "сумма заказов до удержаний"],
+      ["Комиссия продавца", "4% удерживается при завершении заказа"],
+      ["Доступно", "posted ledger минус активные заявки на вывод"],
+      ["Холд", "оплаченные сделки до подтверждения покупателя"],
+      ["Вывод", "баланс уменьшается на сумму списания, комиссия сети остается внутри заявки"],
     ].map(([left, right]) => row(left, right)).join("")}</div></section>
-    <section class="section panel"><h2>История средств</h2>${["В холде", "Доступно", "Запрошено на вывод", "Выплачено", "Заморожено из-за спора"].map((x) => row(x, "USDT")).join("")}</section>
   </section></div>`, "Seller");
 }
 

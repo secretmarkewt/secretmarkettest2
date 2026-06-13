@@ -7,7 +7,10 @@ const liveState = {
   live: {
     deliveries: [{ id: "del-live", orderId: 12345, productId: 12345, sellerId: "usr-seller", buyerId: "usr-buyer", secret: "AUTO-LIVE-SECRET", status: "issued" }],
     disputes: [{ id: "DSP-LIVE", orderId: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", reason: "Live UI dispute", evidence: [], decision: "", refundAmount: 0, status: "waiting_support" }],
-    ledger: [],
+    ledger: [
+      { id: "ledger-live-credit", orderId: 22341, sellerId: "usr-seller", amount: 96, coin: "USDT", type: "escrow_release", status: "posted" },
+      { id: "ledger-live-payout", withdrawalId: "WD-OLD", sellerId: "usr-seller", amount: -25, coin: "USDT", type: "payout", status: "posted" },
+    ],
     orders: [{ id: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", productId: 12345, amount: 88.3, paymentStatus: "paid", status: "awaiting_buyer" }],
     payments: [{ id: "pay-live", orderId: 12345, amount: 88.3, coin: "USDT", network: "TRC20", txHash: "TX-LIVE-UI", confirmations: 24, status: "paid" }],
     products: [{ id: "products-live", sellerId: "usr-seller", title: "Live UI Product", category: "discord", price: 8.5, stock: 10, deliveryType: "auto", status: "moderation" }],
@@ -144,6 +147,15 @@ context.render();
 if (!app.innerHTML.includes("WD-LIVE")) throw new Error("live withdrawal did not render");
 if (!app.innerHTML.includes('data-withdrawal-form') || !app.innerHTML.includes('data-withdrawal-net')) {
   throw new Error("withdrawal fee form did not render");
+}
+
+context.location.pathname = "/seller/finance";
+context.render();
+if (!app.innerHTML.includes("Движение средств") || !app.innerHTML.includes("ledger-live-credit")) {
+  throw new Error("live seller finance ledger did not render");
+}
+if (!app.innerHTML.includes("комиссия продавца 4%") || !app.innerHTML.includes("доступно к выводу")) {
+  throw new Error("seller finance summary did not render release finance labels");
 }
 
 setSession("buyer");
