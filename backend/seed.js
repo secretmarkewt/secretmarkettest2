@@ -32,6 +32,7 @@ const seed = {
   deliveries: [
     { id: "del-12345", orderId: 12345, productId: 12345, sellerId: "usr-seller", buyerId: "usr-buyer", deliveryType: "auto", secret: "AUTO-DELIVERY-CODE-SEC-9K2", status: "issued", createdAt: now },
   ],
+  evidence: [],
   ledger: [
     { id: "ledger-22341", orderId: 22341, sellerId: "usr-seller", amount: 50, coin: "USDT", type: "escrow_release", status: "posted", createdAt: now },
     { id: "ledger-balance-1", orderId: "legacy", sellerId: "usr-seller", amount: 500, coin: "USDT", type: "escrow_release", status: "posted", createdAt: now },

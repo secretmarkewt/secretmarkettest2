@@ -1,5 +1,18 @@
+const { decryptSecret, encryptSecret, maskSecret } = require("./cryptoVault");
+
 function deliveryCode(order, product) {
   return `AUTO-${String(product.category || "ITEM").toUpperCase()}-${order.id}-${Date.now().toString(36).toUpperCase()}`;
+}
+
+function revealDelivery(delivery) {
+  if (!delivery) return null;
+  const encrypted = delivery.secretEncrypted || delivery.secret || "";
+  const secret = decryptSecret(encrypted);
+  return {
+    ...delivery,
+    secret,
+    secretMasked: maskSecret(encrypted),
+  };
 }
 
 function issueDelivery(store, orderId, options = {}) {
@@ -13,7 +26,9 @@ function issueDelivery(store, orderId, options = {}) {
   if (Number(product.stock || 0) <= 0) return { error: "out_of_stock" };
 
   const existing = store.list("deliveries").find((item) => String(item.orderId) === String(order.id));
-  if (existing) return { delivery: existing, order, product, alreadyIssued: true };
+  if (existing) return { delivery: revealDelivery(existing), order, product, alreadyIssued: true };
+
+  const secret = options.secret || deliveryCode(order, product);
 
   const delivery = store.create("deliveries", {
     orderId: order.id,
@@ -21,7 +36,8 @@ function issueDelivery(store, orderId, options = {}) {
     sellerId: order.sellerId,
     buyerId: order.buyerId,
     deliveryType: "auto",
-    secret: options.secret || deliveryCode(order, product),
+    secretEncrypted: encryptSecret(secret),
+    secretMasked: maskSecret(secret),
     status: "issued",
     _actorId: options.actorId || "system",
   });
@@ -38,7 +54,7 @@ function issueDelivery(store, orderId, options = {}) {
     _actorId: options.actorId || "system",
   });
 
-  return { delivery, order: updatedOrder, product: updatedProduct, alreadyIssued: false };
+  return { delivery: revealDelivery(delivery), order: updatedOrder, product: updatedProduct, alreadyIssued: false };
 }
 
-module.exports = { issueDelivery };
+module.exports = { issueDelivery, revealDelivery };

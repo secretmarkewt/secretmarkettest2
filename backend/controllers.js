@@ -1,5 +1,7 @@
 const crypto = require("crypto");
-const { issueDelivery } = require("./deliveryService");
+const { vaultConfigured } = require("./cryptoVault");
+const { issueDelivery, revealDelivery } = require("./deliveryService");
+const { createEvidence, ownsTarget } = require("./evidenceStorage");
 const { confirmOrder } = require("./escrowService");
 const { resourceModels } = require("./models");
 const { syncPayment } = require("./paymentWatcher");
@@ -195,6 +197,7 @@ function deploymentReadinessIssues(storage = {}) {
   if (resetAllowed()) issues.push("reset_enabled");
   if (!storage.persistent || !storage.configured) issues.push("storage_not_configured");
   if (!rateLimit.max || rateLimit.max < 1 || !rateLimit.windowMs || rateLimit.windowMs < 1) issues.push("rate_limit_disabled");
+  if (!vaultConfigured()) issues.push("delivery_secret_key_missing");
   return issues;
 }
 
@@ -268,7 +271,7 @@ function allowedRoles(resource, method) {
   if (resource === "transactions") return ["buyer", "seller", "admin"];
   if (resource === "products") return ["seller", "admin"];
   if (resource === "withdrawals") return ["seller", "admin"];
-  if (["orders", "payments", "deliveries", "ledger", "disputes", "tickets"].includes(resource)) return ["buyer", "seller", "admin"];
+  if (["orders", "payments", "deliveries", "ledger", "disputes", "tickets", "evidence"].includes(resource)) return ["buyer", "seller", "admin"];
   return ["admin"];
 }
 
@@ -289,6 +292,9 @@ function isOwnedBy(resource, item, auth, store) {
     const order = relatedOrderFor(resource, item, store);
     return item.userId === auth.user.id || order?.buyerId === auth.user.id || order?.sellerId === auth.user.id;
   }
+  if (resource === "evidence") {
+    return item.userId === auth.user.id || ownsTarget(store, auth, item.targetType, item.targetId);
+  }
   if (resource === "payments") {
     const order = relatedOrderFor(resource, item, store);
     return order?.buyerId === auth.user.id || order?.sellerId === auth.user.id;
@@ -297,7 +303,9 @@ function isOwnedBy(resource, item, auth, store) {
 }
 
 function visibleItems(resource, auth, store) {
-  return store.list(resource).filter((item) => isOwnedBy(resource, item, auth, store));
+  const items = store.list(resource).filter((item) => isOwnedBy(resource, item, auth, store));
+  if (resource === "deliveries") return items.map(revealDelivery);
+  return items;
 }
 
 function withCommissionFields(payload, itemAmount) {
@@ -601,10 +609,18 @@ async function handleApi(req, res, store) {
     return json(req, res, 200, result);
   }
 
+  if (resource === "evidence" && req.method === "POST" && !id) {
+    const result = createEvidence(store, await readBody(req), auth);
+    if (result.error === "target_not_found") return notFound(req, res);
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 201, result);
+  }
+
   if (req.method === "GET" && !id) return json(req, res, 200, { items: visibleItems(resource, auth, store) });
   if (req.method === "GET" && id) {
     const item = store.find(resource, id);
-    return item && isOwnedBy(resource, item, auth, store) ? json(req, res, 200, item) : notFound(req, res);
+    if (!item || !isOwnedBy(resource, item, auth, store)) return notFound(req, res);
+    return json(req, res, 200, resource === "deliveries" ? revealDelivery(item) : item);
   }
   if (req.method === "POST" && !id) {
     const payload = await readBody(req);

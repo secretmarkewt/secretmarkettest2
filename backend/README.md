@@ -124,7 +124,7 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 
 ## Auto Delivery
 
-`POST /api/orders/:id/deliver` issues an auto-delivery secret for paid auto-delivery products, links it to the order, moves the order to `awaiting_buyer`, decrements product stock and stays idempotent if called twice.
+`POST /api/orders/:id/deliver` issues an auto-delivery secret for paid auto-delivery products, links it to the order, moves the order to `awaiting_buyer`, decrements product stock and stays idempotent if called twice. New delivery secrets are stored encrypted with AES-256-GCM in `secretEncrypted`; the API reveals the decrypted `secret` only through authorized delivery responses. Set `SECMARKET_SECRET_KEY` to at least 32 characters before production.
 
 ## Escrow Release
 
@@ -142,11 +142,15 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 
 `POST /api/withdrawals/:id/settle` is admin-only. It writes the payout transaction id, moves the withdrawal through `processing`, `sent`, `completed` or `rejected`, and posts a negative `payout` ledger entry when the withdrawal is completed. Repeated completed settlements are idempotent and do not double-post the payout.
 
+## Evidence Storage
+
+`POST /api/evidence` accepts authenticated evidence uploads for `ticket`, `dispute` and `order` targets. The API validates ownership, stores the file under `SECMARKET_EVIDENCE_DIR` or `data/evidence`, and writes only metadata to the JSON store: file name, MIME type, size, SHA-256, storage key and target link. Buyers and sellers see only evidence linked to their own tickets, disputes or orders; admins can review all evidence.
+
 ## Next Backend Work
 
 - Move the JSON store to SQLite/PostgreSQL when auth and payment workers are ready.
 - Add registration, password reset and 2FA.
-- Add file storage for dispute evidence and ticket attachments.
+- Move evidence storage from local disk to Supabase Storage or S3 before scaling beyond one backend instance.
 - Replace the mock payment watcher with real TRC20, TON and BEP20 workers.
-- Encrypt auto-delivery secrets before moving from JSON storage to production storage.
+- Add backup automation, monitoring alerts and refund tooling for operations.
 - Add payout batching, risk review notes and withdrawal export for admins.

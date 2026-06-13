@@ -18,6 +18,8 @@ function authHeader(token) {
 (async () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "secmarket-api-"));
   const dbFile = path.join(tempDir, "db.json");
+  const previousEvidenceDir = process.env.SECMARKET_EVIDENCE_DIR;
+  process.env.SECMARKET_EVIDENCE_DIR = path.join(tempDir, "evidence");
   const server = createApiServer({ store: require("./backend/repository").createStore({ filePath: dbFile }) });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const port = server.address().port;
@@ -59,16 +61,19 @@ function authHeader(token) {
     const previousNodeEnvForReady = process.env.NODE_ENV;
     const previousOriginsForReady = process.env.SECMARKET_ALLOWED_ORIGINS;
     const previousResetForReady = process.env.SECMARKET_ALLOW_RESET;
+    const previousSecretKeyForReady = process.env.SECMARKET_SECRET_KEY;
     process.env.NODE_ENV = "production";
     delete process.env.SECMARKET_ALLOWED_ORIGINS;
     delete process.env.SECMARKET_ALLOW_RESET;
+    delete process.env.SECMARKET_SECRET_KEY;
     const unsafeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
     const unsafeReadyBody = await unsafeReady.body;
-    if (unsafeReady.status !== 503 || !unsafeReadyBody.deploymentIssues?.includes("cors_wildcard_origin")) {
+    if (unsafeReady.status !== 503 || !unsafeReadyBody.deploymentIssues?.includes("cors_wildcard_origin") || !unsafeReadyBody.deploymentIssues?.includes("delivery_secret_key_missing")) {
       throw new Error("production ready unsafe settings failed");
     }
     process.env.SECMARKET_ALLOWED_ORIGINS = "https://penisxxxl.github.io";
     process.env.SECMARKET_ALLOW_RESET = "false";
+    process.env.SECMARKET_SECRET_KEY = "verify-production-secret-key-32-bytes-minimum";
     const safeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
     const safeReadyBody = await safeReady.body;
     if (safeReady.status !== 200 || !safeReadyBody.ok || safeReadyBody.deploymentIssues.length !== 0) {
@@ -80,6 +85,8 @@ function authHeader(token) {
     else process.env.SECMARKET_ALLOWED_ORIGINS = previousOriginsForReady;
     if (previousResetForReady === undefined) delete process.env.SECMARKET_ALLOW_RESET;
     else process.env.SECMARKET_ALLOW_RESET = previousResetForReady;
+    if (previousSecretKeyForReady === undefined) delete process.env.SECMARKET_SECRET_KEY;
+    else process.env.SECMARKET_SECRET_KEY = previousSecretKeyForReady;
 
     const resetSnapshot = await request(port, "/api/reset", { method: "POST" }).then((res) => res.json());
     if (!resetSnapshot.products || !resetSnapshot.audit) throw new Error("reset route failed");
@@ -291,6 +298,26 @@ function authHeader(token) {
     if (ticket.id !== "SUP-BACKEND" || ticket.userId !== "usr-buyer" || ticket.ticketNotice?.enabled !== false) {
       throw new Error("support ticket create failed");
     }
+    const evidence = await request(port, "/api/evidence", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({
+        targetType: "ticket",
+        targetId: "SUP-BACKEND",
+        fileName: "payment-proof.txt",
+        mimeType: "text/plain",
+        contentBase64: Buffer.from("payment proof").toString("base64"),
+      }),
+    }).then((res) => res.json());
+    if (evidence.evidence?.status !== "stored" || evidence.evidence?.contentBase64 || evidence.evidence?.size !== 13) {
+      throw new Error("evidence storage failed");
+    }
+    const evidenceList = await request(port, "/api/evidence", {
+      headers: authHeader(login.token),
+    }).then((res) => res.json());
+    if (!evidenceList.items.some((item) => item.id === evidence.evidence.id && item.targetId === "SUP-BACKEND")) {
+      throw new Error("evidence ownership list failed");
+    }
 
     const invalidTicket = await request(port, "/api/tickets", {
       method: "POST",
@@ -405,12 +432,16 @@ function authHeader(token) {
       headers: authHeader(sellerLogin.token),
     }).then((res) => res.json());
     if (delivered.delivery?.status !== "issued" || delivered.order?.status !== "awaiting_buyer") throw new Error("auto delivery failed");
+    if (!delivered.delivery?.secret || !delivered.delivery?.secretMasked) throw new Error("auto delivery reveal failed");
     if (!(delivered.product?.stock < 42)) throw new Error("auto delivery stock failed");
 
     const deliveryList = await request(port, "/api/deliveries", {
       headers: authHeader(login.token),
     }).then((res) => res.json());
     if (!deliveryList.items.some((delivery) => delivery.orderId === 88001)) throw new Error("delivery ownership failed");
+    if (!deliveryList.items.some((delivery) => delivery.orderId === 88001 && delivery.secret && delivery.secretMasked)) {
+      throw new Error("delivery reveal list failed");
+    }
 
     const secondDelivery = await request(port, "/api/orders/88001/deliver", {
       method: "POST",
@@ -553,6 +584,12 @@ function authHeader(token) {
     if (!persisted.products.some((product) => product.id === created.id && product.status === "published")) {
       throw new Error("file persistence failed");
     }
+    const storedDelivery = persisted.deliveries.find((delivery) => delivery.orderId === 88001);
+    if (!storedDelivery?.secretEncrypted || storedDelivery.secret) throw new Error("encrypted delivery persistence failed");
+    const storedEvidence = persisted.evidence.find((item) => item.id === evidence.evidence.id);
+    if (!storedEvidence?.storageKey || !fs.existsSync(path.join(process.env.SECMARKET_EVIDENCE_DIR, storedEvidence.storageKey))) {
+      throw new Error("evidence file persistence failed");
+    }
 
     const logout = await request(port, "/api/auth/logout", {
       method: "POST",
@@ -582,6 +619,8 @@ function authHeader(token) {
     console.log("backend OK");
   } finally {
     server.close();
+    if (previousEvidenceDir === undefined) delete process.env.SECMARKET_EVIDENCE_DIR;
+    else process.env.SECMARKET_EVIDENCE_DIR = previousEvidenceDir;
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 })();
