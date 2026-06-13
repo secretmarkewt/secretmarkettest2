@@ -301,8 +301,7 @@ function product(id = 12345) {
 
 function checkout() {
   const p = checkoutProduct();
-  const fee = checkoutFee(p);
-  const total = checkoutTotal(p);
+  const commission = checkoutCommission(p);
   const steps = ["Товар", "Данные", "Оплата", "Подтверждение"];
   return page("Оформление заказа", `<div class="checkout-layout">
     <section class="panel checkout-panel">
@@ -314,26 +313,26 @@ function checkout() {
       <h2>Ваш заказ</h2>
       <div class="summary-product">${productSketch(p.mark, p.title)}<div><strong>${p.title}</strong><small>${p.seller} · ${p.rating}</small></div></div>
       <div class="list">${[
-        ["Товар", money(p.price)],
-        ["Комиссия сервиса", money(fee)],
-        ["К оплате", money(total)],
+        ["Цена товара", money(commission.itemAmount)],
+        ["Сервисный сбор покупателя 2%", money(commission.buyerFee)],
+        ["Итого к оплате", money(commission.buyerTotal)],
       ].map(([left, right]) => row(left, right)).join("")}</div>
-      <p class="muted section">Платёж закрепляется за заказом, выдача и чат остаются внутри сделки.</p>
+      <p class="muted section">Платёж закрепляется за заказом. Продавцу после завершения начисляется ${money(commission.sellerNet)} с учётом комиссии продавца 4%.</p>
     </aside>
   </div>`, "Checkout");
 }
 
 function checkoutStepBody() {
   const p = checkoutProduct();
-  const fee = checkoutFee(p);
-  const total = checkoutTotal(p);
+  const commission = checkoutCommission(p);
   if (activeStep === 1) {
     return `<div class="list">${[
       ["Товар", p.title],
       ["Продавец", `${p.seller} · ${p.rating}`],
-      ["Цена", money(p.price)],
-      ["Комиссия", money(fee)],
-      ["Итоговая сумма", money(total)],
+      ["Цена товара", money(commission.itemAmount)],
+      ["Сервисный сбор покупателя 2%", money(commission.buyerFee)],
+      ["Итого к оплате", money(commission.buyerTotal)],
+      ["Продавец получит", money(commission.sellerNet)],
     ].map(([left, right]) => row(left, right)).join("")}</div>`;
   }
   if (activeStep === 2) {
@@ -342,7 +341,7 @@ function checkoutStepBody() {
   if (activeStep === 3) {
     return `<div class="payment-methods">${["USDT TRC20", "USDT TON", "USDT BEP20"].map((network, index) => `<button class="trust-item panel ${index === 0 ? "chip active" : ""}" data-network="${network}"><h3>${network}</h3><p class="muted">${index === 0 ? "Рекомендуемый способ" : "Доступно для заказа"}</p></button>`).join("")}</div>`;
   }
-  return `<div class="checkout-confirm"><h2>Подтверждение</h2><p class="lead">Проверьте товар, данные аккаунта и выбранный способ оплаты. После оплаты заказ перейдёт продавцу на выдачу.</p><div class="list">${["Заказ создаётся с отдельным платёжным реквизитом", "Средства удерживаются до подтверждения получения", "Товар выдаётся автоматически или через чат", "Проверка доступна со страницы заказа"].map(row).join("")}</div></div>`;
+  return `<div class="checkout-confirm"><h2>Подтверждение</h2><p class="lead">Проверьте товар, данные аккаунта и выбранный способ оплаты. К оплате будет выставлено ${money(commission.buyerTotal)}.</p><div class="list">${["Заказ создаётся с отдельным платёжным реквизитом", "Средства удерживаются до подтверждения получения", "Товар выдаётся автоматически или через чат", "Проверка доступна со страницы заказа"].map(row).join("")}</div></div>`;
 }
 
 function payment(id = 12345) {

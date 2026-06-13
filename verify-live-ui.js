@@ -74,6 +74,7 @@ const context = {
     },
   },
   navigator: {},
+  URLSearchParams,
   scrollTo() {},
   addEventListener() {},
   fetch() {
@@ -120,6 +121,17 @@ if (!app.innerHTML.includes("Онлайн 24") || !app.innerHTML.includes("Но�
   throw new Error("home release metrics did not render honest fallback values");
 }
 
+setSession("buyer");
+context.location.pathname = "/checkout";
+context.render();
+if (!app.innerHTML.includes("checkout-layout") || !app.innerHTML.includes("86.60 USDT")) {
+  throw new Error("checkout buyer fee summary did not render");
+}
+if (!app.innerHTML.includes("81.51 USDT")) {
+  throw new Error("checkout seller net summary did not render");
+}
+
+setSession("seller");
 context.location.pathname = "/seller/products";
 context.render();
 if (!app.innerHTML.includes("Live UI Product")) throw new Error("live seller product did not render");

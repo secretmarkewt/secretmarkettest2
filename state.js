@@ -322,12 +322,36 @@ function checkoutProduct() {
   return productById(queryParam("product") || 12345);
 }
 
+function roundMoney(value) {
+  return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+}
+
+function checkoutCommission(product) {
+  const itemAmount = roundMoney(product.price || product.amount || 0);
+  const feeRateBuyer = 0.02;
+  const feeRateSeller = 0.04;
+  const feeRateTotal = feeRateBuyer + feeRateSeller;
+  const platformFeeTotal = roundMoney(Math.max(itemAmount * feeRateTotal, 0.2));
+  const buyerFee = roundMoney(platformFeeTotal * (feeRateBuyer / feeRateTotal));
+  const sellerFee = roundMoney(platformFeeTotal - buyerFee);
+  return {
+    itemAmount,
+    buyerFee,
+    sellerFee,
+    platformFeeTotal,
+    buyerTotal: roundMoney(itemAmount + buyerFee),
+    sellerNet: roundMoney(itemAmount - sellerFee),
+    feeRateBuyer,
+    feeRateSeller,
+  };
+}
+
 function checkoutFee(product) {
-  return Number((Number(product.price || 0) * 0.04).toFixed(2));
+  return checkoutCommission(product).buyerFee;
 }
 
 function checkoutTotal(product) {
-  return Number((Number(product.price || 0) + checkoutFee(product)).toFixed(2));
+  return checkoutCommission(product).buyerTotal;
 }
 
 function productMatchesSearch(product, query = state.query) {
