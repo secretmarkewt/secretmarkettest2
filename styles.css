@@ -864,15 +864,15 @@ h3 {
 .home-categories {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 10px;
 }
 
 .home-category-card {
   display: grid;
-  min-height: 132px;
-  gap: 8px;
+  min-height: 104px;
+  gap: 5px;
   align-content: start;
-  padding: 20px;
+  padding: 14px;
   color: var(--text);
   text-decoration: none;
   transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
@@ -911,8 +911,9 @@ h3 {
 }
 
 .home-category-card .category-image {
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
 }
 
 .home-category-card:hover,
@@ -3395,11 +3396,11 @@ a.admin-tile {
   }
 
   .home-category-card {
-    flex: 0 0 142px;
-    min-height: 88px;
+    flex: 0 0 118px;
+    min-height: 78px;
     border-radius: 12px;
-    gap: 5px;
-    padding: 10px;
+    gap: 4px;
+    padding: 8px;
     scroll-snap-align: start;
   }
 
@@ -3411,13 +3412,13 @@ a.admin-tile {
   }
 
   .home-category-card .category-image {
-    width: 44px;
-    height: 44px;
-    border-radius: 11px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
 
   .home-category-card strong {
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.2;
   }
 
