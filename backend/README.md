@@ -63,7 +63,7 @@ Set `SECMARKET_ALLOW_RESET=false` for any public deployment. The reset route sta
 
 When `NODE_ENV=production`, reset is disabled by default even if `SECMARKET_ALLOW_RESET` is missing. Keeping `SECMARKET_ALLOW_RESET=false` in the host environment still makes the public setting explicit in `GET /api/health`.
 
-In production, `GET /api/ready` also reports `deploymentIssues` and blocks readiness when CORS is open to `*`, reset is enabled, storage is not configured or rate limiting is disabled.
+In production, `GET /api/ready` also reports `deploymentIssues` and blocks readiness when CORS is open to `*`, reset is enabled, storage is not configured, rate limiting is disabled, the delivery secret key is missing or payment watcher URLs are not configured.
 
 ## Resources
 
@@ -125,7 +125,16 @@ Auth is password-gated: `POST /api/auth/login` accepts an active user email, rol
 
 ## Payment Watcher
 
-`POST /api/payments/:id/sync` is an admin-only mock watcher. It accepts optional `txHash` and `confirmations`, applies network confirmation rules, marks the payment as paid when ready, and updates the linked order payment status.
+`POST /api/payments/:id/sync` is admin-only. With a manual payload it accepts optional `txHash`, `confirmations` and `status`, applies network confirmation rules, marks the payment as paid when ready, and updates the linked order payment status. Without a manual transaction payload it calls the configured HTTP watcher for the payment network.
+
+Production watcher variables:
+
+- `SECMARKET_TRC20_WATCHER_URL`
+- `SECMARKET_TON_WATCHER_URL`
+- `SECMARKET_BEP20_WATCHER_URL`
+- `SECMARKET_PAYMENT_WATCHER_API_KEY` optional bearer token
+
+Each watcher endpoint receives `paymentId`, `orderId`, `address`, `amount` and `network` as query params and should return JSON with `txHash` or `transactionId`, `confirmations`, optional `status`, and optional `note`.
 
 ## Fees
 
@@ -160,6 +169,6 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 - Move the JSON store to SQLite/PostgreSQL when auth and payment workers are ready.
 - Add email or Telegram delivery provider for password reset tokens.
 - Move evidence storage from local disk to Supabase Storage or S3 before scaling beyond one backend instance.
-- Replace the mock payment watcher with real TRC20, TON and BEP20 workers.
+- Implement and deploy the external TRC20, TON and BEP20 watcher worker services.
 - Add backup automation, monitoring alerts and refund tooling for operations.
 - Add payout batching, risk review notes and withdrawal export for admins.

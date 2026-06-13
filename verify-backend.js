@@ -63,22 +63,39 @@ function authHeader(token) {
     const previousOriginsForReady = process.env.SECMARKET_ALLOWED_ORIGINS;
     const previousResetForReady = process.env.SECMARKET_ALLOW_RESET;
     const previousSecretKeyForReady = process.env.SECMARKET_SECRET_KEY;
+    const previousTrc20Watcher = process.env.SECMARKET_TRC20_WATCHER_URL;
+    const previousTonWatcher = process.env.SECMARKET_TON_WATCHER_URL;
+    const previousBep20Watcher = process.env.SECMARKET_BEP20_WATCHER_URL;
     process.env.NODE_ENV = "production";
     delete process.env.SECMARKET_ALLOWED_ORIGINS;
     delete process.env.SECMARKET_ALLOW_RESET;
     delete process.env.SECMARKET_SECRET_KEY;
+    delete process.env.SECMARKET_TRC20_WATCHER_URL;
+    delete process.env.SECMARKET_TON_WATCHER_URL;
+    delete process.env.SECMARKET_BEP20_WATCHER_URL;
     const unsafeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
     const unsafeReadyBody = await unsafeReady.body;
-    if (unsafeReady.status !== 503 || !unsafeReadyBody.deploymentIssues?.includes("cors_wildcard_origin") || !unsafeReadyBody.deploymentIssues?.includes("delivery_secret_key_missing")) {
+    if (
+      unsafeReady.status !== 503 ||
+      !unsafeReadyBody.deploymentIssues?.includes("cors_wildcard_origin") ||
+      !unsafeReadyBody.deploymentIssues?.includes("delivery_secret_key_missing") ||
+      !unsafeReadyBody.deploymentIssues?.some((issue) => issue.startsWith("payment_watchers_missing:"))
+    ) {
       throw new Error("production ready unsafe settings failed");
     }
     process.env.SECMARKET_ALLOWED_ORIGINS = "https://penisxxxl.github.io";
     process.env.SECMARKET_ALLOW_RESET = "false";
     process.env.SECMARKET_SECRET_KEY = "verify-production-secret-key-32-bytes-minimum";
+    process.env.SECMARKET_TRC20_WATCHER_URL = "https://watchers.example.test/trc20";
+    process.env.SECMARKET_TON_WATCHER_URL = "https://watchers.example.test/ton";
+    process.env.SECMARKET_BEP20_WATCHER_URL = "https://watchers.example.test/bep20";
     const safeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
     const safeReadyBody = await safeReady.body;
     if (safeReady.status !== 200 || !safeReadyBody.ok || safeReadyBody.deploymentIssues.length !== 0) {
       throw new Error("production ready safe settings failed");
+    }
+    if (safeReadyBody.paymentWatchers?.TRC20?.configured === false) {
+      throw new Error("production ready watcher metadata failed");
     }
     if (previousNodeEnvForReady === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previousNodeEnvForReady;
@@ -88,6 +105,12 @@ function authHeader(token) {
     else process.env.SECMARKET_ALLOW_RESET = previousResetForReady;
     if (previousSecretKeyForReady === undefined) delete process.env.SECMARKET_SECRET_KEY;
     else process.env.SECMARKET_SECRET_KEY = previousSecretKeyForReady;
+    if (previousTrc20Watcher === undefined) delete process.env.SECMARKET_TRC20_WATCHER_URL;
+    else process.env.SECMARKET_TRC20_WATCHER_URL = previousTrc20Watcher;
+    if (previousTonWatcher === undefined) delete process.env.SECMARKET_TON_WATCHER_URL;
+    else process.env.SECMARKET_TON_WATCHER_URL = previousTonWatcher;
+    if (previousBep20Watcher === undefined) delete process.env.SECMARKET_BEP20_WATCHER_URL;
+    else process.env.SECMARKET_BEP20_WATCHER_URL = previousBep20Watcher;
 
     const resetSnapshot = await request(port, "/api/reset", { method: "POST" }).then((res) => res.json());
     if (!resetSnapshot.products || !resetSnapshot.audit) throw new Error("reset route failed");

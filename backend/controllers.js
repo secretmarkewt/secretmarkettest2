@@ -12,7 +12,7 @@ const { issueDelivery, revealDelivery } = require("./deliveryService");
 const { createEvidence, ownsTarget } = require("./evidenceStorage");
 const { confirmOrder } = require("./escrowService");
 const { resourceModels } = require("./models");
-const { syncPayment } = require("./paymentWatcher");
+const { missingWatcherNetworks, syncPayment, watcherReadiness } = require("./paymentWatcher");
 const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
 const {
@@ -150,6 +150,7 @@ function healthPayload(store) {
       max: rateLimit.max,
       windowMs: rateLimit.windowMs,
     },
+    paymentWatchers: watcherReadiness(),
     metrics: {
       activeSessions,
       activePresence,
@@ -170,6 +171,7 @@ function readyPayload(store) {
     ...readiness,
     ok: readiness.ok && deploymentIssues.length === 0,
     deploymentIssues,
+    paymentWatchers: watcherReadiness(),
     service: "secret-market-api",
     checkedAt: new Date().toISOString(),
   };
@@ -206,6 +208,8 @@ function deploymentReadinessIssues(storage = {}) {
   if (!storage.persistent || !storage.configured) issues.push("storage_not_configured");
   if (!rateLimit.max || rateLimit.max < 1 || !rateLimit.windowMs || rateLimit.windowMs < 1) issues.push("rate_limit_disabled");
   if (!vaultConfigured()) issues.push("delivery_secret_key_missing");
+  const missingWatchers = missingWatcherNetworks();
+  if (missingWatchers.length) issues.push(`payment_watchers_missing:${missingWatchers.join(",")}`);
   return issues;
 }
 
@@ -612,7 +616,7 @@ async function handleApi(req, res, store) {
     const existing = store.find(resource, id);
     if (!existing) return notFound(req, res);
     const payload = await readBody(req);
-    return json(req, res, 200, syncPayment(store, id, { actorId: auth.user.id, payload }));
+    return json(req, res, 200, await syncPayment(store, id, { actorId: auth.user.id, payload }));
   }
 
   if (resource === "orders" && action === "deliver" && req.method === "POST") {
