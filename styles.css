@@ -2900,28 +2900,29 @@ a.admin-tile {
 
   .market-intro {
     min-height: auto;
-    gap: 8px;
+    gap: 4px;
     margin: 0 -14px;
-    padding: 24px 14px 20px;
+    padding: 18px 14px 14px;
   }
 
   .market-intro h1 {
-    max-width: 360px;
-    font-size: clamp(31px, 10vw, 40px);
+    max-width: 330px;
+    margin-bottom: 6px;
+    font-size: clamp(28px, 9vw, 36px);
     line-height: 1.08;
   }
 
   .market-intro .lead {
-    max-width: 360px;
-    font-size: 14px;
-    line-height: 1.55;
+    max-width: 330px;
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .hero-badge {
-    min-height: 28px;
-    margin-bottom: 14px;
-    padding: 5px 10px;
-    font-size: 11px;
+    min-height: 26px;
+    margin-bottom: 10px;
+    padding: 4px 9px;
+    font-size: 10px;
   }
 
   .market-pulse,
@@ -2941,21 +2942,22 @@ a.admin-tile {
   .market-pulse span,
   .hero-tags a {
     flex: 0 0 auto;
-    min-height: 30px;
-    font-size: 12px;
+    min-height: 28px;
+    padding: 5px 9px;
+    font-size: 11px;
   }
 
   .market-search {
     grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 8px;
-    min-height: 52px;
-    margin-top: 20px;
-    border-radius: 14px;
-    padding: 7px 7px 7px 12px;
+    gap: 7px;
+    min-height: 46px;
+    margin-top: 14px;
+    border-radius: 12px;
+    padding: 6px 6px 6px 10px;
   }
 
   .market-search input {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .market-search span {
@@ -2965,31 +2967,32 @@ a.admin-tile {
   .market-search .btn {
     grid-column: auto;
     width: auto;
-    min-height: 38px;
-    padding: 8px 12px;
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 12px;
   }
 
   .market-mascot {
-    min-height: 228px;
+    min-height: 190px;
   }
 
   .market-mascot img {
-    width: min(272px, 82%);
+    width: min(228px, 76%);
     height: auto;
   }
 
   .mascot-card {
-    min-width: 94px;
+    min-width: 82px;
     border-radius: 12px;
-    padding: 8px 10px;
+    padding: 7px 9px;
   }
 
   .mascot-card strong {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .mascot-card span {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .mascot-card-top {
@@ -3016,8 +3019,10 @@ a.admin-tile {
   }
 
   .quick-pick {
-    flex: 0 0 240px;
-    min-height: 82px;
+    flex: 0 0 190px;
+    min-height: 66px;
+    border-radius: 12px;
+    padding: 12px;
     scroll-snap-align: start;
   }
 
@@ -3171,22 +3176,24 @@ a.admin-tile {
   }
 
   .section {
-    margin-top: 22px;
+    margin-top: 16px;
   }
 
   .section-head {
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
 
   .section-head h2 {
-    font-size: 22px;
+    font-size: 19px;
     line-height: 1.15;
   }
 
   .section-head .btn {
-    min-height: 38px;
-    padding: 8px 11px;
+    min-height: 34px;
+    padding: 7px 9px;
+    font-size: 12px;
     white-space: nowrap;
   }
 
@@ -3317,18 +3324,30 @@ a.admin-tile {
   .home-stats,
   .trust-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
   }
 
   .home-stat,
   .trust-bar article {
-    min-height: 72px;
+    min-height: 56px;
     border-radius: 12px;
-    padding: 12px;
+    padding: 9px;
   }
 
   .home-stat strong {
-    font-size: 22px;
+    font-size: 18px;
+  }
+
+  .home-stat span,
+  .trust-bar article strong {
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  .trust-bar article > span {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
   }
 
   .home-categories {
@@ -3345,16 +3364,33 @@ a.admin-tile {
   }
 
   .home-category-card {
-    flex: 0 0 180px;
-    min-height: 108px;
+    flex: 0 0 142px;
+    min-height: 88px;
     border-radius: 12px;
-    padding: 12px;
+    gap: 5px;
+    padding: 10px;
     scroll-snap-align: start;
   }
 
   .home-category-card span {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    font-size: 12px;
+  }
+
+  .home-category-card strong {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .home-category-card small {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 1.25;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .seller-sidebar {
@@ -3363,7 +3399,7 @@ a.admin-tile {
 
   .home-product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
   }
 
   .home-product-card {
@@ -3373,24 +3409,24 @@ a.admin-tile {
   }
 
   .home-product-thumb {
-    min-height: 70px;
+    min-height: 58px;
   }
 
   .home-product-thumb > .product-sketch {
-    width: 58px;
-    height: 46px;
+    width: 48px;
+    height: 38px;
   }
 
   .home-product-body {
-    gap: 4px;
-    padding: 8px;
+    gap: 3px;
+    padding: 7px;
   }
 
   .home-product-body h3 {
     display: -webkit-box;
     overflow: hidden;
-    min-height: 32px;
-    font-size: 12px;
+    min-height: 30px;
+    font-size: 11px;
     line-height: 1.25;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -3405,16 +3441,16 @@ a.admin-tile {
   }
 
   .home-product-body .price {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.15;
   }
 
   .home-product-card .btn {
-    min-height: 30px;
+    min-height: 28px;
     margin-top: 2px;
     border-radius: 8px;
-    padding: 6px 4px;
-    font-size: 11px;
+    padding: 5px 4px;
+    font-size: 10px;
   }
 
   .section-head,
