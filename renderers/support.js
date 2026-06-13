@@ -31,6 +31,13 @@ function disputeDetail(id = 123) {
   </div>`, "Support");
 }
 
+function supportManagerBlock(compact = false) {
+  const body = compact
+    ? `<div class="list">${[["@secretmarketsupport", "Telegram менеджер"], ["Что отправить", "номер заказа, tx hash, скриншоты"]].map(([left, right]) => row(left, right)).join("")}</div><a class="btn primary section" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Написать в Telegram</a>`
+    : `<div class="section-head"><div><p class="eyebrow">Telegram менеджер</p><h2>@secretmarketsupport</h2><p class="muted">Для срочных вопросов по оплате, заказу или спору. В сообщении укажите номер заказа и tx hash.</p></div><a class="btn primary" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Написать в Telegram</a></div>`;
+  return `<section class="panel support-manager">${body}</section>`;
+}
+
 function support(path = "") {
   if (path.includes("/tickets/")) return supportTicketDetail(path.split("/").pop());
   if (path.includes("/ticket")) return supportTicket();
@@ -49,7 +56,7 @@ function support(path = "") {
     ["Проблемы с заказом", "/support/order"],
     ["Проблемы с продавцом", "/support/seller"],
   ];
-  return page("Поддержка", `<div class="support-grid">${items.map(([label, href]) => `<a class="category-card support-card" href="${href}" data-link><span class="category-icon">i</span><strong>${label}</strong><span class="muted">Раздел поддержки</span></a>`).join("")}</div>`, "Support");
+  return page("Поддержка", `${supportManagerBlock()}<div class="support-grid section">${items.map(([label, href]) => `<a class="category-card support-card" href="${href}" data-link><span class="category-icon">i</span><strong>${label}</strong><span class="muted">Раздел поддержки</span></a>`).join("")}</div>`, "Support");
 }
 
 function supportTicket() {
@@ -58,11 +65,11 @@ function supportTicket() {
     <label class="field"><span>Связанный заказ</span><input name="orderId" placeholder="#12345" /></label>
     <label class="field"><span>Описание</span><textarea name="description" placeholder="Опишите проблему подробно"></textarea></label>
     <label class="field"><span>Контакт</span><input name="contact" placeholder="@telegram" /></label>
-  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside class="panel"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}<section class="section"><h2>После отправки</h2><div class="list">${[
+  </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside>${supportManagerBlock(true)}<section class="panel section"><h2>Что приложить</h2>${["tx hash", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}<div class="section"><h2>После отправки</h2><div class="list">${[
     ["Статус", "открыт"],
     ["Уведомление", "уходит в Telegram поддержки"],
     ["Связь", "ответ появится в обращениях"],
-  ].map(([left, right]) => row(left, right)).join("")}</div></section></aside></div>`, "Support");
+  ].map(([left, right]) => row(left, right)).join("")}</div></div></section></aside></div>`, "Support");
 }
 
 function supportRequests() {
@@ -95,5 +102,5 @@ function supportTicketDetail(id = "SUP-104") {
 }
 
 function supportTopic(title, rows) {
-  return page(title, `<section class="panel"><div class="list">${rows.map(row).join("")}</div><div class="form-actions section"><a class="btn primary" href="/support/ticket" data-link>Создать тикет</a><a class="btn" href="/support" data-link>Все разделы</a></div></section>`, "Support");
+  return page(title, `<section class="panel"><div class="list">${rows.map(row).join("")}${row("@secretmarketsupport", "Telegram менеджер поддержки")}</div><div class="form-actions section"><a class="btn primary" href="/support/ticket" data-link>Создать тикет</a><a class="btn" href="https://t.me/secretmarketsupport" target="_blank" rel="noopener noreferrer">Telegram</a><a class="btn" href="/support" data-link>Все разделы</a></div></section>`, "Support");
 }
