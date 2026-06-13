@@ -141,7 +141,7 @@ function homeCategoryGrid() {
 function quickPicks() {
   return `<div class="quick-picks">${[
     ["Roblox", "Robux, аккаунты, донат", "/catalog/roblox"],
-    ["Steam выходные", "Ключи, гифт-карты, кошелёк", "/catalog/steam"],
+    ["Steam", "Ключи, гифт-карты, кошелёк", "/catalog/steam"],
     ["Подписки без лишнего", "Telegram, Discord, Spotify", "/catalog/telegram"],
   ].map(([title, text, href]) => `<a class="quick-pick" href="${href}" data-link><strong>${title}</strong><span>${text}</span></a>`).join("")}</div>`;
 }
