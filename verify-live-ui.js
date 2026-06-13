@@ -123,6 +123,9 @@ if (!app.innerHTML.includes("Онлайн 24") || !app.innerHTML.includes("Но�
 if (!app.innerHTML.includes("assets/categories/accounts.png") || !app.innerHTML.includes("assets/categories/game-currency.png")) {
   throw new Error("home category images did not render");
 }
+if (!app.innerHTML.includes("mobile-theme-toggle") || !app.innerHTML.includes("data-theme-toggle")) {
+  throw new Error("mobile theme toggle did not render");
+}
 
 context.location.pathname = "/catalog";
 context.render();

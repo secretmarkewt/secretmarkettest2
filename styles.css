@@ -3105,7 +3105,7 @@ a.admin-tile {
     left: 10px;
     z-index: 40;
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 4px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -3119,26 +3119,36 @@ a.admin-tile {
     background: rgba(255, 255, 255, 0.94);
   }
 
-  .mobile-tabbar a {
+  .mobile-tabbar a,
+  .mobile-theme-toggle {
     display: grid;
     min-width: 0;
     min-height: 50px;
     place-items: center;
     gap: 2px;
+    border: 0;
     border-radius: 8px;
+    background: transparent;
     color: var(--muted);
     font-size: 11px;
     text-decoration: none;
   }
 
-  .mobile-tabbar a span {
+  .mobile-tabbar a span,
+  .mobile-theme-toggle span {
     color: var(--text);
     font-size: 17px;
     line-height: 1;
   }
 
+  .mobile-theme-toggle .theme-svg {
+    width: 18px;
+    height: 18px;
+  }
+
   .mobile-tabbar a.active,
-  .mobile-tabbar a:hover {
+  .mobile-tabbar a:hover,
+  .mobile-theme-toggle:hover {
     background: rgba(71, 214, 81, 0.1);
     color: var(--teal);
   }

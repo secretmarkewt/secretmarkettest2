@@ -15,8 +15,10 @@
     saveState();
     render();
   });
-  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
-    toggleTheme();
+  document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      toggleTheme();
+    });
   });
   document.querySelector("[data-search-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();

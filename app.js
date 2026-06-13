@@ -79,6 +79,10 @@ function header() {
         ["/chats", uiIcon("chat"), "Чаты"],
         ["/account", uiIcon("user"), "Профиль"],
       ].map(([href, icon, label]) => `<a href="${href}" data-link class="${activeClass(href)}"><span>${icon}</span>${label}</a>`).join("")}
+      <button class="mobile-theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему" aria-pressed="${state.theme === "light"}">
+        <span>${state.theme === "light" ? themeIcon("sun") : themeIcon("moon")}</span>
+        Тема
+      </button>
     </nav>`;
 }
 
