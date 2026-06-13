@@ -182,6 +182,14 @@ const live = {
     if (isSupabaseEnabled()) return supabaseProvider().health();
     return requestLive("/api/health");
   },
+  async heartbeat(payload = {}) {
+    if (isSupabaseEnabled()) return { ok: true, skipped: true, provider: "supabase" };
+    return requestLive("/api/presence/heartbeat", {
+      method: "POST",
+      token: "",
+      body: JSON.stringify(payload),
+    });
+  },
   async list(collectionName) {
     if (isSupabaseEnabled()) return supabaseProvider().list(collectionName);
     const response = await requestLive(`/api/${collectionName}`);

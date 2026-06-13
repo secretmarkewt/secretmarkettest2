@@ -1,6 +1,7 @@
 let currency = "USDT";
 let activeStep = 1;
 const APP_BASE_PATH = location.hostname.endsWith("github.io") ? `/${location.pathname.split("/").filter(Boolean)[0] || ""}` : "";
+const PRESENCE_CLIENT_KEY = "secmarket-presence-client-id";
 
 const state = {
   theme: "dark",
@@ -141,6 +142,43 @@ function liveProviderName() {
 
 function productionDataMode() {
   return hasLiveProvider() && state.liveStatus === "connected";
+}
+
+function presenceClientId() {
+  let clientId = localStorage.getItem(PRESENCE_CLIENT_KEY);
+  if (!clientId) {
+    clientId = `guest-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+    localStorage.setItem(PRESENCE_CLIENT_KEY, clientId);
+  }
+  return clientId;
+}
+
+async function sendPresenceHeartbeat() {
+  if (!hasLiveProvider() || !api?.live?.heartbeat) return false;
+  const session = sessionApi.currentSession();
+  try {
+    const result = await api.live.heartbeat({
+      clientId: presenceClientId(),
+      userId: session.user?.id || "guest",
+      role: session.role || "guest",
+      path: currentPath(),
+    });
+    if (result.metrics) {
+      state.liveHealth = { ...(state.liveHealth || {}), ok: true, metrics: result.metrics };
+      saveState();
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function startPresenceHeartbeat() {
+  if (typeof window === "undefined" || typeof window.setInterval !== "function") return;
+  sendPresenceHeartbeat();
+  window.setInterval(() => {
+    sendPresenceHeartbeat();
+  }, 30_000);
 }
 
 function mixDemoRows(_collectionName, demoRows, liveRows) {

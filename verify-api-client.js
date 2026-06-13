@@ -44,6 +44,10 @@ const { createStore } = require("./backend/repository");
     const health = await api.live.health();
     if (!health.ok) throw new Error("live health failed");
     if (health.service !== "secret-market-api" || !health.version) throw new Error("live health metadata failed");
+    const heartbeat = await api.live.heartbeat({ clientId: "client-verify", role: "guest", path: "/" });
+    if (heartbeat.presence?.clientId !== "client-verify" || heartbeat.metrics?.onlineUsers < 1) {
+      throw new Error("live presence heartbeat failed");
+    }
 
     const ready = await fetch(`http://127.0.0.1:${port}/api/ready`).then((response) => response.json());
     if (!ready.ok || ready.snapshot?.products < 1) throw new Error("live ready failed");

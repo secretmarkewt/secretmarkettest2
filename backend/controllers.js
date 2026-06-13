@@ -100,6 +100,12 @@ function healthPayload(store) {
   const rateLimit = rateLimitSettings();
   const snapshot = store.snapshot ? store.snapshot() : {};
   const now = Date.now();
+  const presenceTtlMs = Number(process.env.SECMARKET_PRESENCE_TTL_MS || 90_000);
+  const activePresence = store.list("presence").filter((presence) => (
+    presence.status === "online" &&
+    presence.lastSeenAt &&
+    now - new Date(presence.lastSeenAt).getTime() <= presenceTtlMs
+  )).length;
   const activeSessions = store.list("sessions").filter((session) => (
     session.status === "active" &&
     (!session.expiresAt || new Date(session.expiresAt).getTime() > now)
@@ -126,9 +132,11 @@ function healthPayload(store) {
     },
     metrics: {
       activeSessions,
-      onlineUsers: activeSessions,
+      activePresence,
+      onlineUsers: activePresence || activeSessions,
       publishedProducts,
       completedOrders,
+      presenceTtlMs,
       totalProducts: snapshot.products || 0,
       totalOrders: snapshot.orders || 0,
     },
@@ -145,6 +153,26 @@ function readyPayload(store) {
     service: "secret-market-api",
     checkedAt: new Date().toISOString(),
   };
+}
+
+function upsertPresence(store, payload = {}) {
+  const now = new Date().toISOString();
+  const clientId = String(payload.clientId || "").trim().slice(0, 80);
+  if (!clientId) return { error: "client_id_required" };
+  const id = `presence-${clientId}`;
+  const existing = store.find("presence", id);
+  const nextPayload = {
+    clientId,
+    userId: String(payload.userId || "guest").slice(0, 80),
+    role: String(payload.role || "guest").slice(0, 32),
+    path: String(payload.path || "/").slice(0, 160),
+    status: "online",
+    lastSeenAt: now,
+  };
+  const presence = existing
+    ? store.patch("presence", id, nextPayload)
+    : store.create("presence", { id, ...nextPayload });
+  return { presence };
 }
 
 function deploymentReadinessIssues(storage = {}) {
@@ -431,6 +459,11 @@ async function handleApi(req, res, store) {
     return json(req, res, readiness.ok ? 200 : 503, readiness);
   }
   if (resource === "snapshot") return json(req, res, 200, store.snapshot());
+  if (resource === "presence" && id === "heartbeat" && req.method === "POST") {
+    const result = upsertPresence(store, await readBody(req));
+    if (result.error) return json(req, res, 422, { error: result.error });
+    return json(req, res, 200, { ...result, metrics: healthPayload(store).metrics });
+  }
   if (resource === "reset" && req.method === "POST") {
     if (!resetAllowed()) return json(req, res, 403, { error: "reset_disabled" });
     return json(req, res, 200, store.reset());

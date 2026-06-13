@@ -31,6 +31,17 @@ function authHeader(token) {
     if (!health.metrics || health.metrics.totalProducts < 1 || health.metrics.totalOrders < 1 || health.metrics.activeSessions < 0) {
       throw new Error("health metrics failed");
     }
+    const heartbeat = await request(port, "/api/presence/heartbeat", {
+      method: "POST",
+      body: JSON.stringify({ clientId: "verify-client", role: "guest", path: "/" }),
+    }).then((res) => res.json());
+    if (heartbeat.presence?.clientId !== "verify-client" || heartbeat.metrics?.onlineUsers < 1) {
+      throw new Error("presence heartbeat failed");
+    }
+    const healthWithPresence = await request(port, "/api/health").then((res) => res.json());
+    if (healthWithPresence.metrics?.activePresence < 1 || healthWithPresence.metrics?.onlineUsers < 1) {
+      throw new Error("health presence metrics failed");
+    }
     const healthHeaders = await request(port, "/api/health");
     if (healthHeaders.headers.get("cache-control") !== "no-store" || healthHeaders.headers.get("x-content-type-options") !== "nosniff") {
       throw new Error("api security headers failed");

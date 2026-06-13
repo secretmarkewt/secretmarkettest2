@@ -166,6 +166,7 @@ function auth(mode = "both") {
 
 startRouter();
 syncLiveData({ silent: true });
+startPresenceHeartbeat();
 
 
 

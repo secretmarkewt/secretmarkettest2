@@ -12,6 +12,7 @@ const seed = {
     { id: "usr-admin", role: "admin", name: "SupportOne", email: "support@example.com", telegram: "@support", passwordHash: hashPassword("password", "seed-admin"), status: "active", createdAt: now },
   ],
   sessions: [],
+  presence: [],
   products: [
     { id: 12345, sellerId: "usr-seller", title: "Robux 10 000", category: "roblox", price: 88.3, stock: 42, deliveryType: "auto", moderationStatus: "published", status: "published", createdAt: now },
     { id: 22341, sellerId: "usr-seller", title: "Steam Gift Card 50", category: "steam", price: 50, stock: 18, deliveryType: "auto", moderationStatus: "published", status: "published", createdAt: now },
