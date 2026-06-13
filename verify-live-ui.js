@@ -120,6 +120,15 @@ context.render();
 if (!app.innerHTML.includes("Онлайн 24") || !app.innerHTML.includes("Новые товары 12") || app.innerHTML.includes("Онлайн 1 284")) {
   throw new Error("home release metrics did not render honest fallback values");
 }
+if (!app.innerHTML.includes("assets/categories/accounts.png") || !app.innerHTML.includes("assets/categories/game-currency.png")) {
+  throw new Error("home category images did not render");
+}
+
+context.location.pathname = "/catalog";
+context.render();
+if (!app.innerHTML.includes("Игровая валюта") || !app.innerHTML.includes("Услуги")) {
+  throw new Error("catalog category sidebar did not render category names");
+}
 
 setSession("buyer");
 context.location.pathname = "/checkout";

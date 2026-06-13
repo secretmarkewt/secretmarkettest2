@@ -1,10 +1,25 @@
 ﻿function categoryCards() {
   return `<div class="grid categories">${categories.map(([name, desc, icon]) => `
     <a class="category-card" href="/catalog/${slug(name)}" data-link>
-      <span class="category-icon">${icon}</span>
+      ${categoryVisual(name, icon)}
       <strong>${name}</strong>
       <span class="muted">${desc}</span>
     </a>`).join("")}</div>`;
+}
+
+const categoryImages = {
+  "Аккаунты": "assets/categories/accounts.png",
+  "Ключи": "assets/categories/keys.png",
+  "Игровая валюта": "assets/categories/game-currency.png",
+  "Подписки": "assets/categories/subscriptions.png",
+  "Софт": "assets/categories/software.png",
+  "Услуги": "assets/categories/services.png",
+};
+
+function categoryVisual(title, fallback) {
+  const image = categoryImages[title];
+  if (!image) return `<span class="category-icon">${fallback}</span>`;
+  return `<span class="category-image"><img src="${assetPath(image)}" alt="" loading="lazy" /></span>`;
 }
 
 function productSketch(mark, label = "") {
@@ -44,12 +59,12 @@ function productCards(list = products) {
 }
 
 const homeCategories = [
-  ["AC", "Аккаунты", "Игровые и сервисные аккаунты"],
-  ["KY", "Ключи", "Steam, Xbox, PlayStation"],
-  ["IG", "Игровая валюта", "Robux, VP, UC, донат"],
-  ["SB", "Подписки", "Telegram, Discord, Spotify"],
-  ["SF", "Софт", "Лицензии, утилиты, VPN"],
-  ["SV", "Услуги", "Буст, настройка, помощь"],
+  ["Аккаунты", "Игровые и сервисные аккаунты"],
+  ["Ключи", "Steam, Xbox, PlayStation"],
+  ["Игровая валюта", "Robux, VP, UC, донат"],
+  ["Подписки", "Telegram, Discord, Spotify"],
+  ["Софт", "Лицензии, утилиты, VPN"],
+  ["Услуги", "Буст, настройка, помощь"],
 ];
 
 const homeRecommendedProducts = [
@@ -117,9 +132,9 @@ function trustBar() {
 }
 
 function homeCategoryGrid() {
-  return `<div class="home-categories">${homeCategories.map(([icon, title, description]) => `
+  return `<div class="home-categories">${homeCategories.map(([title, description]) => `
     <a class="home-category-card" href="/catalog/${slug(title)}" data-link>
-      <span>${icon}</span><strong>${title}</strong><small>${description}</small>
+      ${categoryVisual(title, title.slice(0, 2).toUpperCase())}<strong>${title}</strong><small>${description}</small>
     </a>`).join("")}</div>`;
 }
 
@@ -211,7 +226,7 @@ function catalog(category = "") {
     <div class="layout">
       <aside class="sidebar catalog-sidebar">
         <h3>Категории</h3>
-        ${["Все товары", ...homeCategories.map((item) => item[1])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все товары") ? "active" : ""}" href="${x === "Все товары" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>${uiIcon("chevron")}</span></a>`).join("")}
+        ${["Все товары", ...homeCategories.map((item) => item[0])].map((x) => `<a class="side-link ${pretty(category) === x || (!category && x === "Все товары") ? "active" : ""}" href="${x === "Все товары" ? "/catalog" : `/catalog/${slug(x)}`}" data-link>${x}<span>${uiIcon("chevron")}</span></a>`).join("")}
         <section class="section"><h3>Игры и сервисы</h3>${Object.keys(categoryPages).map((key) => `<a class="side-link ${category === key ? "active" : ""}" href="/catalog/${key}" data-link>${categoryPages[key].title}<span>${uiIcon("chevron")}</span></a>`).join("")}</section>
       </aside>
       <section class="catalog-content">
