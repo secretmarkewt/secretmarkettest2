@@ -118,6 +118,10 @@ Auth is demo-level but now password-gated: `POST /api/auth/login` accepts an act
 
 `POST /api/payments/:id/sync` is an admin-only mock watcher. It accepts optional `txHash` and `confirmations`, applies network confirmation rules, marks the payment as paid when ready, and updates the linked order payment status.
 
+## Fees
+
+Orders store the item price in `amount`. Payments store the buyer total in `amount`: item price plus the 2% buyer service fee. When an order is confirmed, escrow posts only `sellerNet` to the seller ledger after the 4% seller fee. The shared fee model keeps a 6% total platform fee with a 0.20 USDT minimum and stores `itemAmount`, `buyerFee`, `sellerFee`, `platformFeeTotal`, `buyerTotal`, `sellerNet`, `feeRateBuyer` and `feeRateSeller` on new orders, payments and release ledger entries.
+
 ## Auto Delivery
 
 `POST /api/orders/:id/deliver` issues an auto-delivery secret for paid auto-delivery products, links it to the order, moves the order to `awaiting_buyer`, decrements product stock and stays idempotent if called twice.

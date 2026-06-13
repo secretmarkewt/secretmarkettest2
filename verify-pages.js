@@ -41,6 +41,7 @@ context.window.scrollTo = context.scrollTo;
 Object.assign(context, context.window);
 vm.createContext(context);
 
+vm.runInContext(fs.readFileSync("fees.js", "utf8"), context, { filename: "fees.js" });
 vm.runInContext(fs.readFileSync("state.js", "utf8"), context, { filename: "state.js" });
 
 if (context.currentPath() !== "/catalog/minecraft") {

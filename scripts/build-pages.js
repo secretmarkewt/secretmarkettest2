@@ -13,6 +13,7 @@ const files = [
   "config.js",
   "data.js",
   "events.js",
+  "fees.js",
   "index.html",
   "models.js",
   "robots.txt",

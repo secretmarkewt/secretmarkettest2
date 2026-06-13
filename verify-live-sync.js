@@ -52,7 +52,7 @@ const { createStore } = require("./backend/repository");
   vm.createContext(context);
 
   try {
-    for (const file of ["data.js", "api.js", "state.js"]) {
+    for (const file of ["data.js", "api.js", "fees.js", "state.js"]) {
       vm.runInContext(fs.readFileSync(file, "utf8"), context, { filename: file });
     }
 

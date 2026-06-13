@@ -421,6 +421,7 @@ async function runLiveAction(button) {
       await ensureLiveRole("buyer");
       const buyerId = sessionApi.currentSession().user?.id || "usr-buyer";
       const product = checkoutProduct();
+      const commission = checkoutCommission(product);
       const orderId = `ord-${Date.now()}`;
       const order = await api.live.create("orders", {
         id: orderId,
@@ -428,7 +429,8 @@ async function runLiveAction(button) {
         sellerId: product.sellerId || product.seller,
         productId: product.id,
         productTitle: product.title,
-        amount: checkoutTotal(product),
+        amount: commission.itemAmount,
+        ...commission,
         paymentStatus: "waiting",
         orderStatus: "awaiting_payment",
         escrowStatus: "hold",
@@ -439,7 +441,8 @@ async function runLiveAction(button) {
         orderId: order.id,
         buyerId,
         sellerId: order.sellerId,
-        amount: order.amount,
+        amount: commission.buyerTotal,
+        ...commission,
         coin: "USDT",
         network: "TRC20",
         address: window.SECMARKET_DATA.paymentWallets.TRC20,

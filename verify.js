@@ -7,7 +7,7 @@ const routeContext = { window: {} };
 vm.createContext(routeContext);
 vm.runInContext(fs.readFileSync("routes.js", "utf8"), routeContext);
 const routes = routeContext.window.SECMARKET_ROUTES.map((route) => route.path);
-const requiredScripts = ["data.js", "routes.js", "models.js", "supabase.js", "api.js", "validation.js", "session.js", "ui.js", "state.js", "selectors.js", "renderers/catalog.js", "renderers/account.js", "renderers/seller.js", "renderers/admin.js", "renderers/info.js", "renderers/support.js", "router.js", "events.js", "app.js"];
+const requiredScripts = ["data.js", "routes.js", "models.js", "supabase.js", "api.js", "validation.js", "session.js", "ui.js", "fees.js", "state.js", "selectors.js", "renderers/catalog.js", "renderers/account.js", "renderers/seller.js", "renderers/admin.js", "renderers/info.js", "renderers/support.js", "router.js", "events.js", "app.js"];
 
 (async () => {
   const apiServer = createApiServer();

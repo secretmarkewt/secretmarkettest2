@@ -259,12 +259,27 @@ async function issueDelivery(orderId) {
 }
 
 async function confirmOrder(orderId) {
+  const currentOrder = (await findById("orders", orderId)) || {};
+  const fees = window.SECMARKET_FEES.calculateCommission(currentOrder.itemAmount ?? currentOrder.amount ?? 0);
   const order = await update("orders", orderId, {
+    ...fees,
+    amount: fees.itemAmount,
     orderStatus: "completed",
     escrowStatus: "released",
     status: "completed",
   });
-  return { order, ledgerEntry: null };
+  const ledgerEntry = await create("ledger", {
+    id: `led-${Date.now()}`,
+    orderId,
+    sellerId: order.sellerId,
+    buyerId: order.buyerId,
+    amount: fees.sellerNet,
+    coin: "USDT",
+    type: "escrow_release",
+    status: "posted",
+    ...fees,
+  });
+  return { order, ledgerEntry };
 }
 
 async function withdrawalBalance() {
@@ -296,7 +311,9 @@ async function settleWithdrawal(id, payload = {}) {
     id: `led-${Date.now()}`,
     type: "payout",
     withdrawalId: id,
-    amount: withdrawal.amount,
+    sellerId: withdrawal.sellerId,
+    amount: -Math.abs(Number(withdrawal.grossAmount || withdrawal.amount || 0)),
+    coin: withdrawal.coin || "USDT",
     status: withdrawal.status,
   };
   await create("ledger", ledgerEntry);

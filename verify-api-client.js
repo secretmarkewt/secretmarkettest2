@@ -4,6 +4,7 @@ const path = require("path");
 const vm = require("vm");
 const { createApiServer } = require("./backend/server");
 const { createStore } = require("./backend/repository");
+const { calculateCommission } = require("./fees");
 
 (async () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "secmarket-api-client-"));
@@ -100,6 +101,13 @@ const { createStore } = require("./backend/repository");
       status: "waiting",
     });
     if (order.status !== "awaiting_payment" || payment.orderId !== order.id) throw new Error("live checkout create failed");
+    const clientFees = calculateCommission(88.3);
+    if (order.amount !== clientFees.itemAmount || order.buyerTotal !== clientFees.buyerTotal || order.sellerNet !== clientFees.sellerNet) {
+      throw new Error("live order fee fields failed");
+    }
+    if (payment.amount !== clientFees.buyerTotal || payment.itemAmount !== clientFees.itemAmount) {
+      throw new Error("live payment fee fields failed");
+    }
 
     const ticket = await api.live.create("tickets", {
       id: "SUP-CLIENT",

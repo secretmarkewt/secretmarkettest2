@@ -7,6 +7,7 @@ const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
 const { hashPassword, verifyPassword } = require("./passwords");
 const { notifyRegistration, notifyTicket } = require("./telegramNotifier");
+const { calculateCommission } = require("../fees");
 const packageInfo = require("../package.json");
 
 const PROMO_CODES = [
@@ -288,12 +289,30 @@ function visibleItems(resource, auth, store) {
   return store.list(resource).filter((item) => isOwnedBy(resource, item, auth, store));
 }
 
-function normalizeCreatePayload(resource, payload, auth) {
-  if (!auth.user || auth.user.role === "admin") return payload;
-  if (resource === "products") return { ...payload, sellerId: auth.user.id };
-  if (resource === "orders" && auth.user.role === "buyer") return { ...payload, buyerId: auth.user.id };
-  if (resource === "tickets") return { ...payload, userId: auth.user.id };
-  return payload;
+function withCommissionFields(payload, itemAmount) {
+  return {
+    ...payload,
+    ...calculateCommission(itemAmount),
+  };
+}
+
+function normalizeCreatePayload(resource, payload, auth, store) {
+  let normalized = payload;
+  if (resource === "orders") {
+    const fees = calculateCommission(payload.itemAmount ?? payload.amount ?? 0);
+    normalized = { ...withCommissionFields(payload, fees.itemAmount), amount: fees.itemAmount };
+  } else if (resource === "payments") {
+    const order = store.find("orders", payload.orderId);
+    const sourceAmount = order?.itemAmount ?? order?.amount ?? payload.itemAmount ?? payload.amount ?? 0;
+    const fees = calculateCommission(sourceAmount);
+    normalized = { ...withCommissionFields(payload, fees.itemAmount), amount: fees.buyerTotal };
+  }
+
+  if (!auth.user || auth.user.role === "admin") return normalized;
+  if (resource === "products") return { ...normalized, sellerId: auth.user.id };
+  if (resource === "orders" && auth.user.role === "buyer") return { ...normalized, buyerId: auth.user.id };
+  if (resource === "tickets") return { ...normalized, userId: auth.user.id };
+  return normalized;
 }
 
 async function notifyTicketSafely(ticket) {
@@ -534,7 +553,7 @@ async function handleApi(req, res, store) {
     const payload = await readBody(req);
     const validation = validateCreate(resource, payload);
     if (!validation.ok) return json(req, res, 422, { errors: validation.errors });
-    const item = store.create(resource, { ...normalizeCreatePayload(resource, payload, auth), _actorId: auth.user?.id });
+    const item = store.create(resource, { ...normalizeCreatePayload(resource, payload, auth, store), _actorId: auth.user?.id });
     if (resource === "tickets") {
       const ticketNotice = await notifyTicketSafely(item);
       return json(req, res, 201, { ...item, ticketNotice });

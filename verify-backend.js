@@ -2,6 +2,7 @@ const { createApiServer } = require("./backend/server");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { calculateCommission } = require("./fees");
 
 function request(port, path, options = {}) {
   return fetch(`http://127.0.0.1:${port}${path}`, {
@@ -273,6 +274,10 @@ function authHeader(token) {
       }),
     }).then((res) => res.json());
     if (watcherOrder.status !== "awaiting_payment") throw new Error("watcher order create failed");
+    const watcherFees = calculateCommission(9);
+    if (watcherOrder.amount !== watcherFees.itemAmount || watcherOrder.buyerTotal !== watcherFees.buyerTotal || watcherOrder.sellerNet !== watcherFees.sellerNet) {
+      throw new Error("watcher order commission fields failed");
+    }
 
     const watcherPayment = await request(port, "/api/payments", {
       method: "POST",
@@ -289,6 +294,9 @@ function authHeader(token) {
       }),
     }).then((res) => res.json());
     if (watcherPayment.status !== "waiting") throw new Error("watcher payment create failed");
+    if (watcherPayment.amount !== watcherFees.buyerTotal || watcherPayment.itemAmount !== watcherFees.itemAmount || watcherPayment.sellerNet !== watcherFees.sellerNet) {
+      throw new Error("watcher payment commission fields failed");
+    }
 
     const deniedSync = await request(port, "/api/payments/pay-watch/sync", {
       method: "POST",
@@ -376,6 +384,9 @@ function authHeader(token) {
     }).then((res) => res.json());
     if (confirmed.order?.status !== "completed" || confirmed.order?.escrowStatus !== "released") throw new Error("order confirm failed");
     if (confirmed.ledgerEntry?.type !== "escrow_release") throw new Error("ledger release failed");
+    if (confirmed.ledgerEntry?.amount !== watcherFees.sellerNet || confirmed.ledgerEntry?.platformFeeTotal !== watcherFees.platformFeeTotal) {
+      throw new Error("ledger release commission failed");
+    }
 
     const sellerLedger = await request(port, "/api/ledger", {
       headers: authHeader(sellerLogin.token),

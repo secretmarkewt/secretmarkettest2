@@ -1,3 +1,5 @@
+const { calculateCommission } = require("../fees");
+
 function sellerLedgerTotal(store, sellerId) {
   return store.list("ledger")
     .filter((entry) => entry.sellerId === sellerId && entry.status === "posted")
@@ -7,6 +9,7 @@ function sellerLedgerTotal(store, sellerId) {
 function confirmOrder(store, orderId, options = {}) {
   const order = store.find("orders", orderId);
   if (!order) return { error: "order_not_found" };
+  const fees = calculateCommission(order.itemAmount ?? order.amount ?? 0);
   if (order.status === "completed" && order.escrowStatus === "released") {
     return { order, ledgerEntry: null, alreadyConfirmed: true, sellerAvailableBalance: sellerLedgerTotal(store, order.sellerId) };
   }
@@ -24,10 +27,11 @@ function confirmOrder(store, orderId, options = {}) {
     orderId: order.id,
     sellerId: order.sellerId,
     buyerId: order.buyerId,
-    amount: order.amount,
+    amount: fees.sellerNet,
     coin: "USDT",
     type: "escrow_release",
     status: "posted",
+    ...fees,
     _actorId: options.actorId || "system",
   });
 

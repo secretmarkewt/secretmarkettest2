@@ -64,6 +64,7 @@ vm.createContext(context);
   "validation.js",
   "session.js",
   "ui.js",
+  "fees.js",
   "state.js",
   "selectors.js",
   "renderers/catalog.js",

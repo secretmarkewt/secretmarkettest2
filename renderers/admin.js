@@ -245,9 +245,12 @@ function adminCategories() {
 }
 
 function adminFees() {
-  return page("Комиссии платформы", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Правила комиссий</h2><div class="form-grid">${field("Базовая комиссия", "input", "6%")}${field("Минимальная комиссия", "input", "0.20 USDT")}${field("Холд средств", "input", "до подтверждения заказа")}${field("TRC20 сеть", "input", "ручная выплата")}${field("TON сеть", "input", "ручная выплата")}${field("BEP20 сеть", "input", "ручная выплата")}</div><section class="section"><h2>Примеры</h2><div class="list">${[
-    ["Заказ 100 USDT", "6 USDT комиссия"],
-    ["Продавцу начисляется", "94 USDT"],
+  const example = window.SECMARKET_FEES.calculateCommission(100);
+  return page("Комиссии платформы", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section class="panel"><h2>Правила комиссий</h2><div class="form-grid">${field("Сбор покупателя", "input", "2% сверху")}${field("Комиссия продавца", "input", "4% удержание")}${field("Минимальная общая комиссия", "input", "0.20 USDT")}${field("TRC20 сеть", "input", "ручная выплата")}${field("TON сеть", "input", "ручная выплата")}${field("BEP20 сеть", "input", "ручная выплата")}</div><section class="section"><h2>Примеры</h2><div class="list">${[
+    ["Цена товара", `${money(example.itemAmount)} · заказ хранит эту сумму`],
+    ["Покупатель платит", `${money(example.buyerTotal)} · включая ${money(example.buyerFee)} сбора`],
+    ["Продавцу начисляется", `${money(example.sellerNet)} · после ${money(example.sellerFee)} комиссии`],
+    ["Доход платформы", money(example.platformFeeTotal)],
     ["До подтверждения", "в холде"],
     ["После завершения", "доступно к выводу"],
   ].map(([left, right]) => row(left, right)).join("")}</div></section></section></div>`, "Admin");

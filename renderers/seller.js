@@ -175,12 +175,15 @@ function sellerFinanceSummary() {
     .reduce((sum, item) => sum + Number(item.grossAmount || item.amount || 0), 0);
   const liveHold = liveOrders
     .filter((item) => item.order !== "Завершен" && item.order !== "completed")
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    .reduce((sum, item) => sum + Number(item.itemAmount ?? item.amount ?? 0), 0);
   const available = Math.max(ledgerCredits - ledgerPayouts - reserved, 0);
   const gross = hasLiveFinance
-    ? liveOrders.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+    ? liveOrders.reduce((sum, item) => sum + Number(item.itemAmount ?? item.amount ?? 0), 0)
     : demoCompleted.reduce((sum, item) => sum + Number(item.amount || 0), 0) + demoHold.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const sellerFee = Math.max(gross * 0.04, 0);
+  const sellerFee = hasLiveFinance
+    ? liveOrders.reduce((sum, item) => sum + Number(item.sellerFee ?? checkoutCommission(item).sellerFee), 0)
+    : demoCompleted.concat(demoHold).reduce((sum, item) => sum + checkoutCommission(item).sellerFee, 0);
+  const sellerNet = Math.max(gross - sellerFee, 0);
   return {
     available: hasLiveFinance ? available : 1240,
     gross,
@@ -188,6 +191,7 @@ function sellerFinanceSummary() {
     paidOut: hasLiveFinance ? ledgerPayouts : 950,
     reserved: hasLiveFinance ? reserved : 500,
     sellerFee,
+    sellerNet,
     source: hasLiveFinance ? "live" : "demo",
     rows: hasLiveFinance
       ? [
@@ -213,6 +217,7 @@ function finance() {
       [money(summary.paidOut), "уже выплачено"],
       [money(summary.gross), "валовые продажи"],
       [money(summary.sellerFee), "комиссия продавца 4%"],
+      [money(summary.sellerNet), "чистое начисление"],
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
     <section class="section panel"><div class="section-head"><h2>Движение средств</h2><a class="btn" href="/seller/withdraw" data-link>Вывести</a></div><div class="list">${summary.rows.length ? summary.rows.map(([left, right]) => row(left, right)).join("") : emptySellerState("Движений пока нет")}</div></section>
     <section class="section panel"><h2>Как считается баланс</h2><div class="list">${[
