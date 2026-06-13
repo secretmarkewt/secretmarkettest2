@@ -155,6 +155,10 @@ if (!app.innerHTML.includes("AUTO-LIVE-SECRET")) {
   throw new Error("live delivery did not render on order detail");
 }
 
+if (!app.innerHTML.includes("order-current") || !app.innerHTML.includes("order-info-grid")) {
+  throw new Error("clear order detail layout did not render");
+}
+
 if (app.innerHTML.includes('data-live-action="issue-delivery"')) {
   throw new Error("buyer order detail rendered seller delivery action");
 }

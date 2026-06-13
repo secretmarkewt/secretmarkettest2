@@ -1,4 +1,4 @@
-﻿function order(id = 12345) {
+function order(id = 12345) {
   const orderItem = orderById(id);
   const paymentItem = paymentByOrderId(orderItem.id);
   const deliveryItem = deliveryByOrderId(orderItem.id);
@@ -12,19 +12,49 @@
   const isConfirmed = state.orderConfirmed || orderItem.order === "Завершен";
   const isDispute = state.disputeCreated || orderItem.order === "Спор";
   const orderActions = isConfirmed ? `<span class="status ok">Получение подтверждено</span>` : isSellerView ? sellerActions : isBuyerView ? buyerActions : guestActions;
-  const statusRows = isConfirmed
-    ? [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, "Гарантия: сделка завершена", "Заказ: завершен"]
-    : [`Товар: ${orderItem.product}`, `Продавец: ${orderItem.seller}`, `Покупатель: ${orderItem.buyer}`, `Сумма: ${money(orderItem.amount)}`, `Оплата: ${orderItem.payment}`, isDispute ? "Гарантия: открыта проверка" : "Гарантия: активна", `Заказ: ${orderItem.order}`];
-  const timeline = isConfirmed
-    ? ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель подтвердил получение", "Сделка завершена"]
-    : ["Заказ создан", "Способ оплаты выбран", "Оплата найдена", "Гарантия активирована", "Продавец выдал товар", "Покупатель читает инструкцию"];
-  const doneSteps = isConfirmed ? 5 : isDispute ? 4 : orderItem.order === "В работе" ? 3 : 4;
+  const isPaid = ["Оплачено", "paid", "completed"].includes(orderItem.payment) || paymentItem.status === "paid";
+  const currentHint = isConfirmed
+    ? "Сделка завершена. Средства отпущены продавцу, спор по заказу больше не нужен."
+    : isDispute
+      ? "По заказу открыта проверка. Поддержка удерживает средства до решения."
+      : deliveryItem
+        ? "Товар выдан. Проверьте данные и подтвердите получение, если все работает."
+        : isSellerView
+          ? "Оплата найдена. Выдайте товар покупателю и держите общение в чате заказа."
+          : "Ожидаем выдачу товара продавцом. После получения проверьте данные и подтвердите заказ.";
+  const progressSteps = [
+    ["Создан", true],
+    ["Оплачен", isPaid],
+    ["Выдача", Boolean(deliveryItem) || orderItem.order === "Ожидает подтверждения" || isConfirmed],
+    ["Проверка", Boolean(deliveryItem) || isDispute || isConfirmed],
+    ["Завершен", isConfirmed],
+  ];
+  const timeline = [
+    ["Заказ создан", true],
+    ["Оплата закреплена за сделкой", progressSteps[1][1]],
+    ["Продавец выдает товар", progressSteps[2][1]],
+    [isDispute ? "Поддержка проверяет спор" : "Покупатель проверяет товар", progressSteps[3][1]],
+    ["Сделка завершена", isConfirmed],
+  ];
   return page(`Заказ #${orderItem.id}`, `<div class="order-layout">
-    <section class="panel order-card"><div class="section-head"><div><p class="eyebrow">Сделка</p><h2>${orderItem.product}</h2><p class="muted">${orderItem.seller} · ${money(orderItem.amount)}</p></div><span class="status ${isDispute ? "wait" : "ok"}">${orderItem.order}</span></div><div class="list">${statusRows.map(row).join("")}</div><section class="section"><h2>Оплата</h2>${paymentListRow(paymentItem)}<a class="btn section" href="/payment/${orderItem.id}" data-link>Открыть оплату</a></section><section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Проверьте товар после получения, затем подтвердите заказ.</span></div></section><section class="section"><h2>Статус</h2><div class="status-flow">${["Создан", "Оплачен", "В работе", "Проверка", "Завершен"].map((x, i) => `<span class="${i < doneSteps ? "done" : ""}">${x}</span>`).join("")}</div></section><div class="actions section">${orderActions}</div></section>
-    <aside class="panel timeline"><h2>История</h2>${timeline.map((x, i) => `<div class="list-row"><span>${i + 1}</span><span>${x}</span><span class="status ok">OK</span></div>`).join("")}</aside>
+    <section class="panel order-card order-detail-card">
+      <div class="order-hero">
+        <div><p class="eyebrow">Сделка #${orderItem.id}</p><h2>${orderItem.product}</h2><p class="muted">${orderItem.seller} · ${money(orderItem.amount)}</p></div>
+        <span class="status ${isDispute ? "wait" : isConfirmed ? "ok" : "wait"}">${orderItem.order}</span>
+      </div>
+      <div class="order-current"><strong>${isSellerView ? "Что нужно сделать" : "Текущий шаг"}</strong><span>${currentHint}</span></div>
+      <div class="order-info-grid">
+        <article><span>Товар</span><strong>${orderItem.product}</strong><small>${orderItem.seller}</small></article>
+        <article><span>Оплата</span><strong>${orderItem.payment}</strong><small>${paymentItem.network} · ${paymentItem.confirmations}</small></article>
+        <article><span>Гарантия</span><strong>${isDispute ? "проверка" : isConfirmed ? "завершена" : "активна"}</strong><small>${isDispute ? "средства удержаны" : "защита сделки включена"}</small></article>
+      </div>
+      <section class="section"><h2>Данные выдачи</h2><div class="delivery-box"><strong>${deliverySecret}</strong><span>Проверьте товар после получения, затем подтвердите заказ.</span></div></section>
+      <section class="section"><h2>Прогресс</h2><div class="status-flow order-flow">${progressSteps.map(([label, done]) => `<span class="${done ? "done" : ""}">${label}</span>`).join("")}</div></section>
+      <div class="actions order-actions">${orderActions}<a class="btn" href="/payment/${orderItem.id}" data-link>Открыть оплату</a><a class="btn" href="/chats" data-link>Чат заказа</a></div>
+    </section>
+    <aside class="panel timeline order-timeline"><h2>История</h2>${timeline.map(([label, done], i) => `<div class="order-step ${done ? "done" : ""}"><span>${i + 1}</span><strong>${label}</strong><small>${done ? "готово" : "ожидает"}</small></div>`).join("")}</aside>
   </div>`, "Orders");
 }
-
 function notifications() {
   return page("Уведомления", `<div class="two-col"><section class="panel"><h2>Лента событий</h2><div class="list">${[
     ["Оплата найдена по заказу #12345", "только что"],
