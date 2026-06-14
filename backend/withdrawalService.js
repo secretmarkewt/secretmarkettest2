@@ -1,5 +1,23 @@
 const RESERVED_WITHDRAWAL_STATUSES = ["review", "processing", "sent"];
 const SETTLEMENT_STATUSES = ["processing", "sent", "completed", "rejected"];
+const BATCHABLE_WITHDRAWAL_STATUSES = ["review", "processing"];
+
+function money(value) {
+  return Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+}
+
+function normalizeStatusList(statuses) {
+  const source = Array.isArray(statuses)
+    ? statuses
+    : String(statuses || "").split(",");
+  const normalized = source.map((status) => String(status || "").trim()).filter(Boolean);
+  return normalized.length ? normalized : BATCHABLE_WITHDRAWAL_STATUSES;
+}
+
+function csvValue(value) {
+  const text = String(value ?? "");
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
 
 function sellerReservedWithdrawals(store, sellerId) {
   return store.list("withdrawals")
@@ -57,6 +75,80 @@ function existingPayout(store, withdrawalId) {
   return store.list("ledger").find((entry) => entry.withdrawalId === withdrawalId && entry.type === "payout") || null;
 }
 
+function withdrawalBatchRows(store, filters = {}) {
+  const statuses = normalizeStatusList(filters.statuses);
+  const ids = Array.isArray(filters.ids)
+    ? new Set(filters.ids.map((id) => String(id).toLowerCase()))
+    : null;
+
+  return store.list("withdrawals")
+    .filter((withdrawal) => {
+      if (ids && !ids.has(String(withdrawal.id).toLowerCase())) return false;
+      return statuses.includes(withdrawal.status);
+    })
+    .sort((left, right) => String(left.createdAt || "").localeCompare(String(right.createdAt || "")))
+    .map((withdrawal) => ({
+      id: withdrawal.id,
+      sellerId: withdrawal.sellerId,
+      grossAmount: money(withdrawal.grossAmount || withdrawal.amount),
+      networkFee: money(withdrawal.networkFee || 0),
+      netAmount: money(withdrawal.netAmount || Math.max(Number(withdrawal.grossAmount || withdrawal.amount || 0) - Number(withdrawal.networkFee || 0), 0)),
+      coin: withdrawal.coin || "USDT",
+      network: withdrawal.network || "TRC20",
+      address: withdrawal.address || "",
+      status: withdrawal.status,
+      batchId: withdrawal.batchId || "",
+      riskNote: withdrawal.riskNote || "",
+      createdAt: withdrawal.createdAt || "",
+    }));
+}
+
+function withdrawalBatchCsv(store, filters = {}) {
+  const rows = withdrawalBatchRows(store, filters);
+  const header = ["id", "sellerId", "grossAmount", "networkFee", "netAmount", "coin", "network", "address", "status", "batchId", "createdAt"];
+  return [
+    header.join(","),
+    ...rows.map((row) => header.map((key) => csvValue(row[key])).join(",")),
+  ].join("\n");
+}
+
+function createWithdrawalBatch(store, payload = {}, options = {}) {
+  const rows = withdrawalBatchRows(store, {
+    ids: payload.ids,
+    statuses: payload.statuses || BATCHABLE_WITHDRAWAL_STATUSES,
+  }).filter((row) => !row.batchId);
+
+  if (!rows.length) return { error: "no_withdrawals_for_batch" };
+
+  const now = new Date().toISOString();
+  const batch = store.create("payoutBatches", {
+    id: payload.id || `PB-${Date.now()}`,
+    withdrawalIds: rows.map((row) => row.id),
+    withdrawalCount: rows.length,
+    totalGross: money(rows.reduce((sum, row) => sum + row.grossAmount, 0)),
+    totalNetworkFee: money(rows.reduce((sum, row) => sum + row.networkFee, 0)),
+    totalNet: money(rows.reduce((sum, row) => sum + row.netAmount, 0)),
+    coin: payload.coin || "USDT",
+    status: payload.status || "exported",
+    createdBy: options.actorId || payload.actorId || "system",
+    exportedAt: now,
+    _actorId: options.actorId || payload.actorId || "system",
+  });
+
+  const withdrawals = rows.map((row) => store.patch("withdrawals", row.id, {
+    status: row.status === "review" ? "processing" : row.status,
+    batchId: batch.id,
+    batchedAt: now,
+    _actorId: options.actorId || payload.actorId || "system",
+  }));
+
+  return {
+    batch,
+    withdrawals,
+    csv: withdrawalBatchCsv(store, { ids: rows.map((row) => row.id), statuses: ["processing"] }),
+  };
+}
+
 function settleWithdrawal(store, withdrawalId, payload = {}, options = {}) {
   const withdrawal = store.find("withdrawals", withdrawalId);
   if (!withdrawal) return { error: "withdrawal_not_found" };
@@ -105,9 +197,12 @@ function settleWithdrawal(store, withdrawalId, payload = {}, options = {}) {
 }
 
 module.exports = {
+  createWithdrawalBatch,
   requestWithdrawal,
   settleWithdrawal,
   sellerAvailableBalance,
   sellerLedgerCredits,
   sellerReservedWithdrawals,
+  withdrawalBatchCsv,
+  withdrawalBatchRows,
 };

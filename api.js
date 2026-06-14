@@ -328,6 +328,21 @@ const live = {
       body: JSON.stringify(payload),
     });
   },
+  async exportPayouts(params = {}, token = getAuthToken()) {
+    const search = new URLSearchParams();
+    if (params.statuses) search.set("statuses", Array.isArray(params.statuses) ? params.statuses.join(",") : params.statuses);
+    if (params.ids) search.set("ids", Array.isArray(params.ids) ? params.ids.join(",") : params.ids);
+    return requestLive(`/api/withdrawals/export${search.toString() ? `?${search.toString()}` : ""}`, {
+      token,
+    });
+  },
+  async createPayoutBatch(payload = {}, token = getAuthToken()) {
+    return requestLive("/api/withdrawals/batch", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
   async getSnapshot() {
     if (isSupabaseEnabled()) return supabaseProvider().getSnapshot();
     return requestLive("/api/snapshot");

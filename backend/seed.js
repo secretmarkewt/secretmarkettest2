@@ -47,6 +47,7 @@ const seed = {
   withdrawals: [
     { id: "WD-120", sellerId: "usr-seller", amount: 320.5, coin: "USDT", network: "TRC20", address: "TX7p...D90", txHash: "", status: "review", riskNote: "Проверить адрес", createdAt: now },
   ],
+  payoutBatches: [],
   transactions: [
     { id: "txn-seed-deposit", userId: "usr-buyer", type: "deposit", amount: 120, status: "completed", paymentMethod: "USDT TRC20", details: { txHash: "TX-SEED" }, idempotencyKey: "seed-deposit", createdAt: now, updatedAt: now },
     { id: "txn-seed-withdraw", userId: "usr-seller", type: "withdrawal", amount: 320.5, status: "pending", paymentMethod: "USDT TRC20", details: { address: "TX7p...D90" }, idempotencyKey: "seed-withdraw", createdAt: now, updatedAt: now },

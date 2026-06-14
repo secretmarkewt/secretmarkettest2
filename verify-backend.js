@@ -644,6 +644,29 @@ function authHeader(token) {
       throw new Error("withdrawal fee fields failed");
     }
 
+    const sellerPayoutBatch = await request(port, "/api/withdrawals/batch", {
+      method: "POST",
+      headers: authHeader(sellerLogin.token),
+      body: JSON.stringify({ ids: [withdrawalRequest.withdrawal.id] }),
+    });
+    if (sellerPayoutBatch.status !== 403) throw new Error("payout batch role guard failed");
+
+    const payoutBatch = await request(port, "/api/withdrawals/batch", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({ ids: [withdrawalRequest.withdrawal.id] }),
+    }).then((res) => res.json());
+    if (payoutBatch.batch?.withdrawalCount !== 1 || payoutBatch.batch?.totalNet !== 24) throw new Error("payout batch totals failed");
+    if (!String(payoutBatch.csv || "").includes(withdrawalRequest.withdrawal.id)) throw new Error("payout batch csv failed");
+    if (payoutBatch.withdrawals?.[0]?.status !== "processing" || payoutBatch.withdrawals?.[0]?.batchId !== payoutBatch.batch.id) {
+      throw new Error("payout batch withdrawal patch failed");
+    }
+
+    const payoutExport = await request(port, `/api/withdrawals/export?ids=${withdrawalRequest.withdrawal.id}&statuses=processing`, {
+      headers: authHeader(adminLogin.token),
+    }).then((res) => res.json());
+    if (payoutExport.rows?.length !== 1 || !String(payoutExport.csv || "").includes("grossAmount")) throw new Error("payout export failed");
+
     const sellerSettleWithdrawal = await request(port, `/api/withdrawals/${withdrawalRequest.withdrawal.id}/settle`, {
       method: "POST",
       headers: authHeader(sellerLogin.token),

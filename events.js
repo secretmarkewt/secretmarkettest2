@@ -349,6 +349,18 @@ function payoutDraftFromButton(button, fallbackStatus = "completed") {
   };
 }
 
+function downloadTextFile(fileName, content, type = "text/plain;charset=utf-8") {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function paymentReviewDraftFromButton(button, fallbackStatus = "paid") {
   const form = button.closest("[data-payment-review-form]");
   if (!form) {
@@ -653,6 +665,18 @@ async function runLiveAction(button) {
       const result = await api.live.settleWithdrawal(id, { ...draft, status: "rejected" });
       upsertLiveItem("withdrawals", result.withdrawal);
       notify(`Выплата ${result.withdrawal.id}: отклонена`);
+    } else if (action === "create-payout-batch") {
+      await ensureLiveRole("admin");
+      const result = await api.live.createPayoutBatch({ statuses: ["review", "processing"] });
+      upsertLiveItem("payoutBatches", result.batch);
+      (result.withdrawals || []).forEach((withdrawal) => upsertLiveItem("withdrawals", withdrawal));
+      if (result.csv) downloadTextFile(`${result.batch.id}.csv`, result.csv, "text/csv;charset=utf-8");
+      notify(`Batch ${result.batch.id}: ${result.batch.withdrawalCount} выплат, к отправке ${Number(result.batch.totalNet || 0).toFixed(2)} USDT`);
+    } else if (action === "export-payouts") {
+      await ensureLiveRole("admin");
+      const result = await api.live.exportPayouts({ statuses: ["review", "processing"] });
+      downloadTextFile(`payouts-${new Date().toISOString().slice(0, 10)}.csv`, result.csv || "", "text/csv;charset=utf-8");
+      notify(`CSV выплат готов: ${result.rows?.length || 0} строк`);
     } else if (action === "approve-transaction") {
       const id = button.dataset.transactionId;
       const result = await api.live.approveTransaction(id);

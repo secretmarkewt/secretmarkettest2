@@ -1669,6 +1669,13 @@ textarea:focus-visible {
   margin-bottom: 14px;
 }
 
+.actions-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .grid {
   display: grid;
   gap: 14px;

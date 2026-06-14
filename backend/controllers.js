@@ -15,7 +15,14 @@ const { resourceModels } = require("./models");
 const { missingWatcherNetworks, syncPayment, watcherReadiness } = require("./paymentWatcher");
 const { refundOrder } = require("./refundService");
 const { validateCreate, validatePatch } = require("./validators");
-const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
+const {
+  createWithdrawalBatch,
+  requestWithdrawal,
+  sellerAvailableBalance,
+  settleWithdrawal,
+  withdrawalBatchCsv,
+  withdrawalBatchRows,
+} = require("./withdrawalService");
 const {
   approveTransaction,
   balanceForUser,
@@ -682,6 +689,21 @@ async function handleApi(req, res, store) {
   if (resource === "withdrawals" && id === "balance" && req.method === "GET") {
     if (auth.user?.role !== "seller") return json(req, res, 403, { error: "seller_required" });
     return json(req, res, 200, { sellerId: auth.user.id, availableBalance: sellerAvailableBalance(store, auth.user.id) });
+  }
+
+  if (resource === "withdrawals" && id === "export" && req.method === "GET") {
+    if (auth.user?.role !== "admin") return json(req, res, 403, { error: "forbidden", requiredRoles: ["admin"] });
+    const statuses = url.searchParams.get("statuses") || "review,processing";
+    const ids = url.searchParams.get("ids") ? url.searchParams.get("ids").split(",") : null;
+    const rows = withdrawalBatchRows(store, { statuses, ids });
+    return json(req, res, 200, { rows, csv: withdrawalBatchCsv(store, { statuses, ids }) });
+  }
+
+  if (resource === "withdrawals" && id === "batch" && req.method === "POST") {
+    if (auth.user?.role !== "admin") return json(req, res, 403, { error: "forbidden", requiredRoles: ["admin"] });
+    const result = createWithdrawalBatch(store, await readBody(req), { actorId: auth.user.id });
+    if (result.error) return json(req, res, 422, result);
+    return json(req, res, 201, result);
   }
 
   if (resource === "withdrawals" && req.method === "POST" && !id) {
