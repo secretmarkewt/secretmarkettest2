@@ -13,6 +13,7 @@ const { createEvidence, ownsTarget } = require("./evidenceStorage");
 const { confirmOrder } = require("./escrowService");
 const { resourceModels } = require("./models");
 const { missingWatcherNetworks, syncPayment, watcherReadiness } = require("./paymentWatcher");
+const { refundOrder } = require("./refundService");
 const { validateCreate, validatePatch } = require("./validators");
 const { requestWithdrawal, sellerAvailableBalance, settleWithdrawal } = require("./withdrawalService");
 const {
@@ -665,6 +666,16 @@ async function handleApi(req, res, store) {
     if (auth.user?.role === "seller" && existing.buyerId !== auth.user.id) return json(req, res, 403, { error: "buyer_confirmation_required" });
     const result = confirmOrder(store, id, { actorId: auth.user?.id });
     if (result.error) return json(req, res, 422, { error: result.error });
+    return json(req, res, 200, result);
+  }
+
+  if (resource === "orders" && action === "refund" && req.method === "POST") {
+    if (auth.user?.role !== "admin") return json(req, res, 403, { error: "forbidden", requiredRoles: ["admin"] });
+    const existing = store.find(resource, id);
+    if (!existing) return notFound(req, res);
+    const result = refundOrder(store, id, await readBody(req), { actorId: auth.user.id });
+    if (result.error === "order_not_found" || result.error === "buyer_not_found") return notFound(req, res);
+    if (result.error) return json(req, res, 422, result);
     return json(req, res, 200, result);
   }
 

@@ -708,13 +708,14 @@ async function runLiveAction(button) {
       notify(`Заказ #${order.id}: завершен`);
     } else if (action === "refund-order") {
       await ensureLiveRole("admin");
-      const order = await api.live.update("orders", button.dataset.orderId, {
-        orderStatus: "refunded",
-        escrowStatus: "refunded",
-        status: "refunded",
+      const result = await api.live.refundOrder(button.dataset.orderId, {
+        reason: "Возврат по решению администратора",
       });
-      upsertLiveItem("orders", order);
-      notify(`Заказ #${order.id}: возврат`);
+      upsertLiveItem("orders", result.order);
+      if (result.transaction) upsertLiveItem("transactions", result.transaction);
+      if (result.ledgerEntry) upsertLiveItem("ledger", result.ledgerEntry);
+      if (result.dispute) upsertLiveItem("disputes", result.dispute);
+      notify(`Заказ #${result.order.id}: возврат ${Number(result.transaction?.amount || result.order.refundAmount || 0).toFixed(2)} USDT`);
     }
   } catch (error) {
     notify(`API действие не выполнено: ${error.message}`);

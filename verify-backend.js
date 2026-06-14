@@ -599,6 +599,33 @@ function authHeader(token) {
     });
     if (buyerWithdrawalBalance.status !== 403) throw new Error("buyer withdrawal guard failed");
 
+    const buyerRefundDenied = await request(port, "/api/orders/12345/refund", {
+      method: "POST",
+      headers: authHeader(login.token),
+      body: JSON.stringify({ refundAmount: 20, reason: "buyer denied" }),
+    });
+    if (buyerRefundDenied.status !== 403) throw new Error("refund role guard failed");
+
+    const refunded = await request(port, "/api/orders/12345/refund", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({ refundAmount: 20, reason: "verify partial refund", disputeId: 123 }),
+    }).then((res) => res.json());
+    if (refunded.order?.status !== "refunded" || refunded.transaction?.amount !== 20 || refunded.ledgerEntry?.type !== "refund") {
+      throw new Error("order refund failed");
+    }
+    if (refunded.balance?.availableBalance !== 150 || refunded.dispute?.status !== "partial_refund") {
+      throw new Error("order refund balance or dispute failed");
+    }
+    const refundedAgain = await request(port, "/api/orders/12345/refund", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({ refundAmount: 20, reason: "verify duplicate" }),
+    }).then((res) => res.json());
+    if (!refundedAgain.alreadyRefunded || refundedAgain.balance?.availableBalance !== 150) {
+      throw new Error("order refund idempotency failed");
+    }
+
     const withdrawalRequest = await request(port, "/api/withdrawals", {
       method: "POST",
       headers: authHeader(sellerLogin.token),

@@ -89,6 +89,7 @@ In production, `GET /api/ready` also reports `deploymentIssues` and blocks readi
 - `POST /api/payments/:id/sync`
 - `POST /api/orders/:id/deliver`
 - `POST /api/orders/:id/confirm`
+- `POST /api/orders/:id/refund`
 - `GET /api/ledger`
 - `GET /api/withdrawals/balance`
 - `POST /api/withdrawals`
@@ -151,6 +152,10 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 ## Escrow Release
 
 `POST /api/orders/:id/confirm` confirms receipt, completes the order, releases escrow, and posts an `escrow_release` ledger entry for the seller. Sellers cannot confirm their own orders on behalf of buyers.
+
+## Refund Tooling
+
+`POST /api/orders/:id/refund` is admin-only. It refunds a paid order to the buyer's internal balance, marks the order as `refunded`, writes a completed `adjustment` transaction, writes a negative `refund` ledger entry and updates the linked dispute to `resolved_buyer` or `partial_refund`. Refunds are idempotent by order id so repeated calls do not double-credit the buyer.
 
 ## Withdrawals
 

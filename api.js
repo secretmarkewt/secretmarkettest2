@@ -254,6 +254,14 @@ const live = {
       token,
     });
   },
+  async refundOrder(orderId, payload = {}, token = getAuthToken()) {
+    if (isSupabaseEnabled()) throw new Error("Возвраты через Supabase пока не подключены");
+    return requestLive(`/api/orders/${orderId}/refund`, {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
   async withdrawalBalance(token = getAuthToken()) {
     if (isSupabaseEnabled()) return supabaseProvider().withdrawalBalance(token);
     return requestLive("/api/withdrawals/balance", {
