@@ -341,6 +341,12 @@ function authHeader(token) {
       body: JSON.stringify({ reason: "verify-manual" }),
     }).then((res) => res.json());
     if (!manualBackup.ok || !fs.existsSync(manualBackup.backupPath)) throw new Error("manual backup failed");
+    const backupList = await request(port, "/api/admin/backups", {
+      headers: authHeader(adminLogin.token),
+    }).then((res) => res.json());
+    if (!backupList.items?.some((item) => item.fileName === manualBackup.fileName) || backupList.storage?.backupPersistent !== true) {
+      throw new Error("backup list failed");
+    }
     const buyerBackup = await request(port, "/api/admin/backups", {
       method: "POST",
       headers: authHeader(login.token),

@@ -106,6 +106,7 @@ function adminOperations() {
     : [operationStatusRow("Deployment issues", true, "критичных блокеров от /api/ready нет")];
   const storage = health.storage || ready.storage || {};
   const backups = health.operations?.backups || {};
+  const backupRows = (state.liveBackups || []).map((backup) => `<div class="list-row"><span>${backup.fileName}<br><span class="muted">${Math.ceil(Number(backup.size || 0) / 1024)} KB · ${backup.updatedAt || backup.createdAt || ""}</span></span><span class="status ok">backup</span></div>`);
   const metrics = health.metrics || {};
 
   return page("Operations", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
@@ -122,6 +123,7 @@ function adminOperations() {
       operationStatusRow("Reset disabled for production", !health.resetEnabled || health.environment !== "production", health.resetEnabled ? "reset сейчас включен" : "reset выключен"),
     ].join("")}</div></section>
     <section class="panel section"><div class="section-head"><div><h2>Payment watchers</h2><p class="muted">TRC20 / TON / BEP20 должны иметь реальные worker URL перед production.</p></div><span class="status ${watcherRows.every((item) => item.includes(">OK<")) ? "ok" : "wait"}">watchers</span></div><div class="list">${watcherRows.join("") || emptyAdminState("Данных по watcher пока нет")}</div></section>
+    <section class="panel section"><div class="section-head"><div><h2>Backups</h2><p class="muted">Ручные snapshot-файлы JSON store для отката и миграции в production database.</p></div><button class="btn primary" type="button" data-live-action="create-backup">Создать backup</button></div><div class="list">${backupRows.join("") || emptyAdminState("Backup-файлов пока нет")}</div></section>
     <section class="panel section"><div class="section-head"><div><h2>Production blockers</h2><p class="muted">Если список пустой, backend readiness считает конфигурацию безопасной.</p></div><span class="status ${deploymentIssues.length ? "wait" : "ok"}">${deploymentIssues.length || "OK"}</span></div><div class="list">${issueRows.join("")}</div></section>
   </section></div>`, "Admin");
 }

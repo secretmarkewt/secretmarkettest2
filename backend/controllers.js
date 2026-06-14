@@ -589,6 +589,14 @@ async function handleApi(req, res, store) {
     return json(req, res, readiness.ok ? 200 : 503, readiness);
   }
   if (resource === "snapshot") return json(req, res, 200, store.snapshot());
+  if (resource === "admin" && parts[2] === "backups" && req.method === "GET") {
+    const auth = authorize(req, res, store, "users");
+    if (!auth) return true;
+    return json(req, res, 200, {
+      items: store.listBackups?.() || [],
+      storage: store.meta?.() || {},
+    });
+  }
   if (resource === "admin" && parts[2] === "backups" && req.method === "POST") {
     const auth = authorize(req, res, store, "users");
     if (!auth) return true;

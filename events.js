@@ -504,6 +504,14 @@ async function runLiveAction(button) {
       await ensureLiveRole("admin");
       await syncLiveData({ notify: false });
       notify("Operations обновлены: health и readiness синхронизированы");
+    } else if (action === "create-backup") {
+      await ensureLiveRole("admin");
+      const result = await api.live.createBackup({ reason: "admin-operations" });
+      const backups = await api.live.backups();
+      state.liveBackups = backups.items || [];
+      saveState();
+      render();
+      notify(result.ok ? `Backup создан: ${result.fileName}` : "Backup не создан");
     } else if (action === "create-checkout") {
       await ensureLiveRole("buyer");
       const buyerId = sessionApi.currentSession().user?.id || "usr-buyer";

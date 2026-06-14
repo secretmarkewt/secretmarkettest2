@@ -31,6 +31,7 @@ const state = {
   },
   liveHealth: null,
   liveReady: null,
+  liveBackups: [],
   liveBalance: null,
   liveStatus: "idle",
   liveSyncedAt: "",
@@ -69,6 +70,7 @@ function saveState() {
     chatMessages: state.chatMessages,
     live: state.live,
     liveBalance: state.liveBalance,
+    liveBackups: state.liveBackups,
     liveHealth: state.liveHealth,
     liveReady: state.liveReady,
     liveStatus: state.liveStatus,
@@ -95,6 +97,7 @@ function loadState() {
     };
     state.liveHealth = payload.liveHealth || null;
     state.liveReady = payload.liveReady || null;
+    state.liveBackups = Array.isArray(payload.liveBackups) ? payload.liveBackups : [];
     state.liveBalance = payload.liveBalance || null;
     state.liveStatus = payload.liveStatus || "idle";
     state.liveSyncedAt = payload.liveSyncedAt || "";
@@ -230,6 +233,14 @@ async function syncLiveData(options = {}) {
     results.forEach(([collectionName, items]) => {
       if (Array.isArray(items)) state.live[collectionName] = items;
     });
+    if (role === "admin" && apiClient.live.backups) {
+      try {
+        const backups = await apiClient.live.backups();
+        state.liveBackups = backups.items || [];
+      } catch {
+        state.liveBackups = [];
+      }
+    }
     state.liveStatus = "connected";
     state.liveSyncedAt = new Date().toISOString();
     saveState();
@@ -257,6 +268,7 @@ function resetDemoState() {
   state.live = { deliveries: [], disputes: [], evidence: [], ledger: [], orders: [], payments: [], payoutBatches: [], profiles: [], products: [], tickets: [], transactions: [], withdrawals: [] };
   state.liveHealth = null;
   state.liveReady = null;
+  state.liveBackups = [];
   state.liveStatus = "idle";
   state.liveSyncedAt = "";
   notify("Демо-состояние сброшено");

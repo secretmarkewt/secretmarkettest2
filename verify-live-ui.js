@@ -27,6 +27,7 @@ const liveState = {
       BEP20: { configured: true, url: "https://watcher.example/bep20" },
     },
   },
+  liveBackups: [{ fileName: "secmarket-verify-admin-operations.json", size: 4096, updatedAt: "2026-06-15T00:00:00.000Z" }],
   live: {
     deliveries: [{ id: "del-live", orderId: 12345, productId: 12345, sellerId: "usr-seller", buyerId: "usr-buyer", secret: "AUTO-LIVE-SECRET", status: "issued" }],
     disputes: [{ id: "DSP-LIVE", orderId: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", reason: "Live UI dispute", evidence: [], decision: "", refundAmount: 0, status: "waiting_support" }],
@@ -317,7 +318,7 @@ if (!app.innerHTML.includes("Live UI ticket") || !app.innerHTML.includes("@buyer
 setSession("admin");
 context.location.pathname = "/admin/operations";
 context.render();
-if (!app.innerHTML.includes("Backend readiness") || !app.innerHTML.includes("payment_watchers_missing:TON") || !app.innerHTML.includes("https://watcher.example/trc20")) {
+if (!app.innerHTML.includes("Backend readiness") || !app.innerHTML.includes("payment_watchers_missing:TON") || !app.innerHTML.includes("https://watcher.example/trc20") || !app.innerHTML.includes("secmarket-verify-admin-operations.json")) {
   throw new Error("admin operations readiness did not render");
 }
 

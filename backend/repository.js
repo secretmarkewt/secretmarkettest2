@@ -71,6 +71,24 @@ function createStore(options = {}) {
     return { ok: true, fileName, backupPath, snapshot: snapshot() };
   }
 
+  function listBackups(limit = 12) {
+    if (!backupDir || !fs.existsSync(backupDir)) return [];
+    return fs.readdirSync(backupDir)
+      .filter((fileName) => fileName.endsWith(".json"))
+      .map((fileName) => {
+        const backupPath = path.join(backupDir, fileName);
+        const stat = fs.statSync(backupPath);
+        return {
+          fileName,
+          size: stat.size,
+          createdAt: stat.birthtime.toISOString(),
+          updatedAt: stat.mtime.toISOString(),
+        };
+      })
+      .sort((left, right) => String(right.updatedAt).localeCompare(String(left.updatedAt)))
+      .slice(0, limit);
+  }
+
   function list(collection) {
     return clone(state[collection] || []);
   }
@@ -142,7 +160,7 @@ function createStore(options = {}) {
 
   persist();
 
-  return { backup, create, find, list, meta, patch, ready, reset, snapshot };
+  return { backup, create, find, list, listBackups, meta, patch, ready, reset, snapshot };
 }
 
 module.exports = { DEFAULT_BACKUP_DIR, DEFAULT_DB_FILE, createStore };

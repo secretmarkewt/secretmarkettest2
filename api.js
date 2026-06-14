@@ -347,6 +347,16 @@ const live = {
       body: JSON.stringify(payload),
     });
   },
+  async backups(token = getAuthToken()) {
+    return requestLive("/api/admin/backups", { token });
+  },
+  async createBackup(payload = {}, token = getAuthToken()) {
+    return requestLive("/api/admin/backups", {
+      method: "POST",
+      token,
+      body: JSON.stringify(payload),
+    });
+  },
   async getSnapshot() {
     if (isSupabaseEnabled()) return supabaseProvider().getSnapshot();
     return requestLive("/api/snapshot");
