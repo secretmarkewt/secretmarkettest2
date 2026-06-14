@@ -66,6 +66,21 @@ function updateBalance(balance = {}) {
   });
 }
 
+function updateRole(role, user = null) {
+  const session = readSession();
+  if (!session.user) return session;
+  const nextUser = user || session.user;
+  return writeSession({
+    ...session,
+    role,
+    user: {
+      ...session.user,
+      ...nextUser,
+      role,
+    },
+  });
+}
+
 function logout() {
   localStorage.removeItem(SESSION_STORAGE_KEY);
   return defaultSession();
@@ -98,4 +113,5 @@ window.SECMARKET_SESSION = {
   logout,
   roleLabel,
   updateBalance,
+  updateRole,
 };

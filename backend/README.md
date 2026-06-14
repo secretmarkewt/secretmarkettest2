@@ -69,6 +69,7 @@ In production, `GET /api/ready` also reports `deploymentIssues` and blocks readi
 
 - `POST /api/auth/login`
 - `POST /api/auth/register`
+- `POST /api/auth/role`
 - `POST /api/auth/password-reset/request`
 - `POST /api/auth/password-reset/confirm`
 - `POST /api/auth/2fa/setup`
@@ -108,6 +109,8 @@ The API allows CORS for local frontend development. By default it accepts all or
 Auth is password-gated: `POST /api/auth/login` accepts an active user email, role and password, verifies the stored PBKDF2 hash, then returns a bearer token stored in the JSON database. If TOTP 2FA is enabled, login returns `202` with `twoFactorRequired` until a valid `otpCode` is submitted. Demo users use `password` as the password. Existing local JSON databases without `passwordHash` remain accepted so old demo data is not locked out.
 
 `POST /api/auth/register` accepts nickname, email, password, Telegram username and role (`buyer` or `seller`). The backend hashes the password immediately and never sends the plaintext password to Telegram. Telegram registration notifications use `SECMARKET_TELEGRAM_BOT_TOKEN` and `SECMARKET_TELEGRAM_REGISTRATION_CHAT_ID`; the default chat id is `7391093210`.
+
+`POST /api/auth/role` lets an authenticated non-admin user switch between `buyer` and `seller`. It updates the user and the current session together, rejects `admin`, and blocks switching when another account with the same email already owns the target role.
 
 `POST /api/auth/password-reset/request` creates a short-lived reset record with only a SHA-256 token hash in storage. In non-production verification it returns the raw token; in production the token must be delivered by a configured email or Telegram provider. `POST /api/auth/password-reset/confirm` changes the password, marks the reset token as used and revokes existing sessions.
 

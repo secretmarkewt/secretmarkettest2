@@ -264,6 +264,32 @@ function authHeader(token) {
       body: JSON.stringify({ email: "launch.buyer@example.com", role: "buyer", password: "new-safe-password-123", otpCode: totpCode(twoFactorSetup.secret) }),
     }).then((res) => res.json());
     if (!newPasswordLogin.token) throw new Error("password reset new password login failed");
+    const switchedToSeller = await request(port, "/api/auth/role", {
+      method: "POST",
+      headers: authHeader(newPasswordLogin.token),
+      body: JSON.stringify({ role: "seller" }),
+    }).then((res) => res.json());
+    if (switchedToSeller.user?.role !== "seller" || switchedToSeller.session?.role !== "seller") {
+      throw new Error("role switch to seller failed");
+    }
+    const roleSession = await request(port, "/api/auth/session", {
+      headers: authHeader(newPasswordLogin.token),
+    }).then((res) => res.json());
+    if (roleSession.user?.role !== "seller" || roleSession.session?.role !== "seller") {
+      throw new Error("role switch session failed");
+    }
+    const deniedAdminRole = await request(port, "/api/auth/role", {
+      method: "POST",
+      headers: authHeader(newPasswordLogin.token),
+      body: JSON.stringify({ role: "admin" }),
+    });
+    if (deniedAdminRole.status !== 422) throw new Error("role switch admin guard failed");
+    const switchedBackToBuyer = await request(port, "/api/auth/role", {
+      method: "POST",
+      headers: authHeader(newPasswordLogin.token),
+      body: JSON.stringify({ role: "buyer" }),
+    }).then((res) => res.json());
+    if (switchedBackToBuyer.user?.role !== "buyer") throw new Error("role switch back failed");
     if (previousTelegramToken === undefined) delete process.env.SECMARKET_TELEGRAM_BOT_TOKEN;
     else process.env.SECMARKET_TELEGRAM_BOT_TOKEN = previousTelegramToken;
 

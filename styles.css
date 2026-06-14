@@ -447,6 +447,29 @@ a {
   color: #f59e0b;
 }
 
+.role-switcher {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.28);
+  padding: 12px;
+}
+
+:root[data-theme="light"] .role-switcher {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.role-switcher .btn {
+  width: 100%;
+}
+
+.role-switcher p {
+  margin: 0;
+  font-size: 13px;
+}
+
 .nav-register {
   min-height: 36px;
   padding: 8px 13px;

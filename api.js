@@ -169,6 +169,14 @@ const live = {
       token,
     });
   },
+  async changeRole(role, token = getAuthToken()) {
+    if (isSupabaseEnabled()) throw new Error("Смена роли через Supabase пока не подключена");
+    return requestLive("/api/auth/role", {
+      method: "POST",
+      token,
+      body: JSON.stringify({ role }),
+    });
+  },
   async logout(token = getAuthToken()) {
     if (isSupabaseEnabled()) {
       const result = await supabaseProvider().logout(token);

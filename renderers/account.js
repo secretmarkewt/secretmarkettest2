@@ -228,6 +228,16 @@ function accountOverview() {
     ["Telegram", session.user?.telegram || "@buyer"],
     ["Промокод", session.user?.promoCode || "нет"],
   ];
+  const roleSwitcher = session.role === "admin"
+    ? `<div class="role-switcher muted">Админская роль фиксирована и не меняется из профиля.</div>`
+    : `<form class="role-switcher" data-role-switch-form>
+        <label class="field"><span>Роль аккаунта</span><select name="role">
+          <option value="buyer" ${session.role === "buyer" ? "selected" : ""}>Покупатель</option>
+          <option value="seller" ${session.role === "seller" ? "selected" : ""}>Продавец</option>
+        </select></label>
+        <button class="btn primary" type="submit">Сменить роль</button>
+        <p class="muted">Можно переключиться между покупателем и продавцом. Админка через эту форму не выдается.</p>
+      </form>`;
   return page("Кабинет", `<div class="layout"><aside class="sidebar">${sideLinks(accountLinks)}</aside><section>
     <section class="panel account-hero"><div class="section-head"><div><p class="eyebrow">Профиль</p><h1>${session.user?.name || "Artem"}</h1><p class="lead">Заказы, платежи, обращения и безопасность аккаунта в одном месте.</p></div><span class="status ${session.role === "guest" ? "wait" : "ok"}">${sessionApi.roleLabel(session.role)}</span></div>
       <div class="grid metrics">${[
@@ -240,7 +250,7 @@ function accountOverview() {
     </section>
     <div class="two-col section">
       <section class="panel"><div class="section-head"><h2>Последние заказы</h2><a class="btn" href="/account/orders" data-link>Все</a></div><div class="list">${orders.length ? orders.join("") : emptyAccountState("Заказов пока нет")}</div></section>
-      <aside class="panel"><h2>Профиль</h2><div class="list">${profileRows.map(([left, right]) => row(left, right)).join("")}</div></aside>
+      <aside class="panel"><h2>Профиль</h2><div class="list">${profileRows.map(([left, right]) => row(left, right)).join("")}</div>${roleSwitcher}</aside>
     </div>
     <div class="two-col section">
       <section class="panel"><div class="section-head"><h2>Обращения</h2><a class="btn" href="/support/requests" data-link>Открыть</a></div><div class="list">${openTickets.length ? openTickets.slice(0, 3).join("") : emptyAccountState("Обращений пока нет")}</div></section>

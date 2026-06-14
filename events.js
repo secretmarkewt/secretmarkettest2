@@ -70,6 +70,28 @@
     notify("Вы вышли из демо-сессии");
     go("/");
   });
+  document.querySelector("[data-role-switch-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const role = String(formData.get("role") || "").trim();
+    const session = sessionApi.currentSession();
+    if (!["buyer", "seller"].includes(role)) {
+      notify("Можно выбрать только покупателя или продавца");
+      return;
+    }
+    if (session.role === role) {
+      notify(`Роль уже выбрана: ${sessionApi.roleLabel(role)}`);
+      return;
+    }
+    try {
+      const result = await api.live.changeRole(role);
+      sessionApi.updateRole?.(result.user?.role || role, result.user);
+      notify(`Роль изменена: ${sessionApi.roleLabel(result.user?.role || role)}`);
+      go(role === "seller" ? "/seller" : "/account");
+    } catch (error) {
+      notify(`Роль не изменена: ${error.message}`);
+    }
+  });
   document.querySelector("[data-register-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;

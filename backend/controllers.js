@@ -498,6 +498,25 @@ async function handleAuth(req, res, store, id, action) {
     return json(req, res, 201, { token: session.token, user: publicUser(user), expiresAt: session.expiresAt });
   }
 
+  if (id === "role" && req.method === "POST") {
+    const auth = resolveSession(req, store);
+    if (!auth) return json(req, res, 401, { error: "auth_required" });
+    const payload = await readBody(req);
+    const nextRole = String(payload.role || "").trim().toLowerCase();
+    if (!["buyer", "seller"].includes(nextRole)) return json(req, res, 422, { error: "role_invalid" });
+    if (auth.user.role === "admin") return json(req, res, 403, { error: "admin_role_locked" });
+    if (auth.user.role === nextRole) return json(req, res, 200, { user: publicUser(auth.user), session: auth.session, unchanged: true });
+    const duplicate = store.list("users").find((candidate) => (
+      candidate.id !== auth.user.id &&
+      String(candidate.email || "").toLowerCase() === String(auth.user.email || "").toLowerCase() &&
+      String(candidate.role || "").toLowerCase() === nextRole
+    ));
+    if (duplicate) return json(req, res, 409, { error: "target_role_account_exists" });
+    const user = store.patch("users", auth.user.id, { role: nextRole, _actorId: auth.user.id });
+    const session = store.patch("sessions", auth.session.id, { role: nextRole, _actorId: auth.user.id });
+    return json(req, res, 200, { user: publicUser(user), session });
+  }
+
   if (id === "password-reset" && action === "request" && req.method === "POST") {
     return json(req, res, 200, requestPasswordReset(store, await readBody(req)));
   }
