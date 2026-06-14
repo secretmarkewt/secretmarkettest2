@@ -14,6 +14,20 @@ function requiredConfirmations(network) {
   return REQUIRED_CONFIRMATIONS[network] || 3;
 }
 
+function watcherTimeoutMs() {
+  return Math.max(Number(process.env.SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS || 8000), 1000);
+}
+
+function watcherEndpointSummary(url) {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return "invalid_url";
+  }
+}
+
 function watcherReadiness() {
   return Object.fromEntries(Object.keys(REQUIRED_CONFIRMATIONS).map((network) => {
     const url = String(process.env[WATCHER_ENV[network]] || "").trim();
@@ -21,6 +35,9 @@ function watcherReadiness() {
       configured: Boolean(url),
       env: WATCHER_ENV[network],
       confirmationsRequired: requiredConfirmations(network),
+      endpoint: watcherEndpointSummary(url),
+      timeoutMs: watcherTimeoutMs(),
+      apiKeyConfigured: Boolean(process.env.SECMARKET_PAYMENT_WATCHER_API_KEY),
       provider: url ? "http" : "manual",
     }];
   }));
@@ -46,7 +63,17 @@ async function fetchWatcherState(payment) {
   if (process.env.SECMARKET_PAYMENT_WATCHER_API_KEY) {
     headers.Authorization = `Bearer ${process.env.SECMARKET_PAYMENT_WATCHER_API_KEY}`;
   }
-  const response = await fetch(requestUrl, { headers });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), watcherTimeoutMs());
+  let response;
+  try {
+    response = await fetch(requestUrl, { headers, signal: controller.signal });
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error(`watcher_${network.toLowerCase()}_timeout`, { cause: error });
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!response.ok) throw new Error(`watcher_${network.toLowerCase()}_${response.status}`);
   const body = await response.json();
   return {

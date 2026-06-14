@@ -98,7 +98,7 @@ function adminOperations() {
   const watcherRows = Object.entries(watchers).map(([network, watcher]) => operationStatusRow(
     network,
     Boolean(watcher.configured),
-    watcher.url ? `watcher: ${watcher.url}` : "worker URL не настроен",
+    watcher.endpoint || watcher.url ? `watcher: ${watcher.endpoint || watcher.url} · confirmations ${watcher.confirmationsRequired || "n/a"} · timeout ${watcher.timeoutMs || "n/a"}ms` : "worker URL не настроен",
   ));
   const deploymentIssues = Array.isArray(ready.deploymentIssues) ? ready.deploymentIssues : [];
   const issueRows = deploymentIssues.length

@@ -67,6 +67,8 @@ function authHeader(token) {
     const previousTrc20Watcher = process.env.SECMARKET_TRC20_WATCHER_URL;
     const previousTonWatcher = process.env.SECMARKET_TON_WATCHER_URL;
     const previousBep20Watcher = process.env.SECMARKET_BEP20_WATCHER_URL;
+    const previousWatcherApiKey = process.env.SECMARKET_PAYMENT_WATCHER_API_KEY;
+    const previousWatcherTimeout = process.env.SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS;
     process.env.NODE_ENV = "production";
     delete process.env.SECMARKET_ALLOWED_ORIGINS;
     delete process.env.SECMARKET_ALLOW_RESET;
@@ -74,6 +76,8 @@ function authHeader(token) {
     delete process.env.SECMARKET_TRC20_WATCHER_URL;
     delete process.env.SECMARKET_TON_WATCHER_URL;
     delete process.env.SECMARKET_BEP20_WATCHER_URL;
+    delete process.env.SECMARKET_PAYMENT_WATCHER_API_KEY;
+    delete process.env.SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS;
     const unsafeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
     const unsafeReadyBody = await unsafeReady.body;
     if (
@@ -90,6 +94,8 @@ function authHeader(token) {
     process.env.SECMARKET_TRC20_WATCHER_URL = "https://watchers.example.test/trc20";
     process.env.SECMARKET_TON_WATCHER_URL = "https://watchers.example.test/ton";
     process.env.SECMARKET_BEP20_WATCHER_URL = "https://watchers.example.test/bep20";
+    process.env.SECMARKET_PAYMENT_WATCHER_API_KEY = "verify-watcher-key";
+    process.env.SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS = "4500";
     const safeReady = await request(port, "/api/ready").then((res) => ({ status: res.status, body: res.json() }));
     const safeReadyBody = await safeReady.body;
     if (safeReady.status !== 200 || !safeReadyBody.ok || safeReadyBody.deploymentIssues.length !== 0) {
@@ -97,6 +103,9 @@ function authHeader(token) {
     }
     if (safeReadyBody.paymentWatchers?.TRC20?.configured === false) {
       throw new Error("production ready watcher metadata failed");
+    }
+    if (safeReadyBody.paymentWatchers?.TRC20?.endpoint !== "https://watchers.example.test/trc20" || safeReadyBody.paymentWatchers?.TRC20?.timeoutMs !== 4500 || safeReadyBody.paymentWatchers?.TRC20?.apiKeyConfigured !== true) {
+      throw new Error("production ready watcher safe details failed");
     }
     if (previousNodeEnvForReady === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previousNodeEnvForReady;
@@ -112,6 +121,10 @@ function authHeader(token) {
     else process.env.SECMARKET_TON_WATCHER_URL = previousTonWatcher;
     if (previousBep20Watcher === undefined) delete process.env.SECMARKET_BEP20_WATCHER_URL;
     else process.env.SECMARKET_BEP20_WATCHER_URL = previousBep20Watcher;
+    if (previousWatcherApiKey === undefined) delete process.env.SECMARKET_PAYMENT_WATCHER_API_KEY;
+    else process.env.SECMARKET_PAYMENT_WATCHER_API_KEY = previousWatcherApiKey;
+    if (previousWatcherTimeout === undefined) delete process.env.SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS;
+    else process.env.SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS = previousWatcherTimeout;
 
     const resetSnapshot = await request(port, "/api/reset", { method: "POST" }).then((res) => res.json());
     if (!resetSnapshot.products || !resetSnapshot.audit) throw new Error("reset route failed");

@@ -138,8 +138,10 @@ Production watcher variables:
 - `SECMARKET_TON_WATCHER_URL`
 - `SECMARKET_BEP20_WATCHER_URL`
 - `SECMARKET_PAYMENT_WATCHER_API_KEY` optional bearer token
+- `SECMARKET_PAYMENT_WATCHER_TIMEOUT_MS` optional HTTP timeout, default `8000`
 
 Each watcher endpoint receives `paymentId`, `orderId`, `address`, `amount` and `network` as query params and should return JSON with `txHash` or `transactionId`, `confirmations`, optional `status`, and optional `note`.
+`GET /api/health` and `GET /api/ready` expose safe watcher metadata: configured state, endpoint origin/path, required confirmations, timeout and whether the bearer token is configured.
 
 ## Fees
 
