@@ -65,6 +65,7 @@ function supportTicket() {
     <label class="field"><span>Связанный заказ</span><input name="orderId" placeholder="#12345" /></label>
     <label class="field"><span>Описание</span><textarea name="description" placeholder="Опишите проблему подробно"></textarea></label>
     <label class="field"><span>Контакт</span><input name="contact" placeholder="@telegram" /></label>
+    <label class="field"><span>Файл или скриншот</span><input name="attachment" type="file" accept="image/*,.pdf,.txt,.zip" /></label>
   </div><button class="btn primary section" type="submit">Создать тикет</button></form></section><aside>${supportManagerBlock(true)}<section class="panel section"><h2>Что приложить</h2>${["ID транзакции", "номер заказа", "скриншоты переписки", "файлы или коды выдачи"].map(row).join("")}<div class="section"><h2>После отправки</h2><div class="list">${[
     ["Статус", "открыт"],
     ["Уведомление", "уходит в Telegram поддержки"],
@@ -82,6 +83,10 @@ function supportTicketDetail(id = "SUP-104") {
   const ticket = ticketById(id);
   const paymentItem = paymentByOrderId(ticket.order);
   const relatedOrder = ticket.order === "general" ? null : orderById(ticket.order);
+  const evidenceRows = liveItems("evidence")
+    .filter((item) => item.targetType === "ticket" && String(item.targetId).toLowerCase() === String(ticket.id).toLowerCase())
+    .map((item) => row(item.fileName || item.id, `${Math.ceil(Number(item.size || 0) / 1024)} KB · ${String(item.sha256 || "").slice(0, 10)}`));
+  const evidenceBlock = evidenceRows.length ? `<section class="section"><h2>Вложения</h2><div class="list">${evidenceRows.join("")}</div></section>` : "";
   const messages = [
     ticket.description ? `Пользователь: ${escapeHtml(ticket.description)}` : "Покупатель: приложил ID транзакции и скрин оплаты.",
     "Поддержка: проверяем сеть, сумму и историю заказа.",
@@ -89,7 +94,7 @@ function supportTicketDetail(id = "SUP-104") {
     "Поддержка: если подтверждений достаточно, заказ будет обновлен вручную.",
   ];
   return page(`Тикет #${ticket.id}`, `<div class="two-col">
-    <section class="panel"><div class="section-head"><div><h2>${ticket.topic}</h2><p class="muted">${relatedOrder ? `Связан с заказом #${ticket.order} · ${relatedOrder.product}` : "Общее обращение без заказа"}</p></div><span class="status ${statusTone(ticket.rawStatus || ticket.status)}">${ticket.status}</span></div><section class="section"><h2>Переписка</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section><form class="form-actions section">${field("Ответ", "input", "Написать в поддержку")}<button class="btn primary">Отправить</button></form></section>
+    <section class="panel"><div class="section-head"><div><h2>${ticket.topic}</h2><p class="muted">${relatedOrder ? `Связан с заказом #${ticket.order} · ${relatedOrder.product}` : "Общее обращение без заказа"}</p></div><span class="status ${statusTone(ticket.rawStatus || ticket.status)}">${ticket.status}</span></div><section class="section"><h2>Переписка</h2><div class="list">${messages.map((message) => `<div class="chat-message">${message}</div>`).join("")}</div></section>${evidenceBlock}<form class="form-actions section">${field("Ответ", "input", "Написать в поддержку")}<button class="btn primary">Отправить</button></form></section>
     <aside class="panel"><h2>Связанные сущности</h2><div class="list">${[
       ["Заказ", `#${ticket.order}`],
       ["Платеж", paymentItem.id],

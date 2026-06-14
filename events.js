@@ -140,7 +140,17 @@
       await ensureLiveRole("buyer");
       const ticket = await api.live.create("tickets", payload);
       upsertLiveItem("tickets", ticket);
-      notify(ticket.ticketNotice?.sent ? "Тикет создан и отправлен в Telegram" : "Тикет создан, Telegram уведомление не настроено");
+      const attachment = formData.get("attachment");
+      let evidence = null;
+      if (attachment && attachment.size > 0) {
+        const evidencePayload = await fileToEvidencePayload(attachment, "ticket", ticket.id);
+        const evidenceResult = await api.live.create("evidence", evidencePayload);
+        evidence = evidenceResult.evidence || evidenceResult;
+        upsertLiveItem("evidence", evidence);
+      }
+      notify(evidence
+        ? "Тикет создан, вложение сохранено для поддержки"
+        : ticket.ticketNotice?.sent ? "Тикет создан и отправлен в Telegram" : "Тикет создан, Telegram уведомление не настроено");
       go("/support/requests");
     } catch (error) {
       notify(`Тикет не создан: ${error.message}`);
@@ -359,6 +369,27 @@ function downloadTextFile(fileName, content, type = "text/plain;charset=utf-8") 
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function fileToEvidencePayload(file, targetType, targetId) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      resolve({
+        targetType,
+        targetId,
+        fileName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        contentBase64: String(reader.result || ""),
+      });
+    });
+    reader.addEventListener("error", () => reject(reader.error || new Error("file_read_failed")));
+    reader.readAsDataURL(file);
+  });
 }
 
 function paymentReviewDraftFromButton(button, fallbackStatus = "paid") {

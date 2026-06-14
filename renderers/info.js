@@ -57,7 +57,7 @@ function releaseReadinessData() {
     ["Real payment watchers", false, "нужны TRC20, TON и BEP20 workers вместо mock sync"],
     ["Production database", false, "JSON store подходит для MVP, но не для реальных денег"],
     ["Encrypted delivery secrets", true, "коды автовыдачи хранятся encrypted-only и выдаются по одному"],
-    ["Evidence storage", false, "нужны файлы для споров, тикетов и risk review"],
+    ["Evidence storage", true, "файлы тикетов сохраняются как evidence metadata с ownership и SHA-256"],
     ["Operations", false, "нужны backup, monitoring, payout batching и refund tooling"],
   ];
   const metrics = state.liveHealth?.metrics || {};

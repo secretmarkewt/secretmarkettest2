@@ -7,6 +7,7 @@ const liveState = {
   live: {
     deliveries: [{ id: "del-live", orderId: 12345, productId: 12345, sellerId: "usr-seller", buyerId: "usr-buyer", secret: "AUTO-LIVE-SECRET", status: "issued" }],
     disputes: [{ id: "DSP-LIVE", orderId: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", reason: "Live UI dispute", evidence: [], decision: "", refundAmount: 0, status: "waiting_support" }],
+    evidence: [{ id: "ev-live", targetType: "ticket", targetId: "SUP-LIVE", fileName: "proof.png", size: 2048, sha256: "abcdef1234567890", status: "stored" }],
     ledger: [
       { id: "ledger-live-credit", orderId: 22341, sellerId: "usr-seller", amount: 96, coin: "USDT", type: "escrow_release", status: "posted" },
       { id: "ledger-live-payout", withdrawalId: "WD-OLD", sellerId: "usr-seller", amount: -25, coin: "USDT", type: "payout", status: "posted" },
@@ -194,6 +195,18 @@ context.location.pathname = "/account";
 context.render();
 if (!app.innerHTML.includes("Последние заказы") || !app.innerHTML.includes("Создать тикет") || !app.innerHTML.includes("Профиль")) {
   throw new Error("account overview did not render release dashboard");
+}
+
+context.location.pathname = "/support/ticket";
+context.render();
+if (!app.innerHTML.includes('name="attachment" type="file"')) {
+  throw new Error("support ticket attachment input did not render");
+}
+
+context.location.pathname = "/support/tickets/SUP-LIVE";
+context.render();
+if (!app.innerHTML.includes("proof.png") || !app.innerHTML.includes("abcdef1234")) {
+  throw new Error("support ticket evidence block did not render");
 }
 
 context.location.pathname = "/account/balance";
