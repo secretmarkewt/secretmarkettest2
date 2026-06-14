@@ -67,6 +67,7 @@ const SECMARKET_ROUTES = [
   { path: "/admin/payments/pay-12345", area: "admin", title: "Платеж pay-12345" },
   { path: "/admin/payouts", area: "admin", title: "Выплаты" },
   { path: "/admin/payouts/WD-120", area: "admin", title: "Выплата WD-120" },
+  { path: "/admin/operations", area: "admin", title: "Operations" },
   { path: "/admin/disputes", area: "admin", title: "Споры" },
   { path: "/admin/tickets", area: "admin", title: "Тикеты" },
   { path: "/admin/categories", area: "admin", title: "Категории" },

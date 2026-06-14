@@ -8,6 +8,7 @@
   if (path.includes("/crypto")) return adminCrypto();
   if (path.includes("/payments")) return adminPayments();
   if (path.includes("/payouts")) return adminPayouts();
+  if (path.includes("/operations")) return adminOperations();
   if (path.includes("/disputes")) return adminTable("Админка споров", ["#12345 · покупатель открыл спор", "Причина: товар не работает", "Чат доступен", "Оплата подтверждена", "Решение: запросить данные"]);
   if (path.includes("/tickets")) return adminTickets();
   if (path.includes("/categories")) return adminCategories();
@@ -83,6 +84,45 @@ function adminPayouts() {
   return page("Админка выплат", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
     <section class="panel"><div class="section-head"><div><h2>Очередь выплат</h2><p class="muted">Ручная проверка адресов, баланса продавца и ID транзакции после отправки.</p></div><div class="actions-inline"><button class="btn primary" type="button" data-live-action="create-payout-batch">Собрать batch</button><button class="btn" type="button" data-live-action="export-payouts">CSV</button></div></div><div class="list">${mixDemoRows("withdrawals", demoRows, liveRows).join("") || emptyAdminState("Заявок на вывод пока нет")}</div></section>
     <section class="panel section"><h2>Проверки перед выплатой</h2><div class="grid trust">${["Адрес совпадает с профилем", "Баланс доступен без холда", "Нет открытого спора", "2FA продавца подтверждена"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Админ подтверждает вручную в MVP.</p></div>`).join("")}</div></section>
+  </section></div>`, "Admin");
+}
+
+function operationStatusRow(label, ready, detail) {
+  return `<div class="list-row"><span>${label}<br><span class="muted">${detail}</span></span><span class="status ${ready ? "ok" : "wait"}">${ready ? "OK" : "нужно"}</span></div>`;
+}
+
+function adminOperations() {
+  const health = state.liveHealth || {};
+  const ready = state.liveReady || {};
+  const watchers = health.paymentWatchers || ready.paymentWatchers || {};
+  const watcherRows = Object.entries(watchers).map(([network, watcher]) => operationStatusRow(
+    network,
+    Boolean(watcher.configured),
+    watcher.url ? `watcher: ${watcher.url}` : "worker URL не настроен",
+  ));
+  const deploymentIssues = Array.isArray(ready.deploymentIssues) ? ready.deploymentIssues : [];
+  const issueRows = deploymentIssues.length
+    ? deploymentIssues.map((issue) => `<div class="list-row"><span>${issue}</span><span class="status wait">blocker</span></div>`)
+    : [operationStatusRow("Deployment issues", true, "критичных блокеров от /api/ready нет")];
+  const storage = health.storage || ready.storage || {};
+  const backups = health.operations?.backups || {};
+  const metrics = health.metrics || {};
+
+  return page("Operations", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <div class="grid metrics">${[
+      [health.ok ? "online" : state.liveStatus, "API status"],
+      [metrics.onlineUsers ?? "n/a", "online users"],
+      [metrics.publishedProducts ?? "n/a", "published products"],
+      [metrics.completedOrders ?? "n/a", "completed orders"],
+    ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
+    <section class="panel section"><div class="section-head"><div><h2>Backend readiness</h2><p class="muted">Живые данные из /api/health и /api/ready: storage, backup, reset, rate limit и production blockers.</p></div><button class="btn primary" type="button" data-live-action="refresh-operations">Обновить</button></div><div class="list">${[
+      operationStatusRow("Persistent storage", Boolean(storage.persistent), storage.configured ? "DB file configured" : "DB file не настроен"),
+      operationStatusRow("Backup storage", Boolean(backups.persistent || storage.backupPersistent), backups.configured || storage.backupConfigured ? "backup directory configured" : "backup directory не настроен"),
+      operationStatusRow("Rate limit", Boolean(health.rateLimit?.max), `${health.rateLimit?.max || "n/a"} requests / ${health.rateLimit?.windowMs || "n/a"}ms`),
+      operationStatusRow("Reset disabled for production", !health.resetEnabled || health.environment !== "production", health.resetEnabled ? "reset сейчас включен" : "reset выключен"),
+    ].join("")}</div></section>
+    <section class="panel section"><div class="section-head"><div><h2>Payment watchers</h2><p class="muted">TRC20 / TON / BEP20 должны иметь реальные worker URL перед production.</p></div><span class="status ${watcherRows.every((item) => item.includes(">OK<")) ? "ok" : "wait"}">watchers</span></div><div class="list">${watcherRows.join("") || emptyAdminState("Данных по watcher пока нет")}</div></section>
+    <section class="panel section"><div class="section-head"><div><h2>Production blockers</h2><p class="muted">Если список пустой, backend readiness считает конфигурацию безопасной.</p></div><span class="status ${deploymentIssues.length ? "wait" : "ok"}">${deploymentIssues.length || "OK"}</span></div><div class="list">${issueRows.join("")}</div></section>
   </section></div>`, "Admin");
 }
 

@@ -191,6 +191,10 @@ const live = {
     if (isSupabaseEnabled()) return supabaseProvider().health();
     return requestLive("/api/health");
   },
+  async ready() {
+    if (isSupabaseEnabled()) return { ok: true, provider: "supabase", deploymentIssues: [] };
+    return requestLive("/api/ready");
+  },
   async heartbeat(payload = {}) {
     if (isSupabaseEnabled()) return { ok: true, skipped: true, provider: "supabase" };
     return requestLive("/api/presence/heartbeat", {

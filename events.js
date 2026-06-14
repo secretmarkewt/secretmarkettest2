@@ -500,7 +500,11 @@ async function runLiveAction(button) {
   button.textContent = "Выполняется...";
 
   try {
-    if (action === "create-checkout") {
+    if (action === "refresh-operations") {
+      await ensureLiveRole("admin");
+      await syncLiveData({ notify: false });
+      notify("Operations обновлены: health и readiness синхронизированы");
+    } else if (action === "create-checkout") {
       await ensureLiveRole("buyer");
       const buyerId = sessionApi.currentSession().user?.id || "usr-buyer";
       const product = checkoutProduct();

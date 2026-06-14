@@ -30,6 +30,7 @@ const state = {
     withdrawals: [],
   },
   liveHealth: null,
+  liveReady: null,
   liveBalance: null,
   liveStatus: "idle",
   liveSyncedAt: "",
@@ -69,6 +70,7 @@ function saveState() {
     live: state.live,
     liveBalance: state.liveBalance,
     liveHealth: state.liveHealth,
+    liveReady: state.liveReady,
     liveStatus: state.liveStatus,
     liveSyncedAt: state.liveSyncedAt,
   };
@@ -92,6 +94,7 @@ function loadState() {
       ...(payload.live && typeof payload.live === "object" ? payload.live : {}),
     };
     state.liveHealth = payload.liveHealth || null;
+    state.liveReady = payload.liveReady || null;
     state.liveBalance = payload.liveBalance || null;
     state.liveStatus = payload.liveStatus || "idle";
     state.liveSyncedAt = payload.liveSyncedAt || "";
@@ -199,8 +202,12 @@ async function syncLiveData(options = {}) {
   if (!options.silent) render();
 
   try {
-    const health = await apiClient.live.health();
+    const [health, ready] = await Promise.all([
+      apiClient.live.health(),
+      apiClient.live.ready ? apiClient.live.ready().catch((error) => ({ ok: false, error: error.message })) : Promise.resolve(null),
+    ]);
     state.liveHealth = health;
+    state.liveReady = ready;
     let role = "guest";
 
     if (apiClient.getAuthToken()) {
@@ -249,6 +256,7 @@ function resetDemoState() {
   state.chatMessages = [];
   state.live = { deliveries: [], disputes: [], evidence: [], ledger: [], orders: [], payments: [], payoutBatches: [], profiles: [], products: [], tickets: [], transactions: [], withdrawals: [] };
   state.liveHealth = null;
+  state.liveReady = null;
   state.liveStatus = "idle";
   state.liveSyncedAt = "";
   notify("Демо-состояние сброшено");

@@ -4,6 +4,29 @@ const vm = require("vm");
 const app = { innerHTML: "" };
 const liveState = {
   currency: "USDT",
+  liveHealth: {
+    ok: true,
+    environment: "production",
+    storage: { configured: true, persistent: true },
+    operations: { backups: { configured: true, persistent: true } },
+    rateLimit: { max: 120, windowMs: 60000 },
+    resetEnabled: false,
+    paymentWatchers: {
+      TRC20: { configured: true, url: "https://watcher.example/trc20" },
+      TON: { configured: false, url: "" },
+      BEP20: { configured: true, url: "https://watcher.example/bep20" },
+    },
+    metrics: { onlineUsers: 12, publishedProducts: 7, completedOrders: 5 },
+  },
+  liveReady: {
+    ok: false,
+    deploymentIssues: ["payment_watchers_missing:TON"],
+    paymentWatchers: {
+      TRC20: { configured: true, url: "https://watcher.example/trc20" },
+      TON: { configured: false, url: "" },
+      BEP20: { configured: true, url: "https://watcher.example/bep20" },
+    },
+  },
   live: {
     deliveries: [{ id: "del-live", orderId: 12345, productId: 12345, sellerId: "usr-seller", buyerId: "usr-buyer", secret: "AUTO-LIVE-SECRET", status: "issued" }],
     disputes: [{ id: "DSP-LIVE", orderId: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", reason: "Live UI dispute", evidence: [], decision: "", refundAmount: 0, status: "waiting_support" }],
@@ -292,6 +315,12 @@ if (!app.innerHTML.includes("Live UI ticket") || !app.innerHTML.includes("@buyer
 }
 
 setSession("admin");
+context.location.pathname = "/admin/operations";
+context.render();
+if (!app.innerHTML.includes("Backend readiness") || !app.innerHTML.includes("payment_watchers_missing:TON") || !app.innerHTML.includes("https://watcher.example/trc20")) {
+  throw new Error("admin operations readiness did not render");
+}
+
 context.location.pathname = "/admin/tickets";
 context.render();
 if (!app.innerHTML.includes("требуют ответа") || !app.innerHTML.includes("/support/tickets/SUP-LIVE")) {
