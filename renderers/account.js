@@ -83,7 +83,7 @@ function chats() {
 function account(path = "") {
   if (path.includes("/orders")) return accountOrders();
   if (path.includes("/favorites")) return accountFavorites();
-  if (path.includes("/balance")) return accountBalance();
+  if (path.includes("/balance")) return accountBalanceV2();
   if (path.includes("/payments")) return accountPayments();
   if (path.includes("/reviews")) return accountReviews();
   if (path.includes("/security")) return accountSecurity();
@@ -130,6 +130,76 @@ function accountBalance() {
       </div><div class="form-actions section"><button class="btn warn" type="button" data-live-action="withdraw-balance">Запросить вывод</button><span class="status wait">freeze</span></div></form></section>
     </div>
     <section class="panel section"><div class="section-head"><h2>История транзакций</h2><span class="status ${ownTransactions.length ? "ok" : "wait"}">${ownTransactions.length ? "live" : "demo"}</span></div><div class="list">${rows.length ? rows.map(transactionRow).join("") : emptyAccountState("Операций пока нет")}</div></section>
+  </section></div>`, "Account");
+}
+
+function transactionTypeLabel(type) {
+  const map = {
+    adjustment: "Корректировка",
+    deposit: "Пополнение",
+    withdrawal: "Вывод",
+  };
+  return map[type] || type || "Операция";
+}
+
+function balanceTransactionRow(transaction) {
+  const details = transaction.details || {};
+  const hint = details.address || details.comment || transaction.paymentMethod || "USDT";
+  const amount = Number(transaction.amount || 0);
+  const isOut = transaction.type === "withdrawal" || amount < 0;
+  return `<div class="balance-transaction">
+    <div><strong>${transactionTypeLabel(transaction.type)}</strong><span>${hint}</span></div>
+    <div class="balance-transaction-side"><strong class="${isOut ? "danger-text" : "success-text"}">${isOut ? "-" : "+"}${money(Math.abs(amount))}</strong><span class="status ${statusTone(transaction.status)}">${statusLabel(transaction.status)}</span></div>
+  </div>`;
+}
+
+function accountBalanceV2() {
+  const session = sessionApi.currentSession();
+  const user = session.user || {};
+  const ownTransactions = liveItems("transactions").filter((item) => item.userId === user.id);
+  const demoRows = (window.SECMARKET_DATA.demoTransactions || []).filter((item) => item.userId === (user.id || "usr-buyer"));
+  const rows = ownTransactions.length ? ownTransactions : demoRows;
+  const balance = Number(user.balance ?? (session.role === "seller" ? 620 : 120) ?? 0);
+  const frozenBalance = Number(user.frozenBalance ?? (session.role === "seller" ? 320.5 : 0) ?? 0);
+  const liveBalance = state.liveBalance?.userId === user.id ? state.liveBalance : null;
+  const currentBalance = Number(liveBalance?.balance ?? balance);
+  const currentFrozenBalance = Number(liveBalance?.frozenBalance ?? frozenBalance);
+  const availableBalance = Number(liveBalance?.availableBalance ?? Math.max(currentBalance - currentFrozenBalance, 0));
+  const pendingCount = rows.filter((item) => item.status === "pending").length;
+  const completedCount = rows.filter((item) => item.status === "completed").length;
+  return page("Баланс", `<div class="layout"><aside class="sidebar">${sideLinks([...accountLinks, ["Баланс", "/account/balance"]])}</aside><section class="balance-page">
+    <section class="balance-hero panel">
+      <div class="balance-main">
+        <p class="eyebrow">Кошелек Secret Market</p>
+        <span>Доступно сейчас</span>
+        <strong>${money(availableBalance)}</strong>
+        <p class="muted">Эту сумму можно тратить на покупки или запросить к выводу. Деньги в холде ждут подтверждения операции.</p>
+      </div>
+      <div class="balance-summary">
+        <article><span>Всего на балансе</span><strong>${money(currentBalance)}</strong></article>
+        <article><span>В холде</span><strong>${money(currentFrozenBalance)}</strong></article>
+        <article><span>Заявок в ожидании</span><strong>${pendingCount}</strong></article>
+        <article><span>Завершено</span><strong>${completedCount}</strong></article>
+      </div>
+    </section>
+    <section class="balance-explain panel">
+      <article><strong>Пополнение</strong><span>Создайте заявку, оплатите выбранной сетью и дождитесь подтверждения администратора или watcher.</span></article>
+      <article><strong>Вывод</strong><span>Сумма сразу замораживается. Если вывод отклонят, деньги вернутся в доступный баланс.</span></article>
+      <article><strong>Безопасность</strong><span>Баланс меняется только через backend: frontend не может начислить или списать деньги напрямую.</span></article>
+    </section>
+    <div class="two-col section">
+      <section class="panel balance-action"><div class="section-head"><div><h2>Пополнить баланс</h2><p class="muted">Минимум 5 USDT. После оплаты добавьте ID транзакции или заметку.</p></div><span class="status wait">pending</span></div><form data-balance-deposit-form><div class="form-grid">
+        <label class="field"><span>Сумма, USDT</span><input name="amount" inputmode="decimal" placeholder="25.00" /></label>
+        <label class="field"><span>Сеть оплаты</span><select name="paymentMethod"><option>USDT TRC20</option><option>USDT TON</option><option>USDT BEP20</option></select></label>
+        <label class="field"><span>Комментарий</span><input name="comment" placeholder="ID транзакции или заметка" /></label>
+      </div><button class="btn primary section" type="button" data-live-action="deposit-balance">Создать заявку на пополнение</button></form></section>
+      <section class="panel balance-action"><div class="section-head"><div><h2>Вывести средства</h2><p class="muted">Проверьте сеть и адрес. На время проверки сумма будет в холде.</p></div><span class="status wait">hold</span></div><form data-balance-withdraw-form><div class="form-grid">
+        <label class="field"><span>Сумма, USDT</span><input name="amount" inputmode="decimal" placeholder="25.00" /></label>
+        <label class="field"><span>Сеть вывода</span><select name="network"><option>TRC20</option><option>TON</option><option>BEP20</option></select></label>
+        <label class="field"><span>Кошелек</span><input name="address" placeholder="Адрес для вывода" /></label>
+      </div><button class="btn warn section" type="button" data-live-action="withdraw-balance">Запросить вывод</button></form></section>
+    </div>
+    <section class="panel section"><div class="section-head"><div><h2>История операций</h2><p class="muted">Пополнения, выводы и ручные корректировки баланса.</p></div><span class="status ${ownTransactions.length ? "ok" : "wait"}">${ownTransactions.length ? "live" : "demo"}</span></div><div class="balance-history">${rows.length ? rows.map(balanceTransactionRow).join("") : emptyAccountState("Операций пока нет")}</div></section>
   </section></div>`, "Account");
 }
 
