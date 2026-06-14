@@ -736,12 +736,51 @@ function authHeader(token) {
     }).then((res) => res.json());
     if (!created.id) throw new Error("product create failed");
 
+    const stockedProduct = await request(port, `/api/products/${created.id}`, {
+      method: "PATCH",
+      headers: authHeader(sellerLogin.token),
+      body: JSON.stringify({
+        deliveryType: "auto",
+        deliverySecrets: ["NITRO-CODE-1", "NITRO-CODE-2"],
+      }),
+    }).then((res) => res.json());
+    if (stockedProduct.deliverySecrets || stockedProduct.deliverySecretsEncrypted || stockedProduct.deliverySecretsCount !== 2) {
+      throw new Error("product delivery secret sanitization failed");
+    }
+
     const patched = await request(port, `/api/products/${created.id}/status`, {
       method: "PATCH",
       headers: authHeader(sellerLogin.token),
       body: JSON.stringify({ status: "published" }),
     }).then((res) => res.json());
     if (patched.status !== "published") throw new Error("product status patch failed");
+    if (patched.deliverySecretsEncrypted || patched.deliverySecretsCount !== 2) throw new Error("product patch secret sanitization failed");
+
+    const secretOrder = await request(port, "/api/orders", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({
+        id: 99001,
+        buyerId: "usr-buyer",
+        sellerId: "usr-seller",
+        productId: created.id,
+        amount: 8.5,
+        paymentStatus: "paid",
+        orderStatus: "paid",
+        escrowStatus: "hold",
+        status: "paid",
+      }),
+    }).then((res) => res.json());
+    if (secretOrder.status !== "paid") throw new Error("secret inventory order create failed");
+
+    const inventoryDelivery = await request(port, "/api/orders/99001/deliver", {
+      method: "POST",
+      headers: authHeader(sellerLogin.token),
+    }).then((res) => res.json());
+    if (inventoryDelivery.delivery?.secret !== "NITRO-CODE-1") throw new Error("encrypted inventory delivery failed");
+    if (inventoryDelivery.product?.deliverySecretsEncrypted || inventoryDelivery.product?.deliverySecretsCount !== 1) {
+      throw new Error("encrypted inventory consume failed");
+    }
 
     const audit = await request(port, "/api/audit", {
       headers: authHeader(adminLogin.token),
@@ -752,6 +791,10 @@ function authHeader(token) {
     const persisted = JSON.parse(fs.readFileSync(dbFile, "utf8"));
     if (!persisted.products.some((product) => product.id === created.id && product.status === "published")) {
       throw new Error("file persistence failed");
+    }
+    const storedSecretProduct = persisted.products.find((product) => product.id === created.id);
+    if (storedSecretProduct.deliverySecrets || storedSecretProduct.deliverySecretsEncrypted?.length !== 1 || storedSecretProduct.deliverySecretsEncrypted[0] === "NITRO-CODE-2") {
+      throw new Error("encrypted product inventory persistence failed");
     }
     const storedDelivery = persisted.deliveries.find((delivery) => delivery.orderId === 88001);
     if (!storedDelivery?.secretEncrypted || storedDelivery.secret) throw new Error("encrypted delivery persistence failed");

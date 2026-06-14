@@ -8,7 +8,7 @@ const {
   verifyTotp,
 } = require("./authSecurity");
 const { decryptSecret, vaultConfigured } = require("./cryptoVault");
-const { issueDelivery, revealDelivery } = require("./deliveryService");
+const { issueDelivery, normalizeDeliverySecrets, revealDelivery, sanitizeProduct } = require("./deliveryService");
 const { createEvidence, ownsTarget } = require("./evidenceStorage");
 const { confirmOrder } = require("./escrowService");
 const { resourceModels } = require("./models");
@@ -339,6 +339,7 @@ function isOwnedBy(resource, item, auth, store) {
 function visibleItems(resource, auth, store) {
   const items = store.list(resource).filter((item) => isOwnedBy(resource, item, auth, store));
   if (resource === "deliveries") return items.map(revealDelivery);
+  if (resource === "products") return items.map(sanitizeProduct);
   return items;
 }
 
@@ -351,7 +352,9 @@ function withCommissionFields(payload, itemAmount) {
 
 function normalizeCreatePayload(resource, payload, auth, store) {
   let normalized = payload;
-  if (resource === "orders") {
+  if (resource === "products") {
+    normalized = normalizeDeliverySecrets(payload);
+  } else if (resource === "orders") {
     const fees = calculateCommission(payload.itemAmount ?? payload.amount ?? 0);
     normalized = { ...withCommissionFields(payload, fees.itemAmount), amount: fees.itemAmount };
   } else if (resource === "payments") {
@@ -739,7 +742,7 @@ async function handleApi(req, res, store) {
   if (req.method === "GET" && id) {
     const item = store.find(resource, id);
     if (!item || !isOwnedBy(resource, item, auth, store)) return notFound(req, res);
-    return json(req, res, 200, resource === "deliveries" ? revealDelivery(item) : item);
+    return json(req, res, 200, resource === "deliveries" ? revealDelivery(item) : resource === "products" ? sanitizeProduct(item) : item);
   }
   if (req.method === "POST" && !id) {
     const payload = await readBody(req);
@@ -750,7 +753,7 @@ async function handleApi(req, res, store) {
       const ticketNotice = await notifyTicketSafely(item);
       return json(req, res, 201, { ...item, ticketNotice });
     }
-    return json(req, res, 201, item);
+    return json(req, res, 201, resource === "products" ? sanitizeProduct(item) : item);
   }
   if ((req.method === "PATCH" || req.method === "PUT") && id) {
     const existing = store.find(resource, id);
@@ -758,9 +761,13 @@ async function handleApi(req, res, store) {
     const payload = await readBody(req);
     const validation = validatePatch(resource, payload);
     if (!validation.ok) return json(req, res, 422, { errors: validation.errors });
-    const patchPayload = action === "status" ? { status: payload.status } : payload;
+    const patchPayload = action === "status"
+      ? { status: payload.status }
+      : resource === "products"
+        ? normalizeDeliverySecrets({ ...existing, ...payload })
+        : payload;
     const item = store.patch(resource, id, { ...patchPayload, _actorId: auth.user?.id });
-    return item ? json(req, res, 200, item) : notFound(req, res);
+    return item ? json(req, res, 200, resource === "products" ? sanitizeProduct(item) : item) : notFound(req, res);
   }
 
   json(req, res, 405, { error: "method_not_allowed" });

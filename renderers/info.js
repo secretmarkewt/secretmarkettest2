@@ -56,7 +56,7 @@ function releaseReadinessData() {
     ["Password auth", false, "нужны hash паролей, восстановление, сессии и 2FA для реальных аккаунтов"],
     ["Real payment watchers", false, "нужны TRC20, TON и BEP20 workers вместо mock sync"],
     ["Production database", false, "JSON store подходит для MVP, но не для реальных денег"],
-    ["Encrypted delivery secrets", false, "автовыдачу нужно шифровать до production"],
+    ["Encrypted delivery secrets", true, "коды автовыдачи хранятся encrypted-only и выдаются по одному"],
     ["Evidence storage", false, "нужны файлы для споров, тикетов и risk review"],
     ["Operations", false, "нужны backup, monitoring, payout batching и refund tooling"],
   ];
