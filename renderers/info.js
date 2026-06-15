@@ -53,12 +53,12 @@ function releaseReadinessData() {
     ["Backend safety", true, "CORS allowlist, disabled reset, rate limit и security headers добавлены"],
   ];
   const productionItems = [
-    ["Password auth", false, "нужны hash паролей, восстановление, сессии и 2FA для реальных аккаунтов"],
+    ["Password auth", true, "hash паролей, восстановление, сессии и 2FA покрыты backend API"],
     ["Real payment watchers", false, "нужны TRC20, TON и BEP20 workers вместо mock sync"],
     ["Production database", false, "JSON store подходит для MVP, но не для реальных денег"],
     ["Encrypted delivery secrets", true, "коды автовыдачи хранятся encrypted-only и выдаются по одному"],
     ["Evidence storage", true, "файлы тикетов сохраняются как evidence metadata с ownership и SHA-256"],
-    ["Operations", false, "нужны backup, monitoring, payout batching и refund tooling"],
+    ["Operations", true, "health/readiness, backup-и, payout batching, refund tooling и admin operations покрыты"],
   ];
   const metrics = state.liveHealth?.metrics || {};
   const metricItems = [
