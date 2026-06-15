@@ -13,6 +13,13 @@ function ensureDir(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
 }
 
+function writeJsonAtomic(filePath, value) {
+  ensureDir(filePath);
+  const tempPath = `${filePath}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
+  fs.writeFileSync(tempPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  fs.renameSync(tempPath, filePath);
+}
+
 function readState(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return null;
   const raw = fs.readFileSync(filePath, "utf8");
@@ -49,8 +56,7 @@ function createStore(options = {}) {
 
   function persist() {
     if (!filePath) return;
-    ensureDir(filePath);
-    fs.writeFileSync(filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+    writeJsonAtomic(filePath, state);
   }
 
   function appendAudit(action, resource, itemId, actorId, details) {
@@ -65,7 +71,7 @@ function createStore(options = {}) {
     const cleanReason = String(reason || "manual").replace(/[^\w-]+/g, "-").slice(0, 40) || "manual";
     const fileName = `secmarket-${stamp}-${cleanReason}.json`;
     const backupPath = path.join(backupDir, fileName);
-    fs.writeFileSync(backupPath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+    writeJsonAtomic(backupPath, state);
     appendAudit("backup", "system", fileName, actorId, { reason, backupPath });
     persist();
     return { ok: true, fileName, backupPath, snapshot: snapshot() };
@@ -142,6 +148,7 @@ function createStore(options = {}) {
     return {
       backupConfigured: configuredBackupDir,
       backupPersistent: Boolean(backupDir),
+      atomicWrites: true,
       configured: configuredFilePath,
       persistent: Boolean(filePath),
     };

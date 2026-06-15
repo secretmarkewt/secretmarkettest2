@@ -50,7 +50,7 @@ The Pages workflow writes that value into `dist/config.js`. The frontend still f
 
 ## Storage
 
-The prototype API now uses a file-backed JSON store instead of only in-memory data.
+The prototype API now uses a file-backed JSON store instead of only in-memory data. Writes are atomic: the store writes a temporary JSON file next to the target and then renames it into place.
 
 - Default database file: `data/secmarket-db.json`
 - Override path: `SECMARKET_DB_FILE=C:\path\to\db.json`

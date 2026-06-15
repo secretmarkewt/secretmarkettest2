@@ -29,7 +29,7 @@ function authHeader(token) {
   try {
     const health = await request(port, "/api/health").then((res) => res.json());
     if (!health.ok) throw new Error("health check failed");
-    if (health.service !== "secret-market-api" || !health.version || health.storage?.persistent !== true || health.operations?.backups?.persistent !== true) {
+    if (health.service !== "secret-market-api" || !health.version || health.storage?.persistent !== true || health.storage?.atomicWrites !== true || health.operations?.backups?.persistent !== true) {
       throw new Error("health metadata failed");
     }
     if (!health.resetEnabled || health.rateLimit?.max < 1) throw new Error("health settings failed");

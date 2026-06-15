@@ -118,6 +118,7 @@ function adminOperations() {
     ].map(([value, label]) => `<div class="metric panel"><strong>${value}</strong><span>${label}</span></div>`).join("")}</div>
     <section class="panel section"><div class="section-head"><div><h2>Backend readiness</h2><p class="muted">Живые данные из /api/health и /api/ready: storage, backup, reset, rate limit и production blockers.</p></div><button class="btn primary" type="button" data-live-action="refresh-operations">Обновить</button></div><div class="list">${[
       operationStatusRow("Persistent storage", Boolean(storage.persistent), storage.configured ? "DB file configured" : "DB file не настроен"),
+      operationStatusRow("Atomic JSON writes", Boolean(storage.atomicWrites), storage.atomicWrites ? "tmp + rename enabled" : "atomic writes не подтверждены"),
       operationStatusRow("Backup storage", Boolean(backups.persistent || storage.backupPersistent), backups.configured || storage.backupConfigured ? "backup directory configured" : "backup directory не настроен"),
       operationStatusRow("Rate limit", Boolean(health.rateLimit?.max), `${health.rateLimit?.max || "n/a"} requests / ${health.rateLimit?.windowMs || "n/a"}ms`),
       operationStatusRow("Reset disabled for production", !health.resetEnabled || health.environment !== "production", health.resetEnabled ? "reset сейчас включен" : "reset выключен"),
