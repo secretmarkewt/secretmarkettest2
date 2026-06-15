@@ -516,6 +516,13 @@ function authHeader(token) {
     });
     if (deniedSync.status !== 403) throw new Error("payment watcher role guard failed");
 
+    const missingWatcherSync = await request(port, "/api/payments/pay-watch/sync", {
+      method: "POST",
+      headers: authHeader(adminLogin.token),
+      body: JSON.stringify({}),
+    });
+    if (missingWatcherSync.status !== 422) throw new Error("payment watcher configured guard failed");
+
     const synced = await request(port, "/api/payments/pay-watch/sync", {
       method: "POST",
       headers: authHeader(adminLogin.token),

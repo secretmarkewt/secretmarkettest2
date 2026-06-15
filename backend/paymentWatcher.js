@@ -28,9 +28,13 @@ function watcherEndpointSummary(url) {
   }
 }
 
+function watcherUrl(network) {
+  return String(process.env[WATCHER_ENV[network]] || "").trim();
+}
+
 function watcherReadiness() {
   return Object.fromEntries(Object.keys(REQUIRED_CONFIRMATIONS).map((network) => {
-    const url = String(process.env[WATCHER_ENV[network]] || "").trim();
+    const url = watcherUrl(network);
     return [network, {
       configured: Boolean(url),
       env: WATCHER_ENV[network],
@@ -51,7 +55,7 @@ function missingWatcherNetworks() {
 
 async function fetchWatcherState(payment) {
   const network = String(payment.network || "").toUpperCase();
-  const url = String(process.env[WATCHER_ENV[network]] || "").trim();
+  const url = watcherUrl(network);
   if (!url) return null;
   const requestUrl = new URL(url);
   requestUrl.searchParams.set("paymentId", payment.id);
@@ -109,7 +113,13 @@ async function syncPayment(store, paymentId, options = {}) {
   const payment = store.find("payments", paymentId);
   if (!payment) return null;
 
-  const watcherPayload = options.payload?.txHash || options.payload?.status
+  const hasManualPayload = Boolean(options.payload?.txHash || options.payload?.status);
+  const network = String(payment.network || "").toUpperCase();
+  if (!hasManualPayload && !watcherUrl(network)) {
+    return { error: "payment_watcher_not_configured", network };
+  }
+
+  const watcherPayload = hasManualPayload
     ? null
     : await fetchWatcherState(payment);
   const paymentPatch = nextPaymentState(payment, options.payload, watcherPayload);

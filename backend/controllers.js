@@ -667,7 +667,9 @@ async function handleApi(req, res, store) {
     const existing = store.find(resource, id);
     if (!existing) return notFound(req, res);
     const payload = await readBody(req);
-    return json(req, res, 200, await syncPayment(store, id, { actorId: auth.user.id, payload }));
+    const result = await syncPayment(store, id, { actorId: auth.user.id, payload });
+    if (result?.error) return json(req, res, 422, result);
+    return json(req, res, 200, result);
   }
 
   if (resource === "orders" && action === "deliver" && req.method === "POST") {
