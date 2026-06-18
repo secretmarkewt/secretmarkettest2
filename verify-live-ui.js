@@ -37,6 +37,7 @@ const liveState = {
     targetTables: ["users", "orders", "payments"],
   },
   live: {
+    audit: [{ id: "audit-live", actorId: "usr-admin", action: "patch", resource: "payments", itemId: "pay-live", details: { fromStatus: "waiting", toStatus: "paid", fields: ["status", "txHash"] }, createdAt: "2026-06-15T00:00:00.000Z" }],
     deliveries: [{ id: "del-live", orderId: 12345, productId: 12345, sellerId: "usr-seller", buyerId: "usr-buyer", secret: "AUTO-LIVE-SECRET", status: "issued" }],
     disputes: [{ id: "DSP-LIVE", orderId: 12345, buyerId: "usr-buyer", sellerId: "usr-seller", reason: "Live UI dispute", evidence: [], decision: "", refundAmount: 0, status: "waiting_support" }],
     evidence: [{ id: "ev-live", targetType: "ticket", targetId: "SUP-LIVE", fileName: "proof.png", size: 2048, sha256: "abcdef1234567890", status: "stored" }],
@@ -334,6 +335,12 @@ context.location.pathname = "/admin/tickets";
 context.render();
 if (!app.innerHTML.includes("требуют ответа") || !app.innerHTML.includes("/support/tickets/SUP-LIVE")) {
   throw new Error("admin ticket queue did not render live support workflow");
+}
+
+context.location.pathname = "/admin/audit";
+context.render();
+if (!app.innerHTML.includes("pay-live") || !app.innerHTML.includes("waiting -> paid")) {
+  throw new Error("live audit rows did not render");
 }
 
 context.location.pathname = "/launch-readiness";

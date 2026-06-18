@@ -245,16 +245,22 @@ function adminModeration() {
 }
 
 function adminAudit() {
-  const auditRows = [
+  const demoRows = [
     ["usr-admin", "patch payments pay-12345", "from confirming to paid"],
     ["usr-admin", "patch withdrawals WD-120", "from review to processing"],
     ["usr-admin", "patch disputes 123", "from waiting_support to partial_refund"],
     ["usr-seller", "create products", "status moderation"],
     ["system", "reset system seed", "demo data restored"],
-  ];
+  ].map(([actor, action, details]) => `<div class="list-row"><span>${actor}<br><span class="muted">${details}</span></span><strong>${action}</strong></div>`);
+  const liveRows = liveItems("audit").map((entry) => {
+    const fields = Array.isArray(entry.details?.fields) ? ` · поля: ${entry.details.fields.join(", ")}` : "";
+    const status = entry.details?.fromStatus || entry.details?.toStatus ? `${entry.details?.fromStatus || "n/a"} -> ${entry.details?.toStatus || "n/a"}` : entry.createdAt || "";
+    return `<div class="list-row"><span>${entry.actorId || "system"}<br><span class="muted">${status}${fields}</span></span><strong>${entry.action || ""} ${entry.resource || ""} ${entry.itemId || ""}</strong></div>`;
+  });
+  const rows = mixDemoRows("audit", demoRows, liveRows);
 
   return page("Журнал аудита", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
-    <section class="panel"><div class="section-head"><div><h2>Последние действия</h2><p class="muted">API пишет такие события в /api/audit при создании и изменении записей.</p></div><span class="status ok">live-ready</span></div><div class="list">${auditRows.map(([actor, action, details]) => `<div class="list-row"><span>${actor}<br><span class="muted">${details}</span></span><strong>${action}</strong></div>`).join("")}</div></section>
+    <section class="panel"><div class="section-head"><div><h2>Последние действия</h2><p class="muted">API пишет такие события в /api/audit при создании и изменении записей.</p></div><span class="status ok">live-ready</span></div><div class="list">${rows.join("") || emptyAdminState("Событий аудита пока нет")}</div></section>
     <section class="panel section"><h2>Что фиксируется</h2><div class="grid trust">${["Кто изменил запись", "Какой ресурс изменен", "ID заказа, платежа или выплаты", "Старый и новый статус", "Время действия"].map((item) => `<div class="trust-item panel"><h3>${item}</h3><p class="muted">Нужно для споров, выплат и ручной модерации.</p></div>`).join("")}</div></section>
   </section></div>`, "Admin");
 }

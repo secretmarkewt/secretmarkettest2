@@ -16,6 +16,7 @@ const state = {
   copiedAddress: false,
   chatMessages: [],
   live: {
+    audit: [],
     deliveries: [],
     disputes: [],
     evidence: [],
@@ -138,7 +139,7 @@ function upsertLiveItem(collectionName, item) {
 }
 
 function liveCollectionsForRole(role) {
-  if (role === "admin") return ["deliveries", "disputes", "evidence", "ledger", "orders", "payments", "payoutBatches", "profiles", "products", "tickets", "transactions", "withdrawals"];
+  if (role === "admin") return ["audit", "deliveries", "disputes", "evidence", "ledger", "orders", "payments", "payoutBatches", "profiles", "products", "tickets", "transactions", "withdrawals"];
   if (role === "seller") return ["deliveries", "disputes", "evidence", "ledger", "orders", "payments", "products", "tickets", "transactions", "withdrawals"];
   if (role === "buyer") return ["deliveries", "disputes", "evidence", "ledger", "orders", "payments", "products", "tickets", "transactions"];
   return ["products"];
@@ -275,7 +276,7 @@ function resetDemoState() {
   state.disputeCreated = false;
   state.copiedAddress = false;
   state.chatMessages = [];
-  state.live = { deliveries: [], disputes: [], evidence: [], ledger: [], orders: [], payments: [], payoutBatches: [], profiles: [], products: [], tickets: [], transactions: [], withdrawals: [] };
+  state.live = { audit: [], deliveries: [], disputes: [], evidence: [], ledger: [], orders: [], payments: [], payoutBatches: [], profiles: [], products: [], tickets: [], transactions: [], withdrawals: [] };
   state.liveHealth = null;
   state.liveReady = null;
   state.liveBackups = [];
