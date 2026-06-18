@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { seed } = require("./seed");
 
 const DEFAULT_DB_FILE = path.join(process.cwd(), "data", "secmarket-db.json");
@@ -18,6 +19,10 @@ function writeJsonAtomic(filePath, value) {
   const tempPath = `${filePath}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
   fs.writeFileSync(tempPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   fs.renameSync(tempPath, filePath);
+}
+
+function sha256Json(value) {
+  return crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
 function readState(filePath) {
@@ -144,6 +149,26 @@ function createStore(options = {}) {
     return Object.fromEntries(Object.entries(state).map(([key, value]) => [key, value.length]));
   }
 
+  function migrationManifest() {
+    const counts = snapshot();
+    const relations = {
+      ordersWithPayments: state.orders.filter((order) => state.payments.some((payment) => String(payment.orderId) === String(order.id))).length,
+      ordersWithDeliveries: state.orders.filter((order) => state.deliveries.some((delivery) => String(delivery.orderId) === String(order.id))).length,
+      ordersWithLedger: state.orders.filter((order) => state.ledger.some((entry) => String(entry.orderId) === String(order.id))).length,
+      ticketsWithEvidence: state.tickets.filter((ticket) => state.evidence.some((item) => item.targetType === "ticket" && String(item.targetId).toLowerCase() === String(ticket.id).toLowerCase())).length,
+      disputesWithEvidence: state.disputes.filter((dispute) => state.evidence.some((item) => item.targetType === "dispute" && String(item.targetId).toLowerCase() === String(dispute.id).toLowerCase())).length,
+    };
+    return {
+      generatedAt: new Date().toISOString(),
+      format: "secmarket-json-store-v1",
+      counts,
+      relations,
+      checksum: sha256Json(state),
+      targetTables: Object.keys(seed),
+      storage: meta(),
+    };
+  }
+
   function meta() {
     return {
       backupConfigured: configuredBackupDir,
@@ -167,7 +192,7 @@ function createStore(options = {}) {
 
   persist();
 
-  return { backup, create, find, list, listBackups, meta, patch, ready, reset, snapshot };
+  return { backup, create, find, list, listBackups, meta, migrationManifest, patch, ready, reset, snapshot };
 }
 
 module.exports = { DEFAULT_BACKUP_DIR, DEFAULT_DB_FILE, createStore };

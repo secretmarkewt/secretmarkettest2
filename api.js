@@ -357,6 +357,9 @@ const live = {
       body: JSON.stringify(payload),
     });
   },
+  async migrationManifest(token = getAuthToken()) {
+    return requestLive("/api/admin/migration", { token });
+  },
   async getSnapshot() {
     if (isSupabaseEnabled()) return supabaseProvider().getSnapshot();
     return requestLive("/api/snapshot");

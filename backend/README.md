@@ -178,6 +178,7 @@ Orders store the item price in `amount`. Payments store the buyer total in `amou
 ## Operations
 
 `POST /api/admin/backups` is admin-only and writes a full JSON-store backup to `SECMARKET_BACKUP_DIR` or `data/backups`. `/api/reset` automatically creates a `before-reset` backup before replacing state with seed data. `GET /api/health` exposes backup metadata so hosting checks can verify that backups are on persistent storage.
+`GET /api/admin/migration` returns an admin-only migration manifest with collection counts, relation coverage, target tables and a checksum for the current JSON store. Use it with a fresh backup before moving data to PostgreSQL, Supabase or SQLite.
 
 ## Next Backend Work
 

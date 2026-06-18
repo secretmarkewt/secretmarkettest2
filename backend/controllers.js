@@ -603,6 +603,11 @@ async function handleApi(req, res, store) {
     const body = await readBody(req);
     return json(req, res, 201, store.backup?.(body.reason || "admin-manual", auth.user.id) || { ok: false, error: "backup_unavailable" });
   }
+  if (resource === "admin" && parts[2] === "migration" && req.method === "GET") {
+    const auth = authorize(req, res, store, "users");
+    if (!auth) return true;
+    return json(req, res, 200, store.migrationManifest?.() || { error: "migration_manifest_unavailable" });
+  }
   if (resource === "admin" && parts[2] === "transactions" && parts[4] && req.method === "POST") {
     const auth = authorize(req, res, store, "users");
     if (!auth) return true;

@@ -32,6 +32,7 @@ const state = {
   liveHealth: null,
   liveReady: null,
   liveBackups: [],
+  liveMigration: null,
   liveBalance: null,
   liveStatus: "idle",
   liveSyncedAt: "",
@@ -71,6 +72,7 @@ function saveState() {
     live: state.live,
     liveBalance: state.liveBalance,
     liveBackups: state.liveBackups,
+    liveMigration: state.liveMigration,
     liveHealth: state.liveHealth,
     liveReady: state.liveReady,
     liveStatus: state.liveStatus,
@@ -98,6 +100,7 @@ function loadState() {
     state.liveHealth = payload.liveHealth || null;
     state.liveReady = payload.liveReady || null;
     state.liveBackups = Array.isArray(payload.liveBackups) ? payload.liveBackups : [];
+    state.liveMigration = payload.liveMigration || null;
     state.liveBalance = payload.liveBalance || null;
     state.liveStatus = payload.liveStatus || "idle";
     state.liveSyncedAt = payload.liveSyncedAt || "";
@@ -241,6 +244,13 @@ async function syncLiveData(options = {}) {
         state.liveBackups = [];
       }
     }
+    if (role === "admin" && apiClient.live.migrationManifest) {
+      try {
+        state.liveMigration = await apiClient.live.migrationManifest();
+      } catch {
+        state.liveMigration = null;
+      }
+    }
     state.liveStatus = "connected";
     state.liveSyncedAt = new Date().toISOString();
     saveState();
@@ -269,6 +279,7 @@ function resetDemoState() {
   state.liveHealth = null;
   state.liveReady = null;
   state.liveBackups = [];
+  state.liveMigration = null;
   state.liveStatus = "idle";
   state.liveSyncedAt = "";
   notify("Демо-состояние сброшено");

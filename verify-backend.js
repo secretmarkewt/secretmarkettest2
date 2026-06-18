@@ -347,12 +347,22 @@ function authHeader(token) {
     if (!backupList.items?.some((item) => item.fileName === manualBackup.fileName) || backupList.storage?.backupPersistent !== true) {
       throw new Error("backup list failed");
     }
+    const migrationManifest = await request(port, "/api/admin/migration", {
+      headers: authHeader(adminLogin.token),
+    }).then((res) => res.json());
+    if (!migrationManifest.checksum || migrationManifest.counts?.users < 1 || !migrationManifest.targetTables?.includes("orders")) {
+      throw new Error("migration manifest failed");
+    }
     const buyerBackup = await request(port, "/api/admin/backups", {
       method: "POST",
       headers: authHeader(login.token),
       body: JSON.stringify({ reason: "buyer-denied" }),
     });
     if (buyerBackup.status !== 403) throw new Error("manual backup role guard failed");
+    const buyerMigration = await request(port, "/api/admin/migration", {
+      headers: authHeader(login.token),
+    });
+    if (buyerMigration.status !== 403) throw new Error("migration manifest role guard failed");
 
     const initialBalance = await request(port, "/api/balance", {
       headers: authHeader(login.token),
