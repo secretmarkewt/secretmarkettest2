@@ -30,6 +30,20 @@ create table if not exists public.transactions (
   unique (user_id, idempotency_key)
 );
 
+create table if not exists public.developer_applications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete set null,
+  name text not null,
+  telegram text not null,
+  role text not null,
+  about text not null,
+  portfolio_url text not null default '',
+  status text not null default 'new' check (status in ('new', 'review', 'contacted', 'rejected')),
+  admin_note text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.secmarket_items (
   collection text not null,
   id text not null,
@@ -64,6 +78,11 @@ for each row execute function public.secmarket_touch_updated_at();
 drop trigger if exists transactions_touch_updated_at on public.transactions;
 create trigger transactions_touch_updated_at
 before update on public.transactions
+for each row execute function public.secmarket_touch_updated_at();
+
+drop trigger if exists developer_applications_touch_updated_at on public.developer_applications;
+create trigger developer_applications_touch_updated_at
+before update on public.developer_applications
 for each row execute function public.secmarket_touch_updated_at();
 
 create or replace function public.secmarket_handle_new_user()
@@ -118,6 +137,7 @@ $$;
 alter table public.profiles enable row level security;
 alter table public.secmarket_items enable row level security;
 alter table public.transactions enable row level security;
+alter table public.developer_applications enable row level security;
 
 drop policy if exists "profiles_select_own_or_admin" on public.profiles;
 create policy "profiles_select_own_or_admin"
@@ -147,6 +167,30 @@ with check (
 drop policy if exists "transactions_update_admin" on public.transactions;
 create policy "transactions_update_admin"
 on public.transactions for update
+using (public.secmarket_is_admin())
+with check (public.secmarket_is_admin());
+
+drop policy if exists "developer_applications_insert_public" on public.developer_applications;
+create policy "developer_applications_insert_public"
+on public.developer_applications for insert
+to anon, authenticated
+with check (
+  length(trim(name)) >= 2
+  and length(trim(telegram)) >= 2
+  and length(trim(role)) >= 2
+  and length(trim(about)) >= 10
+);
+
+drop policy if exists "developer_applications_select_admin_or_own" on public.developer_applications;
+create policy "developer_applications_select_admin_or_own"
+on public.developer_applications for select
+to authenticated
+using (public.secmarket_is_admin() or user_id = (select auth.uid()));
+
+drop policy if exists "developer_applications_update_admin" on public.developer_applications;
+create policy "developer_applications_update_admin"
+on public.developer_applications for update
+to authenticated
 using (public.secmarket_is_admin())
 with check (public.secmarket_is_admin());
 
@@ -197,3 +241,13 @@ on public.transactions (user_id, created_at desc);
 
 create index if not exists transactions_status_idx
 on public.transactions (status, created_at desc);
+
+create index if not exists developer_applications_status_created_idx
+on public.developer_applications (status, created_at desc);
+
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.profiles to authenticated;
+grant select, insert, update on public.secmarket_items to authenticated;
+grant select, insert, update on public.transactions to authenticated;
+grant insert on public.developer_applications to anon, authenticated;
+grant select, update on public.developer_applications to authenticated;

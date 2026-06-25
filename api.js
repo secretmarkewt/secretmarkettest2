@@ -119,7 +119,32 @@ function isSupabaseEnabled() {
 
 function syncSupabaseToken(session) {
   if (session?.token) setAuthToken(session.token);
+  else setAuthToken("");
   return session;
+}
+
+function localRegistrationFallback(payload, error) {
+  const email = String(payload.email || "").trim().toLowerCase();
+  const requestedRole = String(payload.role || "").trim();
+  const role = ["buyer", "seller"].includes(requestedRole) ? requestedRole : "buyer";
+  return {
+    token: "",
+    provider: "local-fallback",
+    fallbackReason: error?.message || "live provider unavailable",
+    user: {
+      id: `local-${role}-${Date.now()}`,
+      role,
+      name: String(payload.name || email.split("@")[0] || "Пользователь").trim(),
+      email,
+      telegram: String(payload.telegram || "").trim(),
+      promoCode: payload.promoCode || "",
+      promoTitle: payload.promoTitle || "",
+      status: "active",
+      balance: 0,
+      frozenBalance: 0,
+    },
+    registrationNotice: { enabled: false, sent: false, error: "live_provider_unavailable" },
+  };
 }
 
 async function requestLive(path, options = {}) {
@@ -144,7 +169,14 @@ async function requestLive(path, options = {}) {
 
 const live = {
   async register(payload) {
-    if (isSupabaseEnabled()) return syncSupabaseToken(await supabaseProvider().register(payload));
+    if (isSupabaseEnabled()) {
+      try {
+        return syncSupabaseToken(await supabaseProvider().register(payload));
+      } catch (error) {
+        if (!getApiBaseUrl()) return localRegistrationFallback(payload, error);
+        throw error;
+      }
+    }
     const session = await requestLive("/api/auth/register", {
       method: "POST",
       token: "",

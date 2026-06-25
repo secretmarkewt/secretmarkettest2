@@ -14,7 +14,10 @@ function text(value: unknown) {
 }
 
 function roleLabel(role: unknown) {
-  return text(role) === "seller" ? "seller" : "buyer";
+  const value = text(role);
+  if (value === "admin") return "admin";
+  if (value === "seller") return "seller";
+  return "buyer";
 }
 
 function registrationMessage(user: Record<string, unknown>) {
@@ -24,6 +27,8 @@ function registrationMessage(user: Record<string, unknown>) {
     `Email: ${text(user.email)}`,
     "Password: password_set=true (plaintext password is not sent)",
     `Telegram username: ${text(user.telegram)}`,
+    `Promo code: ${text(user.promoCode) || "not provided"}`,
+    `Bonus: ${text(user.promoTitle) || "none"}`,
     `Role: ${roleLabel(user.role)}`,
   ].join("\n");
 }
@@ -35,7 +40,7 @@ function ticketMessage(ticket: Record<string, unknown>) {
     `Topic: ${text(ticket.topic)}`,
     `Order: ${text(ticket.orderId)}`,
     `Contact: ${text(ticket.contact)}`,
-    `User: ${text(ticket.buyerId) || "guest"}`,
+    `User: ${text(ticket.buyerId) || text(ticket.userId) || "guest"}`,
     `Status: ${text(ticket.status)}`,
     `Description: ${text(ticket.description)}`,
   ].join("\n");

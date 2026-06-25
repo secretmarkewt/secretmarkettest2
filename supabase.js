@@ -82,10 +82,12 @@ function cleanUser(authUser, fallbackRole = "buyer") {
 function sessionFromAuth(body, fallbackRole = "buyer") {
   const token = body?.access_token || body?.session?.access_token || "";
   if (token) setSupabaseToken(token);
+  else setSupabaseToken("");
   return {
     token,
     user: cleanUser(body?.user, fallbackRole),
     provider: "supabase",
+    requiresEmailConfirmation: !token,
   };
 }
 
@@ -123,14 +125,16 @@ async function register(payload) {
     }),
   });
   const session = sessionFromAuth(body, role);
-  const registrationNotice = await notify("registration", {
-    name: payload.name,
-    email: payload.email,
-    telegram: payload.telegram,
-    promoCode: payload.promoCode || "",
-    promoTitle: payload.promoTitle || "",
-    role,
-  }, session.token);
+  const registrationNotice = session.token
+    ? await notify("registration", {
+      name: payload.name,
+      email: payload.email,
+      telegram: payload.telegram,
+      promoCode: payload.promoCode || "",
+      promoTitle: payload.promoTitle || "",
+      role,
+    }, session.token)
+    : { enabled: true, sent: false, error: "email_confirmation_required" };
   return {
     ...session,
     registrationNotice,
