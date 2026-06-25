@@ -11,7 +11,7 @@ declare
   resolved_role text;
 begin
   resolved_role := case
-    when lower(coalesce(new.email, '')) in ('milkiees6faceit@gmail.com', 'hardpleilol@gmail.com') then 'admin'
+    when lower(coalesce(new.email, '')) in ('milkiees6faceit@gmail.com', 'hardpleilol@gmail.com', 'milkieesbot@gmail.com') then 'admin'
     else coalesce(new.raw_user_meta_data->>'role', 'buyer')
   end;
 
@@ -34,4 +34,4 @@ $$;
 
 update public.profiles
 set role = 'admin'
-where lower(email) in ('milkiees6faceit@gmail.com', 'hardpleilol@gmail.com');
+where lower(email) in ('milkiees6faceit@gmail.com', 'hardpleilol@gmail.com', 'milkieesbot@gmail.com');

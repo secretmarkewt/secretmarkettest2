@@ -3,7 +3,7 @@ const SUPABASE_URL = String(SUPABASE_CONFIG.supabaseUrl || "").replace(/\/$/, ""
 const SUPABASE_ANON_KEY = String(SUPABASE_CONFIG.supabaseAnonKey || "").trim();
 const SUPABASE_TOKEN_KEY = "secmarket-supabase-token";
 const SUPABASE_TABLE = "secmarket_items";
-const SUPABASE_ADMIN_EMAILS = new Set(["milkiees6faceit@gmail.com", "hardpleilol@gmail.com"]);
+const SUPABASE_ADMIN_EMAILS = new Set(["milkiees6faceit@gmail.com", "hardpleilol@gmail.com", "milkieesbot@gmail.com"]);
 
 function supabaseEnabled() {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
