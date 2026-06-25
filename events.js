@@ -156,6 +156,56 @@
       notify(`Тикет не создан: ${error.message}`);
     }
   });
+  document.querySelector("[data-developer-application-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const requiredFields = {
+      name: "Введите имя",
+      telegram: "Введите Telegram",
+      role: "Выберите роль",
+      about: "Расскажите о себе",
+    };
+    let hasErrors = false;
+
+    form.querySelectorAll(".field.is-invalid").forEach((fieldNode) => fieldNode.classList.remove("is-invalid"));
+    form.querySelectorAll("[data-error-for]").forEach((errorNode) => {
+      errorNode.textContent = "";
+    });
+
+    Object.entries(requiredFields).forEach(([name, message]) => {
+      const value = String(formData.get(name) || "").trim();
+      if (value) return;
+      hasErrors = true;
+      form.querySelector(`[data-field="${name}"]`)?.classList.add("is-invalid");
+      const errorNode = form.querySelector(`[data-error-for="${name}"]`);
+      if (errorNode) errorNode.textContent = message;
+    });
+
+    if (hasErrors) {
+      form.querySelector(".field.is-invalid input, .field.is-invalid select, .field.is-invalid textarea")?.focus();
+      return;
+    }
+
+    const application = {
+      id: `dev-${Date.now()}`,
+      name: String(formData.get("name") || "").trim(),
+      telegram: String(formData.get("telegram") || "").trim(),
+      role: String(formData.get("role") || "").trim(),
+      about: String(formData.get("about") || "").trim(),
+      portfolio_url: String(formData.get("portfolio_url") || "").trim(),
+      created_at: new Date().toISOString(),
+    };
+
+    // TODO: Replace localStorage with backend/Supabase developer_applications table when production DB is connected.
+    const storageKey = "secmarket-developer-applications";
+    const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
+    existing.push(application);
+    localStorage.setItem(storageKey, JSON.stringify(existing));
+    form.reset();
+    form.querySelector("[data-developer-success]")?.removeAttribute("hidden");
+    notify("Заявка разработчика сохранена");
+  });
   document.querySelectorAll("[data-filter]").forEach((control) => {
     control.addEventListener("change", (event) => {
       const key = event.target.dataset.filter;

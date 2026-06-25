@@ -164,6 +164,12 @@ if (!app.innerHTML.includes("mobile-theme-toggle") || !app.innerHTML.includes("d
   throw new Error("mobile theme toggle did not render");
 }
 
+context.location.pathname = "/developers";
+context.render();
+if (!app.innerHTML.includes('data-developer-application-form') || !app.innerHTML.includes("Стать разработчиком")) {
+  throw new Error("developer application page did not render");
+}
+
 context.location.pathname = "/catalog";
 context.render();
 if (!app.innerHTML.includes("Игровая валюта") || !app.innerHTML.includes("Услуги")) {

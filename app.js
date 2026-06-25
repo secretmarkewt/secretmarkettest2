@@ -100,7 +100,7 @@ function footer() {
           ["Покупателям", ["/buyer-rules", "/refund-policy", "/crypto-payment-guide"]],
           ["Продавцам", ["/seller-rules", "/fees", "/seller/withdraw"]],
           ["Поддержка", ["/support", "/support/ticket", "/faq", "/contacts"]],
-          ["Мы в сети", ["/status-map", "/privacy", "/terms", "/backend-structure", "/launch-readiness"]],
+          ["Мы в сети", ["/status-map", "/privacy", "/terms", "/backend-structure", "/launch-readiness", "/developers"]],
         ].map(([title, links]) => `<div><h3>${title}</h3>${links.map((href) => `<a href="${href}" data-link>${infoPages[href]?.[0] || href}</a>`).join("")}</div>`).join("")}
       </div>
     </footer>`;

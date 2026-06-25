@@ -11,15 +11,55 @@ const infoPageCopy = {
   "/status-map": ["Карта статусов", "Основные статусы оплаты, заказов, средств продавца и выплат."],
   "/backend-structure": ["Backend-ready структура", "Сущности, API-контракт и правила доступа, которые уже заложены в MVP."],
   "/launch-readiness": ["Готовность к запуску", "Чеклист MVP-запуска, live API, GitHub Pages, CI и production-блокеров."],
+  "/developers": ["Стать разработчиком", "Анкета для разработчиков, дизайнеров и тестировщиков, которые хотят помочь Secret Market."],
 };
 
 function info(path) {
   if (path === "/status-map") return statusMap();
   if (path === "/backend-structure") return backendStructure();
   if (path === "/launch-readiness") return launchReadiness();
+  if (path === "/developers") return developerApplicationPage();
   const data = infoPageCopy[path] || ["Страница", "Раздел будет добавлен позже."];
   const rows = infoRows(path);
   return page(data[0], `<section class="panel"><p class="lead">${data[1]}</p><div class="list section">${rows.map(row).join("")}</div></section>`, "Info");
+}
+
+function DeveloperApplicationForm() {
+  const roles = ["Frontend Developer", "Backend Developer", "Fullstack Developer", "UI/UX Designer", "Mobile Developer", "Tester / QA", "Другое"];
+  return `<form class="developer-form" data-developer-application-form novalidate>
+    <div class="developer-form-grid">
+      <label class="field" data-field="name"><span>Имя</span><input name="name" placeholder="Ваше имя" autocomplete="name" /><small class="field-error" data-error-for="name"></small></label>
+      <label class="field" data-field="telegram"><span>Telegram для связи</span><input name="telegram" placeholder="@username" autocomplete="off" /><small class="field-error" data-error-for="telegram"></small></label>
+      <label class="field" data-field="role"><span>Роль разработчика</span><select name="role"><option value="">Выберите роль</option>${roles.map((role) => `<option value="${role}">${role}</option>`).join("")}</select><small class="field-error" data-error-for="role"></small></label>
+      <label class="field" data-field="portfolio_url"><span>Ссылка на проект или портфолио</span><input name="portfolio_url" placeholder="GitHub, сайт, Behance, портфолио или другой проект" inputmode="url" /><small class="field-error" data-error-for="portfolio_url"></small></label>
+      <label class="field developer-about-field" data-field="about"><span>Расскажите о себе</span><textarea name="about" placeholder="Напишите ваш опыт, навыки, чем можете помочь проекту"></textarea><small class="field-error" data-error-for="about"></small></label>
+    </div>
+    <div class="developer-form-footer">
+      <p class="muted">Заявка сохраняется локально в MVP. При подключении production backend она уйдет в таблицу developer_applications.</p>
+      <button class="btn primary" type="submit">Отправить заявку</button>
+    </div>
+    <div class="developer-success" data-developer-success hidden>Заявка отправлена! Мы свяжемся с вами в Telegram.</div>
+  </form>`;
+}
+
+function developerApplicationPage() {
+  return page("Стать разработчиком", `<section class="developer-page">
+    <div class="developer-hero panel">
+      <p class="eyebrow">Команда Secret Market</p>
+      <h2>Хочешь стать частью проекта?</h2>
+      <p class="lead">Заполни небольшую анкету, расскажи о себе и покажи свои работы. Мы свяжемся с тобой в Telegram.</p>
+      <div class="developer-perks">
+        <span>Frontend</span>
+        <span>Backend</span>
+        <span>UI/UX</span>
+        <span>QA</span>
+      </div>
+    </div>
+    <section class="developer-card panel">
+      <div class="section-head"><div><h2>Анкета разработчика</h2><p class="muted">Пиши коротко и по делу: опыт, стек, чем хочешь помочь и где посмотреть работы.</p></div><span class="status ok">open</span></div>
+      ${DeveloperApplicationForm()}
+    </section>
+  </section>`, "Developers");
 }
 
 function statusMap() {
