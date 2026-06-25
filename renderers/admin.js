@@ -11,6 +11,7 @@
   if (path.includes("/operations")) return adminOperations();
   if (path.includes("/disputes")) return adminTable("Админка споров", ["#12345 · покупатель открыл спор", "Причина: товар не работает", "Чат доступен", "Оплата подтверждена", "Решение: запросить данные"]);
   if (path.includes("/tickets")) return adminTickets();
+  if (path.includes("/developers")) return adminDevelopers();
   if (path.includes("/categories")) return adminCategories();
   if (path.includes("/promocodes")) return adminPromocodes();
   if (path.includes("/fees")) return adminFees();
@@ -295,6 +296,52 @@ function roleName(role) {
     seller: "Продавец",
   };
   return map[role] || role || "Гость";
+}
+
+function developerApplications() {
+  try {
+    const rows = JSON.parse(localStorage.getItem("secmarket-developer-applications") || "[]");
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+function developerStatusLabel(status) {
+  if (status === "contacted") return "связались";
+  if (status === "review") return "на проверке";
+  if (status === "rejected") return "отклонена";
+  return "актуальная";
+}
+
+function adminDevelopers() {
+  const applications = developerApplications();
+  const activeApplications = applications.filter((application) => !["contacted", "rejected"].includes(application.status));
+  const rows = applications.map((application) => {
+    const status = developerStatusLabel(application.status);
+    const portfolio = application.portfolio_url ? ` · ${escapeHtml(application.portfolio_url)}` : "";
+    const createdAt = application.created_at ? new Date(application.created_at).toLocaleString("ru-RU") : "дата не указана";
+    const telegramUser = String(application.telegram || "").replace(/^@/, "");
+    return `<article class="developer-admin-row list-row">
+      <span><strong>${escapeHtml(application.name || "Без имени")}</strong> · ${escapeHtml(application.role || "роль не выбрана")}<br><span class="muted">${escapeHtml(application.telegram || "telegram не указан")}${portfolio}<br>${escapeHtml(application.about || "описание не заполнено")} · ${createdAt}</span></span>
+      <span class="admin-row-actions"><span class="status ${status === "актуальная" ? "ok" : "wait"}">${status}</span>${telegramUser ? `<a class="btn tiny" href="https://t.me/${escapeHtml(telegramUser)}" target="_blank" rel="noreferrer">Telegram</a>` : ""}</span>
+    </article>`;
+  });
+  return page("Разработчики", `<div class="layout"><aside class="sidebar">${sideLinks(adminLinks)}</aside><section>
+    <div class="grid metrics">
+      <div class="metric panel"><strong>${activeApplications.length}</strong><span>актуальные заявки</span></div>
+      <div class="metric panel"><strong>${applications.length}</strong><span>всего анкет</span></div>
+      <div class="metric panel"><strong>${new Set(applications.map((application) => application.role).filter(Boolean)).size}</strong><span>ролей в очереди</span></div>
+      <div class="metric panel"><strong>local</strong><span>MVP-хранилище</span></div>
+    </div>
+    <section class="panel section"><div class="section-head"><div><h2>Актуальные заявки</h2><p class="muted">Заявки с формы “Стать разработчиком”. Сейчас они хранятся локально до подключения developer_applications в backend/Supabase.</p></div><a class="btn primary" href="/developers" data-link>Открыть форму</a></div><div class="list">${rows.length ? rows.join("") : emptyAdminState("Заявок разработчиков пока нет")}</div></section>
+    <section class="panel section"><h2>Что подключить дальше</h2><div class="list">${[
+      "Таблица developer_applications в production database",
+      "Статусы: новая, на проверке, связались, отклонена",
+      "Telegram-уведомление админу о новой заявке",
+      "Экспорт кандидатов и комментарии администратора",
+    ].map(row).join("")}</div></section>
+  </section></div>`, "Admin");
 }
 
 function emptyAdminState(text) {

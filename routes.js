@@ -71,6 +71,7 @@ const SECMARKET_ROUTES = [
   { path: "/admin/operations", area: "admin", title: "Operations" },
   { path: "/admin/disputes", area: "admin", title: "Споры" },
   { path: "/admin/tickets", area: "admin", title: "Тикеты" },
+  { path: "/admin/developers", area: "admin", title: "Разработчики" },
   { path: "/admin/categories", area: "admin", title: "Категории" },
   { path: "/admin/promocodes", area: "admin", title: "Промокоды" },
   { path: "/admin/fees", area: "admin", title: "Комиссии" },

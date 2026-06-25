@@ -207,6 +207,7 @@ const SECMARKET_DATA = {
     ["Operations", "/admin/operations"],
     ["Споры", "/admin/disputes"],
     ["Тикеты", "/admin/tickets"],
+    ["Разработчики", "/admin/developers"],
     ["Категории", "/admin/categories"],
     ["Промокоды", "/admin/promocodes"],
     ["Комиссии", "/admin/fees"],

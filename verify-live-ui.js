@@ -55,6 +55,9 @@ const liveState = {
 
 const storage = {
   "secmarket-demo-state": JSON.stringify(liveState),
+  "secmarket-developer-applications": JSON.stringify([
+    { id: "dev-verify", name: "Verify Dev", telegram: "@verifydev", role: "Frontend Developer", about: "Builds UI", portfolio_url: "https://github.com/verify", status: "new", created_at: "2026-06-25T00:00:00.000Z" },
+  ]),
   "secmarket-session": JSON.stringify({
     role: "seller",
     user: { id: "usr-seller", name: "Live Seller", email: "seller@example.com", role: "seller", status: "active", balance: 620, frozenBalance: 25 },
@@ -341,6 +344,12 @@ context.location.pathname = "/admin/tickets";
 context.render();
 if (!app.innerHTML.includes("требуют ответа") || !app.innerHTML.includes("/support/tickets/SUP-LIVE")) {
   throw new Error("admin ticket queue did not render live support workflow");
+}
+
+context.location.pathname = "/admin/developers";
+context.render();
+if (!app.innerHTML.includes("Verify Dev") || !app.innerHTML.includes("developer_applications")) {
+  throw new Error("admin developer applications did not render");
 }
 
 context.location.pathname = "/admin/audit";

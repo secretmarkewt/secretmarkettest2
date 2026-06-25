@@ -194,6 +194,7 @@
       role: String(formData.get("role") || "").trim(),
       about: String(formData.get("about") || "").trim(),
       portfolio_url: String(formData.get("portfolio_url") || "").trim(),
+      status: "new",
       created_at: new Date().toISOString(),
     };
 
