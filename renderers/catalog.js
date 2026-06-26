@@ -162,10 +162,14 @@ function homeProductGrid(list) {
 
 function marketplaceIntro() {
   return `<section class="market-intro" data-cursor-glow>
+    <div class="market-radar" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
     <div class="market-intro-copy">
       <p class="eyebrow hero-badge">${uiIcon("info")} Безопасный маркетплейс цифровых товаров</p>
-      <h1>Найди нужный товар <span>за секунды</span></h1>
-      <p class="lead">Сравнивай аккаунты, ключи, подписки и игровую валюту у продавцов с рейтингом, чатом и защитой заказа.</p>
+      <div class="hero-kicker"><span>SM-01</span><span>protected checkout</span><span>digital goods</span></div>
+      <h1>Цифровые товары <span>под защитой сделки</span></h1>
+      <p class="lead">Выбирай продавца по рейтингу, оплачивай USDT и держи заказ, чат и спор в одной безопасной сделке.</p>
       <div class="market-pulse">${homePulseItems().map((item) => `<span>${item}</span>`).join("")}</div>
       <div class="hero-actions">
         <a class="btn primary" href="/catalog" data-link>Открыть каталог</a>
@@ -185,6 +189,11 @@ function marketplaceIntro() {
         <div class="mascot-card mascot-card-top"><strong>4.91</strong><span>средний рейтинг</span></div>
         <div class="mascot-card mascot-card-bottom"><strong>500+</strong><span>сделок закрыто</span></div>
       </aside>
+      <div class="market-command-card">
+        <span>live desk</span>
+        <strong>escrow / chat / payout</strong>
+        <small>заказы, тикеты и баланс в одном контуре</small>
+      </div>
     </div>
   </section>`;
 }
@@ -213,10 +222,13 @@ function homeSellerGrid() {
 function home() {
   return `${header()}<main class="main">
     ${marketplaceIntro()}
+    ${homeStats()}
     ${trustBar()}
     ${quickPicks()}
     ${homeSection("Популярные категории", homeCategoryGrid(), `<a class="btn ghost" href="/catalog" data-link>Все категории</a>`)}
+    ${paymentBlock()}
     ${homeSection("Рекомендованные товары", homeProductGrid(homeRecommendedProducts), `<a class="btn ghost" href="/catalog" data-link>Смотреть все</a>`)}
+    ${homeSection("Продавцы в онлайне", homeSellerGrid(), `<a class="btn ghost" href="/catalog" data-link>Все продавцы</a>`)}
     ${footer()}
   </main>`;
 }
