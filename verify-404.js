@@ -12,7 +12,7 @@ function wait(ms) {
 (async () => {
   const source404 = fs.readFileSync("404.html", "utf8");
   if (!source404.includes("assets/404-secret-market.jpg")) throw new Error("404 source image is missing");
-  if (!source404.includes("https://secretmarkewt.github.io/secretmarkettest/")) throw new Error("404 source retry link is missing");
+  if (!source404.includes("location.hostname.endsWith(\"github.io\")")) throw new Error("404 source dynamic Pages retry link is missing");
   if (!source404.includes("Попробовать еще раз")) throw new Error("404 source accessible label is broken");
 
   if (!fs.existsSync(path.join(dist, "404.html"))) throw new Error("dist 404.html is missing");

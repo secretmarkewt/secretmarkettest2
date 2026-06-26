@@ -2,6 +2,7 @@ const fs = require("fs");
 const vm = require("vm");
 
 const pushes = [];
+const pagesBasePath = "/secretmarkettest2";
 const context = {
   window: {
     clearTimeout() {},
@@ -12,8 +13,8 @@ const context = {
   },
   location: {
     protocol: "https:",
-    hostname: "t1lt54.github.io",
-    pathname: "/secretmarket1/catalog/minecraft",
+    hostname: "secretmarkewt.github.io",
+    pathname: `${pagesBasePath}/catalog/minecraft`,
     hash: "",
   },
   history: {
@@ -48,13 +49,13 @@ if (context.currentPath() !== "/catalog/minecraft") {
   throw new Error(`GitHub Pages path strip failed: ${context.currentPath()}`);
 }
 
-if (context.assetPath("assets/secret-market-logo.png") !== "/secretmarket1/assets/secret-market-logo.png") {
+if (context.assetPath("assets/secret-market-logo.png") !== `${pagesBasePath}/assets/secret-market-logo.png`) {
   throw new Error(`GitHub Pages asset path failed: ${context.assetPath("assets/secret-market-logo.png")}`);
 }
 
 context.go("/catalog/roblox");
 
-if (pushes[0] !== "/secretmarket1/catalog/roblox") {
+if (pushes[0] !== `${pagesBasePath}/catalog/roblox`) {
   throw new Error(`GitHub Pages base path push failed: ${pushes[0]}`);
 }
 

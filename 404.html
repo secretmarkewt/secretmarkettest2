@@ -52,7 +52,14 @@
   </head>
   <body>
     <main class="not-found" aria-label="404 Secret Market">
-      <a class="retry-link" href="https://secretmarkewt.github.io/secretmarkettest/">Попробовать еще раз</a>
+      <a class="retry-link" href="/" aria-label="Попробовать еще раз">Попробовать еще раз</a>
     </main>
+    <script>
+      const retryLink = document.querySelector(".retry-link");
+      if (retryLink) {
+        const repo = location.hostname.endsWith("github.io") ? location.pathname.split("/").filter(Boolean)[0] : "";
+        retryLink.href = repo ? `/${repo}/` : "/";
+      }
+    </script>
   </body>
 </html>

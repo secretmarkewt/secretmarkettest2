@@ -1,6 +1,10 @@
 let currency = "USDT";
 let activeStep = 1;
-const APP_BASE_PATH = location.hostname.endsWith("github.io") ? `/${location.pathname.split("/").filter(Boolean)[0] || ""}` : "";
+const APP_BASE_PATH = (() => {
+  if (!location.hostname.endsWith("github.io")) return "";
+  const repo = location.pathname.split("/").filter(Boolean)[0];
+  return repo ? `/${repo}` : "";
+})();
 const PRESENCE_CLIENT_KEY = "secmarket-presence-client-id";
 
 const state = {
@@ -300,7 +304,9 @@ function currentPath() {
   if (location.protocol === "file:") {
     return (location.hash.replace(/^#/, "").split("?")[0]) || "/";
   }
-  const path = location.pathname.replace(APP_BASE_PATH, "") || "/";
+  const path = APP_BASE_PATH && location.pathname.startsWith(APP_BASE_PATH)
+    ? location.pathname.slice(APP_BASE_PATH.length) || "/"
+    : location.pathname || "/";
   return path.startsWith("/") ? path : `/${path}`;
 }
 

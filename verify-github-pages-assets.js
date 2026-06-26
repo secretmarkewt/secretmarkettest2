@@ -2,6 +2,7 @@ const fs = require("fs");
 const vm = require("vm");
 
 const app = { innerHTML: "" };
+const pagesBasePath = "/secretmarkettest2";
 const context = {
   window: {
     clearTimeout() {},
@@ -20,8 +21,8 @@ const context = {
   },
   location: {
     protocol: "https:",
-    hostname: "penisxxxl.github.io",
-    pathname: "/secretmarket1/seller/products/create",
+    hostname: "secretmarkewt.github.io",
+    pathname: `${pagesBasePath}/seller/products/create`,
     hash: "",
   },
   history: {
@@ -78,17 +79,17 @@ vm.createContext(context);
   "app.js",
 ].forEach((file) => vm.runInContext(fs.readFileSync(file, "utf8"), context, { filename: file }));
 
-if (!app.innerHTML.includes('src="/secretmarket1/assets/secret-market-logo.png"')) {
+if (!app.innerHTML.includes(`src="${pagesBasePath}/assets/secret-market-logo.png"`)) {
   throw new Error("nested seller route logo asset path failed");
 }
 
-context.location.pathname = "/secretmarket1/orders/12345";
+context.location.pathname = `${pagesBasePath}/orders/12345`;
 context.render();
-if (!app.innerHTML.includes('src="/secretmarket1/assets/secret-market-logo.png"')) {
+if (!app.innerHTML.includes(`src="${pagesBasePath}/assets/secret-market-logo.png"`)) {
   throw new Error("nested order route logo asset path failed");
 }
 
-context.location.pathname = "/secretmarket1/";
+context.location.pathname = `${pagesBasePath}/`;
 context.render();
 if (!app.innerHTML.includes('class="market-intro"')) {
   throw new Error("home marketplace intro failed");

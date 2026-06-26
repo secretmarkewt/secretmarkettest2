@@ -167,6 +167,10 @@ function marketplaceIntro() {
       <h1>Найди нужный товар <span>за секунды</span></h1>
       <p class="lead">Сравнивай аккаунты, ключи, подписки и игровую валюту у продавцов с рейтингом, чатом и защитой заказа.</p>
       <div class="market-pulse">${homePulseItems().map((item) => `<span>${item}</span>`).join("")}</div>
+      <div class="hero-actions">
+        <a class="btn primary" href="/catalog" data-link>Открыть каталог</a>
+        <a class="btn ghost" href="/seller/products/create" data-link>Разместить товар</a>
+      </div>
       <form class="market-search" data-search-form>
         <span>${uiIcon("search")}</span>
         <input name="query" value="${state.query}" placeholder="Найти Robux, Steam key, Telegram Premium..." />
