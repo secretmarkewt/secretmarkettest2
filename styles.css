@@ -4956,6 +4956,154 @@ a.list-row:hover,
   background: linear-gradient(145deg, rgba(46, 255, 119, 0.26), rgba(255, 255, 255, 0.04));
 }
 
+.security-block {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.74fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 58px;
+  padding: 34px;
+  border: 1px solid rgba(46, 255, 119, 0.16);
+  border-radius: 34px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(46, 255, 119, 0.16), transparent 18rem),
+    linear-gradient(135deg, rgba(8, 16, 13, 0.9), rgba(4, 7, 9, 0.86));
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.42);
+}
+
+.security-block::after {
+  content: "";
+  position: absolute;
+  right: -120px;
+  bottom: -120px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: rgba(46, 255, 119, 0.12);
+  filter: blur(34px);
+}
+
+.security-block > * {
+  position: relative;
+  z-index: 1;
+}
+
+.security-block h2 {
+  max-width: 620px;
+  font-size: clamp(34px, 4.5vw, 68px);
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+}
+
+.advantages-grid,
+.workflow-grid,
+.faq-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.advantages-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.advantage-card,
+.workflow-card,
+.faq-card {
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 24px;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.014)),
+    rgba(5, 9, 11, 0.72);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.28);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.advantage-card:hover,
+.workflow-card:hover,
+.faq-card:hover {
+  border-color: rgba(46, 255, 119, 0.32);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.36), 0 0 38px rgba(46, 255, 119, 0.1);
+  transform: translateY(-4px);
+}
+
+.advantage-card {
+  padding: 20px;
+}
+
+.advantage-card span,
+.workflow-card span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  height: 32px;
+  margin-bottom: 18px;
+  border-radius: 999px;
+  background: rgba(46, 255, 119, 0.1);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.advantage-card strong,
+.workflow-card strong {
+  display: block;
+  color: var(--text);
+  font-size: 20px;
+}
+
+.advantage-card p,
+.workflow-card p,
+.faq-card p {
+  margin: 10px 0 0;
+  color: rgba(210, 224, 216, 0.68);
+  line-height: 1.6;
+}
+
+.workflow-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workflow-card {
+  min-height: 210px;
+  padding: 24px;
+}
+
+.faq-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.faq-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.faq-card summary {
+  cursor: pointer;
+  padding: 20px 22px;
+  color: var(--text);
+  font-weight: 850;
+  list-style: none;
+}
+
+.faq-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-card summary::after {
+  content: "+";
+  float: right;
+  color: var(--accent);
+}
+
+.faq-card[open] summary::after {
+  content: "-";
+}
+
+.faq-card p {
+  padding: 0 22px 22px;
+}
+
 .layout {
   align-items: start;
 }
@@ -5156,6 +5304,18 @@ a.list-row:hover,
 
   .home-product-grid,
   .home-sellers {
+    grid-template-columns: 1fr;
+  }
+
+  .security-block {
+    grid-template-columns: 1fr;
+    padding: 24px;
+    border-radius: 26px;
+  }
+
+  .advantages-grid,
+  .workflow-grid,
+  .faq-grid {
     grid-template-columns: 1fr;
   }
 

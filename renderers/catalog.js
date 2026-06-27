@@ -11,6 +11,7 @@ const categoryImages = {
   "Аккаунты": "assets/categories/accounts.png",
   "Ключи": "assets/categories/keys.png",
   "Игровая валюта": "assets/categories/game-currency.png",
+  "Игровые товары": "assets/categories/game-currency.png",
   "Подписки": "assets/categories/subscriptions.png",
   "Софт": "assets/categories/software.png",
   "Услуги": "assets/categories/services.png",
@@ -61,10 +62,11 @@ function productCards(list = products) {
 const homeCategories = [
   ["Аккаунты", "Игровые и сервисные аккаунты"],
   ["Ключи", "Steam, Xbox, PlayStation"],
-  ["Игровая валюта", "Robux, VP, UC, донат"],
+  ["Игровая валюта", "Предметы, валюта, донат"],
   ["Подписки", "Telegram, Discord, Spotify"],
   ["Софт", "Лицензии, утилиты, VPN"],
   ["Услуги", "Буст, настройка, помощь"],
+  ["Другое", "Редкие цифровые позиции"],
 ];
 
 const homeRecommendedProducts = [
@@ -219,6 +221,66 @@ function homeSellerGrid() {
     </article>`).join("")}</div>`;
 }
 
+function advantagesGrid() {
+  const items = [
+    ["Гарант-система", "Средства удерживаются до подтверждения заказа покупателем."],
+    ["Проверенные продавцы", "Рейтинги, история продаж и статусы помогают выбрать надёжного исполнителя."],
+    ["Быстрая поддержка", "Тикеты, Telegram-менеджер и спор привязаны к конкретной сделке."],
+    ["Удобный кабинет", "Баланс, заказы, чаты, выплаты и товары собраны в одном интерфейсе."],
+  ];
+  return `<div class="advantages-grid">${items.map(([title, text], index) => `
+    <article class="advantage-card">
+      <span>0${index + 1}</span>
+      <strong>${title}</strong>
+      <p>${text}</p>
+    </article>`).join("")}</div>`;
+}
+
+function howItWorks() {
+  const steps = [
+    ["Выбери товар", "Открой каталог, сравни продавцов, цену, рейтинг и способ выдачи."],
+    ["Оплати безопасно", "Checkout покажет сумму, комиссию и сеть USDT перед созданием платежа."],
+    ["Получай и подтверждай", "Чат, выдача и спор остаются внутри заказа до финального подтверждения."],
+  ];
+  return `<section class="home-section workflow-section" id="how-it-works">
+    <div class="section-head"><h2>Как это работает</h2><a class="btn ghost" href="/checkout" data-link>Посмотреть checkout</a></div>
+    <div class="workflow-grid">${steps.map(([title, text], index) => `
+      <article class="workflow-card">
+        <span>${index + 1}</span>
+        <strong>${title}</strong>
+        <p>${text}</p>
+      </article>`).join("")}</div>
+  </section>`;
+}
+
+function securityBlock() {
+  return `<section class="security-block" id="advantages">
+    <div>
+      <p class="eyebrow">Security layer</p>
+      <h2>Покупка, спор и гарантия в одном контуре</h2>
+      <p class="muted">Secret Market держит ключевые действия сделки рядом: платеж, чат, выдачу, подтверждение, тикет и историю. Это снижает хаос и делает заказ понятным для покупателя, продавца и поддержки.</p>
+    </div>
+    ${advantagesGrid()}
+  </section>`;
+}
+
+function homeFaq() {
+  const rows = [
+    ["Как защищается покупка?", "Деньги учитываются в заказе до подтверждения получения или решения спора."],
+    ["Можно ли продавать свои товары?", "Да, через раздел продажи можно создать товар и управлять заказами продавца."],
+    ["Какие оплаты поддерживаются?", "MVP показывает USDT TRC20, TON и BEP20, а комиссии считаются прозрачно на checkout."],
+    ["Куда писать при проблеме?", "Создайте тикет в поддержке или напишите Telegram-менеджеру @secretmarketsupport."],
+  ];
+  return `<section class="home-section faq-section">
+    <div class="section-head"><h2>FAQ</h2><a class="btn ghost" href="/support" data-link>Поддержка</a></div>
+    <div class="faq-grid">${rows.map(([question, answer]) => `
+      <details class="faq-card">
+        <summary>${question}</summary>
+        <p>${answer}</p>
+      </details>`).join("")}</div>
+  </section>`;
+}
+
 function home() {
   return `${header()}<main class="main">
     ${marketplaceIntro()}
@@ -227,8 +289,11 @@ function home() {
     ${quickPicks()}
     ${homeSection("Популярные категории", homeCategoryGrid(), `<a class="btn ghost" href="/catalog" data-link>Все категории</a>`)}
     ${paymentBlock()}
+    ${securityBlock()}
+    ${howItWorks()}
     ${homeSection("Рекомендованные товары", homeProductGrid(homeRecommendedProducts), `<a class="btn ghost" href="/catalog" data-link>Смотреть все</a>`)}
     ${homeSection("Продавцы в онлайне", homeSellerGrid(), `<a class="btn ghost" href="/catalog" data-link>Все продавцы</a>`)}
+    ${homeFaq()}
     ${footer()}
   </main>`;
 }
