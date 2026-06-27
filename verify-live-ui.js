@@ -170,6 +170,8 @@ if (!app.innerHTML.includes("mobile-theme-toggle") || !app.innerHTML.includes("d
   'id="advantages"',
   'id="how-it-works"',
   'class="catalog-strip"',
+  'class="operation-deck"',
+  'class="market-board"',
   'class="why-grid"',
   'class="workflow-grid"',
   'class="faq-grid"',

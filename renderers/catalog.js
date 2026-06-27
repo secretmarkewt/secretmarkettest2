@@ -182,13 +182,14 @@ function marketplaceIntro() {
       <span></span><span></span><span></span>
     </div>
     <div class="market-intro-copy">
-      <p class="eyebrow hero-badge">${uiIcon("info")} Безопасный маркетплейс цифровых товаров</p>
-      <div class="hero-kicker"><span>SM-01</span><span>protected checkout</span><span>digital goods</span></div>
-      <h1>Цифровые товары <span>под защитой сделки</span></h1>
-      <p class="lead">Выбирай продавца по рейтингу, оплачивай USDT и держи заказ, чат и спор в одной безопасной сделке.</p>
+      <p class="eyebrow hero-badge">${uiIcon("info")} Secret Market OS</p>
+      <div class="hero-kicker"><span>escrow layer</span><span>USDT checkout</span><span>seller desk</span></div>
+      <h1>Маркет цифровых сделок <span>нового поколения</span></h1>
+      <p class="lead">Покупай и продавай аккаунты, ключи, подписки и игровые товары через единый контур: каталог, оплата, чат, выдача, спор и баланс.</p>
       <div class="market-pulse">${homePulseItems().map((item) => `<span>${item}</span>`).join("")}</div>
       <div class="hero-actions">
         <a class="btn primary" href="/catalog" data-link>Открыть каталог</a>
+        <a class="btn primary soft" href="/register" data-link>Начать</a>
         <a class="btn ghost" href="/seller/products/create" data-link>Разместить товар</a>
       </div>
       <form class="market-search" data-search-form>
@@ -199,6 +200,12 @@ function marketplaceIntro() {
       <div class="hero-tags">${["Robux", "Steam", "Minecraft", "VPN", "Windows 11", "Telegram Premium"].map((tag) => `<a href="/catalog?query=${encodeURIComponent(tag)}" data-link>${tag}</a>`).join("")}</div>
     </div>
     <div class="market-tools">
+      <div class="market-board">
+        <div class="board-head"><span>Live marketplace</span><strong>SM Console</strong></div>
+        <div class="board-row"><span>Orders protected</span><strong>500+</strong></div>
+        <div class="board-row"><span>Avg seller rating</span><strong>4.91</strong></div>
+        <div class="board-row"><span>Payout network</span><strong>TRC20 / TON</strong></div>
+      </div>
       <aside class="market-mascot" aria-label="Secret Market assistant">
         <div class="mascot-glow"></div>
         <img src="${assetPath("assets/hero-mascot.png")}" alt="Secret Market" />
@@ -211,6 +218,22 @@ function marketplaceIntro() {
         <small>заказы, тикеты и баланс в одном контуре</small>
       </div>
     </div>
+  </section>`;
+}
+
+function operationDeck() {
+  const cards = [
+    ["Buy", "Каталог", "Фильтры, категории, рейтинг и быстрая покупка.", "/catalog"],
+    ["Sell", "Витрина продавца", "Создание товара, остатки, выдача и финансы.", "/seller/products/create"],
+    ["Secure", "Гарант", "Платёж, чат, подтверждение и спор связаны с заказом.", "/buyer-rules"],
+    ["Support", "Операции", "Тикеты, Telegram-менеджер и админ-панель для контроля.", "/support"],
+  ];
+  return `<section class="operation-deck">
+    ${cards.map(([code, title, text, href]) => `<a class="operation-card" href="${href}" data-link>
+      <span>${code}</span>
+      <strong>${title}</strong>
+      <p>${text}</p>
+    </a>`).join("")}
   </section>`;
 }
 
@@ -334,6 +357,7 @@ function homeFaq() {
 function home() {
   return `${header()}<main class="main">
     ${marketplaceIntro()}
+    ${operationDeck()}
     ${homeStats()}
     ${trustBar()}
     ${quickPicks()}
