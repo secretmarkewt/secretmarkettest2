@@ -166,6 +166,19 @@ if (!app.innerHTML.includes("assets/categories/accounts.png") || !app.innerHTML.
 if (!app.innerHTML.includes("mobile-theme-toggle") || !app.innerHTML.includes("data-theme-toggle")) {
   throw new Error("mobile theme toggle did not render");
 }
+[
+  'id="advantages"',
+  'id="how-it-works"',
+  'class="catalog-strip"',
+  'class="why-grid"',
+  'class="workflow-grid"',
+  'class="faq-grid"',
+  'class="home-product-type"',
+].forEach((requiredMarkup) => {
+  if (!app.innerHTML.includes(requiredMarkup)) {
+    throw new Error(`redesigned landing section missing: ${requiredMarkup}`);
+  }
+});
 
 context.location.pathname = "/developers";
 context.render();

@@ -130,6 +130,7 @@ function trustBar() {
     ["Автовыдача"],
     ["Доверие"],
     ["USDT"],
+    ["Удобный интерфейс"],
   ].map(([title]) => `<article><span aria-hidden="true">✓</span><strong>${title}</strong></article>`).join("")}</section>`;
 }
 
@@ -153,6 +154,7 @@ function homeProductGrid(list) {
     <article class="home-product-card" style="--thumb-a:${colors[0]};--thumb-b:${colors[1]}">
       <a class="home-product-thumb" href="/product/${products[index % products.length].id}" data-link>${productSketch(mark, title)}</a>
       <div class="home-product-body">
+        <span class="home-product-type">${productCategoryLabel(mark)}</span>
         <h3>${title}</h3>
         <p class="home-seller-line"><span>${seller}</span><span>★ ${rating}</span></p>
         <p class="meta">${delivery} · ${sales} продаж</p>
@@ -160,6 +162,18 @@ function homeProductGrid(list) {
         <a class="btn primary" href="/product/${products[index % products.length].id}" data-link>Купить</a>
       </div>
     </article>`).join("")}</div>`;
+}
+
+function productCategoryLabel(mark) {
+  const labels = {
+    DN: "Подписки",
+    MC: "Аккаунты",
+    RB: "Игровая валюта",
+    ST: "Ключи",
+    TG: "Подписки",
+    VP: "Игровая валюта",
+  };
+  return labels[String(mark || "").toUpperCase()] || "Цифровой товар";
 }
 
 function marketplaceIntro() {
@@ -197,6 +211,24 @@ function marketplaceIntro() {
         <small>заказы, тикеты и баланс в одном контуре</small>
       </div>
     </div>
+  </section>`;
+}
+
+function catalogFilterStrip() {
+  const filters = [
+    ["Все", "/catalog"],
+    ["Игры", "/catalog/roblox"],
+    ["Аккаунты", "/catalog/аккаунты"],
+    ["Софт", "/catalog/софт"],
+    ["Услуги", "/catalog/услуги"],
+    ["Подписки", "/catalog/telegram"],
+  ];
+  return `<section class="catalog-strip">
+    <div>
+      <p class="eyebrow">Catalog filters</p>
+      <h2>Быстрый вход в категории</h2>
+    </div>
+    <div class="catalog-filter-pills">${filters.map(([label, href], index) => `<a class="${index === 0 ? "active" : ""}" href="${href}" data-link>${label}</a>`).join("")}</div>
   </section>`;
 }
 
@@ -264,6 +296,24 @@ function securityBlock() {
   </section>`;
 }
 
+function whyChooseUs() {
+  const items = [
+    ["Безопасные сделки", "Покупатель видит платеж, продавца и статус заказа в одном экране."],
+    ["Проверенные продавцы", "Рейтинг, продажи и формат выдачи помогают быстро отсеять риск."],
+    ["Быстрая поддержка", "Тикеты и Telegram-менеджер привязаны к заказам, оплатам и спорам."],
+    ["Гарант-система", "Средства не теряются между чатом, оплатой и подтверждением товара."],
+    ["Удобный интерфейс", "Каталог, баланс, покупка и продажа собраны в понятные рабочие панели."],
+  ];
+  return `<section class="home-section why-section">
+    <div class="section-head"><h2>Почему выбирают нас</h2><a class="btn ghost" href="/launch-readiness" data-link>Готовность</a></div>
+    <div class="why-grid">${items.map(([title, text]) => `
+      <article class="why-card">
+        <strong>${title}</strong>
+        <p>${text}</p>
+      </article>`).join("")}</div>
+  </section>`;
+}
+
 function homeFaq() {
   const rows = [
     ["Как защищается покупка?", "Деньги учитываются в заказе до подтверждения получения или решения спора."],
@@ -288,7 +338,9 @@ function home() {
     ${trustBar()}
     ${quickPicks()}
     ${homeSection("Популярные категории", homeCategoryGrid(), `<a class="btn ghost" href="/catalog" data-link>Все категории</a>`)}
+    ${catalogFilterStrip()}
     ${paymentBlock()}
+    ${whyChooseUs()}
     ${securityBlock()}
     ${howItWorks()}
     ${homeSection("Рекомендованные товары", homeProductGrid(homeRecommendedProducts), `<a class="btn ghost" href="/catalog" data-link>Смотреть все</a>`)}
