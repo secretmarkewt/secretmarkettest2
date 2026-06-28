@@ -62,12 +62,12 @@ function header() {
         ${[
           ["/", "Главная"],
           ["/catalog", "Каталог"],
-          ["#how-it-works", "Как это работает"],
-          ["#advantages", "Преимущества"],
+          ["/#how-it-works", "Как это работает"],
+          ["/#advantages", "Преимущества"],
           ["/seller/products/create", "Продать"],
           ["/orders/12345", "Заказы"],
           ["/chats", "Чаты"],
-        ].map(([href, label]) => `<a href="${href}" ${href.startsWith("#") ? "" : "data-link"} class="${href.startsWith("#") ? "" : activeClass(href)}">${label}</a>`).join("")}
+        ].map(([href, label]) => `<a href="${href}" data-link class="${href.includes("#") ? "" : activeClass(href)}">${label}</a>`).join("")}
         <a href="/support" data-link>Поддержка</a>
         ${session.role === "admin" ? `<a href="/admin" data-link class="${currentPath().startsWith("/admin") ? "active" : ""}">Админ</a>` : ""}
         <a class="nav-balance" href="/account/balance" data-link>${navBalance.toFixed(2)} USDT</a>

@@ -31,10 +31,17 @@ function guardedPage(roles, renderer) {
 }
 
 function startRouter() {
-  addEventListener("popstate", render);
-  addEventListener("hashchange", () => {
+  addEventListener("popstate", () => {
     render();
-    scrollTo({ top: 0, behavior: "smooth" });
+    scrollToHashOrTop();
+  });
+  addEventListener("hashchange", () => {
+    if (location.protocol !== "file:" && location.hash && document.getElementById(decodeURIComponent(location.hash.replace(/^#/, "")))) {
+      scrollToHashOrTop();
+      return;
+    }
+    render();
+    scrollToHashOrTop();
   });
   render();
 }

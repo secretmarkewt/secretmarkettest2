@@ -296,8 +296,20 @@ function go(path) {
   } else {
     history.pushState({}, "", `${APP_BASE_PATH}${path}`);
     render();
-    scrollTo({ top: 0, behavior: "smooth" });
+    scrollToHashOrTop();
   }
+}
+
+function scrollToHashOrTop() {
+  if (location.hash) {
+    const id = decodeURIComponent(location.hash.replace(/^#/, ""));
+    const target = id ? document.getElementById(id) : null;
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+  }
+  scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function currentPath() {

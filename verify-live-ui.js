@@ -169,6 +169,8 @@ if (!app.innerHTML.includes("mobile-theme-toggle") || !app.innerHTML.includes("d
 [
   'id="advantages"',
   'id="how-it-works"',
+  'href="/#how-it-works"',
+  'href="/#advantages"',
   'class="catalog-strip"',
   'class="operation-deck"',
   'class="market-board"',
